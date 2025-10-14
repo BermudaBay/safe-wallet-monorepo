@@ -6,6 +6,10 @@
 
 .detailsWrapper {
   position: relative;
+  display: flex;
+  flex-wrap: wrap-reverse;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--color-border-light);
 }
 
 .details {
@@ -23,10 +27,7 @@
 }
 
 .inlineSimulation {
-  display: flex;
-  justify-content: flex-end;
   margin: var(--space-2);
-  position: absolute;
   right: 0;
   top: 0;
   z-index: 1;
@@ -49,10 +50,6 @@
 .advancedDetails,
 .txModule {
   padding: var(--space-2);
-}
-
-.txData {
-  border-bottom: 1px solid var(--color-border-light);
 }
 
 .txData:empty {
