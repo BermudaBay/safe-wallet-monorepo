@@ -40,7 +40,8 @@ export type MultiSend = {
   value: string
   dataDecoded?: BaseDataDecoded
   to: string
-  data?: object
+  /** Hexadecimal encoded data */
+  data?: string | null
 }
 export type DataDecodedParameter = {
   name: string
