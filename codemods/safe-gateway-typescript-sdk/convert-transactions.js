@@ -69,7 +69,7 @@ export const importMapping = {
   Transfer: { module: '@safe-global/store/gateway/AUTO_GENERATED/transactions', newName: 'TransferTransactionInfo' },
   TokenType: { module: '@safe-global/store/gateway/types', newName: 'TokenType' },
   DecodedDataResponse: { module: '@safe-global/store/gateway/AUTO_GENERATED/data-decoded', newName: 'DataDecoded' },
-  StakingTxInfo: { module: '@safe-global/store/gateway/AUTO_GENERATED/data-decoded', newName: 'StakingTxInfo' },
+  StakingTxInfo: { module: '@safe-global/store/gateway/types', newName: 'StakingTxInfo' },
   RelayCountResponse: { module: '@safe-global/store/gateway/AUTO_GENERATED/relay', newName: 'RelaysRemaining' },
   SafeAppAccessPolicyTypes: { module: '@safe-global/store/gateway/types', newName: 'SafeAppAccessPolicyTypes' },
   SafeBalanceResponse: { module: '@safe-global/store/gateway/types', newName: 'Balances' },

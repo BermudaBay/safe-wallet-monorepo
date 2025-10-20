@@ -1,4 +1,4 @@
-import type { StakingTxInfo } from '@safe-global/store/gateway/AUTO_GENERATED/data-decoded'
+import type { StakingTxInfo } from '@safe-global/store/gateway/types'
 
 import type {
   DetailedExecutionInfo,
@@ -355,7 +355,7 @@ export function isRecoveryQueueItem(value: TransactionListItem | RecoveryQueueIt
 // Narrows `Transaction`
 // TODO: Consolidate these types with the new sdk
 export const isMultisigExecutionInfo = (
-  value?: ExecutionInfo | DetailedExecutionInfo,
+  value?: ExecutionInfo | DetailedExecutionInfo | null,
 ): value is MultisigExecutionInfo => {
   return value?.type === 'MULTISIG'
 }
