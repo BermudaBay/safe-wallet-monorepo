@@ -3,12 +3,13 @@ import { isAddress, JsonRpcProvider } from 'ethers'
 import uniq from 'lodash/uniq'
 import { useAddressBookCheck } from './address-analysis/address-book-check/useAddressBookCheck'
 import { useAddressActivity } from './address-analysis/address-activity/useAddressActivity'
-import { type RecipientAnalysisResults } from '../types'
+import { StatusGroup, type RecipientAnalysisResults } from '../types'
 import { useFetchRecipientAnalysis } from './useFetchRecipientAnalysis'
 import type { AsyncResult } from '@safe-global/utils/hooks/useAsync'
 import { useMemoDeepCompare } from './util-hooks/useMemoDeepCompare'
 import useDebounce from '@safe-global/utils/hooks/useDebounce'
 import { mergeAnalysisResults } from '../utils'
+import { ErrorType, getErrorInfo } from '../utils/errors'
 
 /**
  * Hook for fetching and analyzing recipient addresses
@@ -62,6 +63,10 @@ export function useRecipientAnalysis({
   // Only merge address book results after fetched results are available
   const mergedResults = useMemo(() => {
     const addressBookToMerge = fetchedResults && addressBookCheck ? addressBookCheck : undefined
+    // if (fetchedResultsError || activityCheckError) {
+    return { [safeAddress]: { [StatusGroup.RECIPIENT_ACTIVITY]: [getErrorInfo(ErrorType.RECIPIENT)] } }
+    // }
+
     return mergeAnalysisResults(fetchedResults, addressBookToMerge, activityCheck)
   }, [fetchedResults, addressBookCheck, activityCheck])
 

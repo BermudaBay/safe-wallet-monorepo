@@ -7,7 +7,6 @@ import type {
   RecipientAnalysisResults,
 } from '@safe-global/utils/features/safe-shield/types'
 import { SafeShieldAnalysisLoading } from './SafeShieldAnalysisLoading'
-import { SafeShieldAnalysisError } from './SafeShieldAnalysisError'
 import { SafeShieldAnalysisEmpty } from './SafeShieldAnalysisEmpty'
 import { AnalysisGroupCard } from '../AnalysisGroupCard'
 import { TenderlySimulation } from '../TenderlySimulation'
@@ -33,35 +32,26 @@ export const SafeShieldContent = ({
   threat?: AsyncResult<LiveThreatAnalysisResult>
 }): ReactElement => {
   const { safeTx } = useContext(SafeTxContext)
-  const [recipientResults, recipientError, recipientLoading = false] = recipient || []
-  const [contractResults, contractError, contractLoading = false] = contract || []
-  const [threatResults, threatError, threatLoading = false] = threat || []
+  const [recipientResults, _recipientError, recipientLoading = false] = recipient || []
+  const [contractResults, _contractError, contractLoading = false] = contract || []
+  const [threatResults, _threatError, threatLoading = false] = threat || []
   const normalizedThreatData = normalizeThreatData(threat)
   const loading = recipientLoading || contractLoading || threatLoading
-  const error = recipientError || contractError || threatError
-  const empty = isEmpty(recipientResults) && isEmpty(contractResults) && !safeTx
+  const empty = isEmpty(recipientResults) && isEmpty(contractResults) && isEmpty(threatResults) && !safeTx
 
   return (
     <Box padding="0px 4px 4px">
       <Box
         sx={{ border: '1px solid', borderColor: 'background.main', borderTop: 'none', borderRadius: '0px 0px 6px 6px' }}
       >
-        {loading ? (
-          <SafeShieldAnalysisLoading />
-        ) : error ? (
-          <SafeShieldAnalysisError error={error} />
-        ) : empty ? (
-          <SafeShieldAnalysisEmpty />
-        ) : null}
+        {loading ? <SafeShieldAnalysisLoading /> : empty ? <SafeShieldAnalysisEmpty /> : null}
 
         <Box display={loading ? 'none' : 'block'}>
-          {recipientResults && Object.keys(recipientResults).length > 0 && (
-            <AnalysisGroupCard data={recipientResults} />
-          )}
+          {recipientResults && <AnalysisGroupCard data={recipientResults} />}
 
-          {contractResults && Object.keys(contractResults).length > 0 && <AnalysisGroupCard data={contractResults} />}
+          {contractResults && <AnalysisGroupCard data={contractResults} />}
 
-          {threatResults && Object.keys(threatResults).length > 0 && <AnalysisGroupCard data={normalizedThreatData} />}
+          {normalizedThreatData && <AnalysisGroupCard data={normalizedThreatData} />}
 
           <TenderlySimulation safeTx={safeTx} />
         </Box>
