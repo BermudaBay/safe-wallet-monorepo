@@ -63,9 +63,9 @@ export function useRecipientAnalysis({
   // Only merge address book results after fetched results are available
   const mergedResults = useMemo(() => {
     const addressBookToMerge = fetchedResults && addressBookCheck ? addressBookCheck : undefined
-    // if (fetchedResultsError || activityCheckError) {
-    return { [safeAddress]: { [StatusGroup.RECIPIENT_ACTIVITY]: [getErrorInfo(ErrorType.RECIPIENT)] } }
-    // }
+    if (fetchedResultsError || activityCheckError) {
+      return { [safeAddress]: { [StatusGroup.RECIPIENT_ACTIVITY]: [getErrorInfo(ErrorType.RECIPIENT)] } }
+    }
 
     return mergeAnalysisResults(fetchedResults, addressBookToMerge, activityCheck)
   }, [fetchedResults, addressBookCheck, activityCheck])
