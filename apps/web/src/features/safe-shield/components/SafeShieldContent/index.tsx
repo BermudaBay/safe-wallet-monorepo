@@ -35,16 +35,22 @@ export const SafeShieldContent = ({
   const [recipientResults, _recipientError, recipientLoading = false] = recipient || []
   const [contractResults, _contractError, contractLoading = false] = contract || []
   const [threatResults, _threatError, threatLoading = false] = threat || []
+
   const normalizedThreatData = normalizeThreatData(threat)
+
   const loading = recipientLoading || contractLoading || threatLoading
-  const empty = isEmpty(recipientResults) && isEmpty(contractResults) && isEmpty(threatResults) && !safeTx
+
+  const recipientEmpty = isEmpty(recipientResults)
+  const contractEmpty = isEmpty(contractResults)
+  const threatEmpty = isEmpty(threatResults) || isEmpty(threatResults.THREAT)
+  const allEmpty = recipientEmpty && contractEmpty && threatEmpty && !safeTx
 
   return (
     <Box padding="0px 4px 4px">
       <Box
         sx={{ border: '1px solid', borderColor: 'background.main', borderTop: 'none', borderRadius: '0px 0px 6px 6px' }}
       >
-        {loading ? <SafeShieldAnalysisLoading /> : empty ? <SafeShieldAnalysisEmpty /> : null}
+        {loading ? <SafeShieldAnalysisLoading /> : allEmpty ? <SafeShieldAnalysisEmpty /> : null}
 
         <Box display={loading ? 'none' : 'block'}>
           {recipientResults && <AnalysisGroupCard data={recipientResults} />}
