@@ -2,11 +2,8 @@ import { AppRoutes } from '@/config/routes'
 import { Paper, Typography, Divider, Box, Link, Button } from '@mui/material'
 import css from './styles.module.css'
 import { useRouter } from 'next/router'
-import { CREATE_SAFE_EVENTS } from '@/services/analytics/events/createLoadSafe'
-import { OVERVIEW_EVENTS, OVERVIEW_LABELS, trackEvent } from '@/services/analytics'
 import useWallet from '@/hooks/wallets/useWallet'
 import useHasSafes from '@/features/myAccounts/hooks/useHasSafes'
-import Track from '@/components/common/Track'
 import { useCallback, useEffect, useState } from 'react'
 import WalletLogin from './WalletLogin'
 
@@ -19,7 +16,6 @@ const WelcomeLogin = () => {
   const redirect = useCallback(() => {
     if (wallet) {
       if (isLoaded && !hasSafes) {
-        trackEvent(CREATE_SAFE_EVENTS.OPEN_SAFE_CREATION)
         router.push({ pathname: AppRoutes.newSafe.create, query: router.query })
       } else {
         router.push({ pathname: AppRoutes.welcome.accounts, query: router.query })
@@ -50,9 +46,7 @@ const WelcomeLogin = () => {
         </Typography>
 
         <Box className={css.fullWidth}>
-          <Track {...OVERVIEW_EVENTS.OPEN_ONBOARD} label={OVERVIEW_LABELS.welcome_page}>
-            <WalletLogin onLogin={onLogin} onContinue={redirect} fullWidth />
-          </Track>
+          <WalletLogin onLogin={onLogin} onContinue={redirect} fullWidth />
         </Box>
 
         {!wallet && (

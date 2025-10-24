@@ -7,8 +7,6 @@ import { Button, Tooltip } from '@mui/material'
 
 import { isSignableBy } from '@/utils/transaction-guards'
 import useWallet from '@/hooks/wallets/useWallet'
-import Track from '@/components/common/Track'
-import { TX_LIST_EVENTS } from '@/services/analytics/events/txList'
 import CheckWallet from '@/components/common/CheckWallet'
 import { useSafeSDK } from '@/hooks/coreSDK/safeCoreSDK'
 import { TxModalContext } from '@/components/tx-flow'
@@ -43,17 +41,15 @@ const SignTxButton = ({
       {(isOk) => (
         <Tooltip title={isOk && !isSignable && isSafeOwner ? "You've already signed this transaction" : ''}>
           <span>
-            <Track {...TX_LIST_EVENTS.CONFIRM}>
-              <Button
-                onClick={onClick}
-                variant={compact ? 'outlined' : 'contained'}
-                disabled={!isOk || isDisabled}
-                size={compact ? 'small' : 'stretched'}
-                sx={compact ? { py: 0.6 } : undefined}
-              >
-                Confirm
-              </Button>
-            </Track>
+            <Button
+              onClick={onClick}
+              variant={compact ? 'outlined' : 'contained'}
+              disabled={!isOk || isDisabled}
+              size={compact ? 'small' : 'stretched'}
+              sx={compact ? { py: 0.6 } : undefined}
+            >
+              Confirm
+            </Button>
           </span>
         </Tooltip>
       )}

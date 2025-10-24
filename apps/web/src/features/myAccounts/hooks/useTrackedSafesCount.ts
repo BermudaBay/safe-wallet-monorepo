@@ -1,12 +1,10 @@
 import { AppRoutes } from '@/config/routes'
-import { OVERVIEW_EVENTS, trackEvent } from '@/services/analytics'
 import { useRouter } from 'next/router'
 import { useEffect, useMemo } from 'react'
 import type { ConnectedWallet } from '@/hooks/wallets/useOnboard'
 import { type SafeItem } from './useAllSafes'
 import type { AllSafeItemsGrouped } from './useAllSafesGrouped'
 import { type MultiChainSafeItem } from './useAllSafesGrouped'
-import { isMultiChainSafeItem } from '@/features/multichain/utils/utils'
 
 let isOwnedSafesTracked = false
 let isPinnedSafesTracked = false
@@ -40,23 +38,13 @@ const useTrackSafesCount = (safes: AllSafeItemsGrouped, wallet: ConnectedWallet 
   }, [wallet?.address])
 
   useEffect(() => {
-    const totalSafesOwned = ownedSafes?.reduce(
-      (prev, current) => prev + (isMultiChainSafeItem(current) ? current.safes.length : 1),
-      0,
-    )
     if (wallet && !isOwnedSafesTracked && ownedSafes && ownedSafes.length > 0 && isLoginPage) {
-      trackEvent({ ...OVERVIEW_EVENTS.TOTAL_SAFES_OWNED, label: totalSafesOwned })
       isOwnedSafesTracked = true
     }
   }, [isLoginPage, ownedSafes, wallet])
 
   useEffect(() => {
-    const totalSafesPinned = pinnedSafes?.reduce(
-      (prev, current) => prev + (isMultiChainSafeItem(current) ? current.safes.length : 1),
-      0,
-    )
     if (!isPinnedSafesTracked && pinnedSafes && pinnedSafes.length > 0 && isLoginPage) {
-      trackEvent({ ...OVERVIEW_EVENTS.TOTAL_SAFES_PINNED, label: totalSafesPinned })
       isPinnedSafesTracked = true
     }
   }, [isLoginPage, pinnedSafes])

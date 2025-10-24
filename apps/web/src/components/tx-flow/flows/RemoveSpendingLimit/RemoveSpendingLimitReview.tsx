@@ -6,7 +6,6 @@ import useChainId from '@/hooks/useChainId'
 import { type PropsWithChildren, useCallback, useContext, useEffect } from 'react'
 import { SafeTxContext } from '../../SafeTxProvider'
 import type { SpendingLimitState } from '@/store/spendingLimitsSlice'
-import { trackEvent, SETTINGS_EVENTS } from '@/services/analytics'
 import { createTx } from '@/services/tx/tx-sender'
 import useSafeInfo from '@/hooks/useSafeInfo'
 import ReviewTransaction from '@/components/tx/ReviewTransactionV2'
@@ -45,7 +44,6 @@ export const RemoveSpendingLimitReview = ({
   }, [chainId, params.beneficiary, params.token, setSafeTx, setSafeTxError, safe.modules])
 
   const onFormSubmit = useCallback(() => {
-    trackEvent(SETTINGS_EVENTS.SPENDING_LIMIT.LIMIT_REMOVED)
     onSubmit()
   }, [onSubmit])
 

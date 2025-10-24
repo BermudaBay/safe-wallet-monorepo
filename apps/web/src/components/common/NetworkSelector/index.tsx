@@ -1,5 +1,4 @@
 import ChainIndicator from '@/components/common/ChainIndicator'
-import Track from '@/components/common/Track'
 import { useDarkMode } from '@/hooks/useDarkMode'
 import { useAppSelector } from '@/store'
 import { selectChains } from '@/store/chainsSlice'
@@ -26,7 +25,6 @@ import type { SafeAppData } from '@safe-global/safe-gateway-typescript-sdk'
 import { useRouter } from 'next/router'
 import css from './styles.module.css'
 import { type ReactElement, useCallback, useMemo, useState } from 'react'
-import { OVERVIEW_EVENTS, OVERVIEW_LABELS, trackEvent } from '@/services/analytics'
 import { useAllSafesGrouped } from '@/features/myAccounts/hooks/useAllSafesGrouped'
 import useSafeAddress from '@/hooks/useSafeAddress'
 import { sameAddress } from '@safe-global/utils/utils/addresses'
@@ -128,27 +126,25 @@ const UndeployedNetworkMenuItem = ({
   const isDisabled = !chain.available
 
   return (
-    <Track {...OVERVIEW_EVENTS.ADD_NEW_NETWORK} label={OVERVIEW_LABELS.top_bar}>
-      <Tooltip data-testid="add-network-tooltip" title="Add network" arrow placement="left">
-        <MenuItem
-          value={chain.chainId}
-          sx={{ '&:hover': { backgroundColor: 'inherit' } }}
-          onClick={() => onSelect(chain)}
-          disabled={isDisabled}
-        >
-          <Box className={css.item}>
-            <ChainIndicator responsive={isSelected} chainId={chain.chainId} inline />
-            {isDisabled ? (
-              <Typography variant="caption" component="span" className={css.comingSoon}>
-                Not available
-              </Typography>
-            ) : (
-              <PlusIcon className={css.plusIcon} />
-            )}
-          </Box>
-        </MenuItem>
-      </Tooltip>
-    </Track>
+    <Tooltip data-testid="add-network-tooltip" title="Add network" arrow placement="left">
+      <MenuItem
+        value={chain.chainId}
+        sx={{ '&:hover': { backgroundColor: 'inherit' } }}
+        onClick={() => onSelect(chain)}
+        disabled={isDisabled}
+      >
+        <Box className={css.item}>
+          <ChainIndicator responsive={isSelected} chainId={chain.chainId} inline />
+          {isDisabled ? (
+            <Typography variant="caption" component="span" className={css.comingSoon}>
+              Not available
+            </Typography>
+          ) : (
+            <PlusIcon className={css.plusIcon} />
+          )}
+        </Box>
+      </MenuItem>
+    </Tooltip>
   )
 }
 
@@ -293,7 +289,6 @@ const UndeployedNetworks = ({
   }
 
   const onShowAllNetworks = () => {
-    !open && trackEvent(OVERVIEW_EVENTS.SHOW_ALL_NETWORKS)
     setOpen((prev) => !prev)
   }
 
@@ -403,10 +398,6 @@ const NetworkSelector = ({
       const chain = chains.data.find((chain) => chain.chainId === chainId)
       if (!chain) return null
 
-      const onSwitchNetwork = () => {
-        trackEvent({ ...OVERVIEW_EVENTS.SWITCH_NETWORK, label: chainId })
-      }
-
       return (
         <MenuItem
           data-testid="network-selector-item"
@@ -414,7 +405,6 @@ const NetworkSelector = ({
           value={chainId}
           sx={{ '&:hover': { backgroundColor: isSelected ? 'transparent' : 'inherit' } }}
           disableRipple={isSelected}
-          onClick={onSwitchNetwork}
         >
           <Link
             href={getNetworkLink(router, safeAddress, chain, currentSafeApp)}
@@ -435,7 +425,7 @@ const NetworkSelector = ({
 
   const handleOpen = () => {
     setOpen(true)
-    offerSafeCreation && trackEvent({ ...OVERVIEW_EVENTS.EXPAND_MULTI_SAFE, label: OVERVIEW_LABELS.top_bar })
+    offerSafeCreation
   }
 
   return configs.length ? (

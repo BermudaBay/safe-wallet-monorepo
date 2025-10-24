@@ -21,7 +21,6 @@ import { setSafeLabsTermsAccepted } from '@/services/safe-labs-terms'
 import { getSafeRedirectUrl, isValidAutoConnectParam } from '@/services/safe-labs-terms/security'
 import { getLogoLink } from '../common/Header'
 import NextLink from 'next/link'
-import { trackEvent, TERMS_EVENTS } from '@/services/analytics'
 
 const SafeLabsTerms = () => {
   const router = useRouter()
@@ -34,8 +33,6 @@ const SafeLabsTerms = () => {
   const logoHref = getLogoLink(router)
 
   const handleAcceptAndContinue = () => {
-    trackEvent({ ...TERMS_EVENTS.ACCEPT_SAFE_LABS_TERMS, label: requestDataTransfer }, { requestDataTransfer })
-
     const { pathname, query } = getSafeRedirectUrl(router.query.redirect as string | undefined)
     const autoConnect = router.query.autoConnect
     const isValidAutoConnect = isValidAutoConnectParam(autoConnect)

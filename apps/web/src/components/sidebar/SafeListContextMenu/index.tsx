@@ -14,15 +14,11 @@ import EditIcon from '@/public/images/common/edit.svg'
 import DeleteIcon from '@/public/images/common/delete.svg'
 import PlusIcon from '@/public/images/common/plus.svg'
 import ContextMenu from '@/components/common/ContextMenu'
-import { trackEvent, OVERVIEW_EVENTS, OVERVIEW_LABELS, type AnalyticsEvent } from '@/services/analytics'
 import { SvgIcon } from '@mui/material'
 import useAddressBook from '@/hooks/useAddressBook'
-import { AppRoutes } from '@/config/routes'
-import router from 'next/router'
 import { CreateSafeOnNewChain } from '@/features/multichain/components/CreateSafeOnNewChain'
 import { useGetOwnedSafesQuery } from '@/store/slices'
 import { NestedSafesPopover } from '../NestedSafesPopover'
-import { NESTED_SAFE_EVENTS, NESTED_SAFE_LABELS } from '@/services/analytics/events/nested-safes'
 import { useHasFeature } from '@/hooks/useChains'
 
 import { FEATURES } from '@safe-global/utils/utils/chains'
@@ -67,9 +63,6 @@ const SafeListContextMenu = ({
   const hasName = address in addressBook
   const [open, setOpen] = useState<typeof defaultOpen>(defaultOpen)
 
-  const trackingLabel =
-    router.pathname === AppRoutes.welcome.accounts ? OVERVIEW_LABELS.login_page : OVERVIEW_LABELS.sidebar
-
   const handleOpenContextMenu = (e: MouseEvent<HTMLButtonElement, globalThis.MouseEvent>) => {
     setAnchorEl(e.currentTarget)
   }
@@ -78,13 +71,11 @@ const SafeListContextMenu = ({
     setAnchorEl(null)
   }
 
-  const handleOpenModal = (type: keyof typeof open, event: AnalyticsEvent) => () => {
+  const handleOpenModal = (type: keyof typeof open) => () => {
     if (type !== ModalType.NESTED_SAFES) {
       handleCloseContextMenu()
     }
     setOpen((prev) => ({ ...prev, [type]: true }))
-
-    trackEvent({ ...event, label: trackingLabel })
   }
 
   const handleCloseModal = () => {
@@ -98,12 +89,7 @@ const SafeListContextMenu = ({
       </IconButton>
       <ContextMenu anchorEl={anchorEl} open={!!anchorEl} onClose={handleCloseContextMenu}>
         {isNestedSafesEnabled && !undeployedSafe && nestedSafes?.safes && nestedSafes.safes.length > 0 && (
-          <MenuItem
-            onClick={handleOpenModal(ModalType.NESTED_SAFES, {
-              ...NESTED_SAFE_EVENTS.OPEN_LIST,
-              label: NESTED_SAFE_LABELS.sidebar,
-            })}
-          >
+          <MenuItem onClick={handleOpenModal(ModalType.NESTED_SAFES)}>
             <ListItemIcon>
               <SvgIcon component={NestedSafesIcon} inheritViewBox fontSize="small" color="success" />
             </ListItemIcon>
@@ -112,7 +98,7 @@ const SafeListContextMenu = ({
         )}
 
         {rename && (
-          <MenuItem onClick={handleOpenModal(ModalType.RENAME, OVERVIEW_EVENTS.SIDEBAR_RENAME)}>
+          <MenuItem onClick={handleOpenModal(ModalType.RENAME)}>
             <ListItemIcon>
               <SvgIcon component={EditIcon} inheritViewBox fontSize="small" color="success" />
             </ListItemIcon>
@@ -121,7 +107,7 @@ const SafeListContextMenu = ({
         )}
 
         {undeployedSafe && (
-          <MenuItem onClick={handleOpenModal(ModalType.REMOVE, OVERVIEW_EVENTS.REMOVE_FROM_WATCHLIST)}>
+          <MenuItem onClick={handleOpenModal(ModalType.REMOVE)}>
             <ListItemIcon>
               <SvgIcon component={DeleteIcon} inheritViewBox fontSize="small" color="error" />
             </ListItemIcon>
@@ -130,7 +116,7 @@ const SafeListContextMenu = ({
         )}
 
         {addNetwork && (
-          <MenuItem onClick={handleOpenModal(ModalType.ADD_CHAIN, OVERVIEW_EVENTS.ADD_NEW_NETWORK)}>
+          <MenuItem onClick={handleOpenModal(ModalType.ADD_CHAIN)}>
             <ListItemIcon>
               <SvgIcon component={PlusIcon} inheritViewBox fontSize="small" color="primary" />
             </ListItemIcon>

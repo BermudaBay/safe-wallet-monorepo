@@ -13,8 +13,6 @@ import { useState } from 'react'
 import css from './styles.module.css'
 import { MemberStatus } from '@/features/spaces/hooks/useSpaceMembers'
 import useWallet from '@/hooks/wallets/useWallet'
-import { SPACE_EVENTS, SPACE_LABELS } from '@/services/analytics/events/spaces'
-import Track from '@/components/common/Track'
 import SpaceInfoModal from '../SpaceInfoModal'
 import { filterSpacesByStatus } from '@/features/spaces/utils'
 
@@ -83,9 +81,7 @@ const NoSpacesState = () => {
             What are spaces?
           </Link>
         </Box>
-        <Track {...SPACE_EVENTS.CREATE_SPACE_MODAL} label={SPACE_LABELS.space_list_page}>
-          <AddSpaceButton />
-        </Track>
+        <AddSpaceButton />
       </Card>
       {isInfoOpen && (
         <SpaceInfoModal onCreateSpace={() => setOpenCreationModal(true)} onClose={() => setIsInfoOpen(false)} />
@@ -109,11 +105,7 @@ const SpacesList = () => {
         <Box className={css.spacesHeader}>
           <AccountsNavigation />
 
-          {isUserSignedIn && activeSpaces.length > 0 && (
-            <Track {...SPACE_EVENTS.CREATE_SPACE_MODAL} label={SPACE_LABELS.space_list_page}>
-              <AddSpaceButton />
-            </Track>
-          )}
+          {isUserSignedIn && activeSpaces.length > 0 && <AddSpaceButton />}
         </Box>
 
         {isUserSignedIn &&

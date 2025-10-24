@@ -6,7 +6,6 @@ import { getAddress } from 'ethers'
 import useChains, { useCurrentChain } from '@/hooks/useChains'
 import ExternalStore from '@safe-global/utils/services/ExternalStore'
 import { logError, Errors } from '@/services/exceptions'
-import { trackEvent, WALLET_EVENTS, MixpanelEventParams } from '@/services/analytics'
 import { useAppSelector, useAppDispatch } from '@/store'
 import { selectRpc } from '@/store/settingsSlice'
 import { formatAmount } from '@safe-global/utils/utils/formatNumber'
@@ -87,28 +86,6 @@ export const getWalletConnectLabel = (wallet: ConnectedWallet): string | undefin
   const { connector } = wallet.provider as unknown as any
   const peerWalletV2 = connector.session?.peer?.metadata?.name
   return peerWalletV2 || UNKNOWN_PEER
-}
-
-export const trackWalletType = (wallet: ConnectedWallet, configs: ChainInfo[]) => {
-  const chainInfo = configs.find((config) => config.chainId === wallet.chainId)
-  const networkName = chainInfo?.chainName || `Chain ${wallet.chainId}`
-
-  trackEvent(
-    { ...WALLET_EVENTS.CONNECT, label: wallet.label },
-    {
-      [MixpanelEventParams.EOA_WALLET_LABEL]: wallet.label,
-      [MixpanelEventParams.EOA_WALLET_ADDRESS]: wallet.address,
-      [MixpanelEventParams.EOA_WALLET_NETWORK]: networkName,
-    },
-  )
-
-  const wcLabel = getWalletConnectLabel(wallet)
-  if (wcLabel) {
-    trackEvent({
-      ...WALLET_EVENTS.WALLET_CONNECT,
-      label: wcLabel,
-    })
-  }
 }
 
 let isConnecting = false
@@ -204,7 +181,6 @@ export const useInitOnboard = () => {
         if (newWallet.label !== lastConnectedWallet) {
           lastConnectedWallet = newWallet.label
           saveLastWallet(lastConnectedWallet)
-          trackWalletType(newWallet, configs)
         }
       } else if (lastConnectedWallet) {
         lastConnectedWallet = ''

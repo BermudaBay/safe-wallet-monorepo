@@ -5,7 +5,6 @@ import classNames from 'classnames'
 import { useDarkMode } from '@/hooks/useDarkMode'
 import { useRouter } from 'next/router'
 import NextLink from 'next/link'
-import { OVERVIEW_EVENTS, trackEvent } from '@/services/analytics'
 import useLocalStorage from '@/services/local-storage/useLocalStorage'
 import ExternalLink from '@/components/common/ExternalLink'
 import { AppRoutes } from '@/config/routes'
@@ -24,17 +23,8 @@ const StakingBanner = ({
 
   if (!isStakingBannerVisible) return null
 
-  const onClick = () => {
-    trackEvent(OVERVIEW_EVENTS.OPEN_STAKING_WIDGET)
-  }
-
   const onHide = () => {
     setWidgetHidden(true)
-    trackEvent(OVERVIEW_EVENTS.HIDE_STAKING_BANNER)
-  }
-
-  const onLearnMore = () => {
-    trackEvent(OVERVIEW_EVENTS.OPEN_LEARN_MORE_STAKING_BANNER)
   }
 
   return (
@@ -75,9 +65,7 @@ const StakingBanner = ({
               {LEARN_MORE_LINK && (
                 <>
                   {' '}
-                  <ExternalLink onClick={onLearnMore} href={LEARN_MORE_LINK}>
-                    Learn more
-                  </ExternalLink>
+                  <ExternalLink href={LEARN_MORE_LINK}>Learn more</ExternalLink>
                 </>
               )}
             </Typography>
@@ -99,7 +87,6 @@ const StakingBanner = ({
               href={AppRoutes.stake && { pathname: AppRoutes.stake, query: { safe: router.query.safe } }}
               passHref
               rel="noreferrer"
-              onClick={onClick}
               className={classNames(css.stakeButton)}
             >
               <Button fullWidth size="small" variant="contained">

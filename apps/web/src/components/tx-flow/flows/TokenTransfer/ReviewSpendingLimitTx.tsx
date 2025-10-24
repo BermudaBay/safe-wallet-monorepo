@@ -18,13 +18,11 @@ import WalletRejectionError from '@/components/tx/SignOrExecuteForm/WalletReject
 import { useCurrentChain } from '@/hooks/useChains'
 import { dispatchSpendingLimitTxExecution } from '@/services/tx/tx-sender'
 import { getTxOptions } from '@/utils/transactions'
-import { MODALS_EVENTS, trackEvent } from '@/services/analytics'
 import useOnboard from '@/hooks/wallets/useOnboard'
 import { asError } from '@safe-global/utils/services/exceptions/utils'
 import TxCard from '@/components/tx-flow/common/TxCard'
 import { TxModalContext } from '@/components/tx-flow'
 import { type SubmitCallback } from '@/components/tx/SignOrExecuteForm/SignOrExecuteFormV2'
-import { TX_EVENTS, TX_TYPES } from '@/services/analytics/events/transactions'
 import { isWalletRejection } from '@/utils/wallets'
 import { safeParseUnits } from '@safe-global/utils/utils/formatters'
 import CheckWallet from '@/components/common/CheckWallet'
@@ -87,8 +85,6 @@ const ReviewSpendingLimitTx = ({
     e.preventDefault()
     if (!onboard || !wallet) return
 
-    trackEvent(MODALS_EVENTS.USE_SPENDING_LIMIT)
-
     setIsSubmittable(false)
     setSubmitError(undefined)
     setIsRejectedByUser(false)
@@ -117,9 +113,6 @@ const ReviewSpendingLimitTx = ({
       setIsSubmittable(true)
       return
     }
-
-    trackEvent({ ...TX_EVENTS.CREATE_VIA_SPENDING_LIMTI, label: TX_TYPES.transfer_token })
-    trackEvent({ ...TX_EVENTS.EXECUTE_VIA_SPENDING_LIMIT, label: TX_TYPES.transfer_token })
   }
 
   const submitDisabled = !isSubmittable || gasLimitLoading

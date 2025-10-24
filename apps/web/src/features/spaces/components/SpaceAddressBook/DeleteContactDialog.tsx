@@ -4,8 +4,6 @@ import Button from '@mui/material/Button'
 import Typography from '@mui/material/Typography'
 import DialogTitle from '@mui/material/DialogTitle'
 import ModalDialog from '@/components/common/ModalDialog'
-import { trackEvent } from '@/services/analytics'
-import { SPACE_EVENTS } from '@/services/analytics/events/spaces'
 import { ChainIndicatorList } from '@/features/multichain/components/SignerSetupWarning/InconsistentSignerSetupWarning'
 import { useAddressBooksDeleteByAddressV1Mutation } from '@safe-global/store/gateway/AUTO_GENERATED/spaces'
 import { useCurrentSpaceId } from '@/features/spaces/hooks/useCurrentSpaceId'
@@ -33,7 +31,7 @@ const DeleteContactDialog = ({ name, address, networks, onClose }: DeleteContact
 
     try {
       setIsSubmitting(true)
-      trackEvent({ ...SPACE_EVENTS.REMOVE_ADDRESS_SUBMIT })
+
       const response = await deleteEntry({ spaceId: Number(spaceId), address })
 
       if (response.error) {

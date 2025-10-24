@@ -4,8 +4,6 @@ import PlusIcon from '@/public/images/common/plus.svg'
 import { useState } from 'react'
 import AddMemberModal from '../AddMemberModal'
 import MemberName from '../MembersList/MemberName'
-import { SPACE_EVENTS, SPACE_LABELS } from '@/services/analytics/events/spaces'
-import Track from '@/components/common/Track'
 import { useIsAdmin } from '@/features/spaces/hooks/useSpaceMembers'
 
 const DashboardMembersList = ({ members }: { members: Member[] }) => {
@@ -23,11 +21,9 @@ const DashboardMembersList = ({ members }: { members: Member[] }) => {
       </Stack>
       {isAdmin && (
         <Box display="flex" justifyContent="center" mt={2}>
-          <Track {...SPACE_EVENTS.ADD_MEMBER_MODAL} label={SPACE_LABELS.space_dashboard}>
-            <Button size="small" variant="text" startIcon={<PlusIcon />} onClick={() => setOpenAddMembersModal(true)}>
-              Add member
-            </Button>
-          </Track>
+          <Button size="small" variant="text" startIcon={<PlusIcon />} onClick={() => setOpenAddMembersModal(true)}>
+            Add member
+          </Button>
         </Box>
       )}
       {openAddMembersModal && <AddMemberModal onClose={() => setOpenAddMembersModal(false)} />}

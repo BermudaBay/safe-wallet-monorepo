@@ -16,8 +16,6 @@ import SpendingLimitRow from '../SpendingLimitRow'
 import { useSelector } from 'react-redux'
 import { selectSpendingLimits } from '@/store/spendingLimitsSlice'
 import { sameAddress } from '@safe-global/utils/utils/addresses'
-import Track from '@/components/common/Track'
-import { MODALS_EVENTS } from '@/services/analytics'
 
 const getFieldName = (
   field: keyof TokenTransferParams,
@@ -107,18 +105,16 @@ export const RecipientRow = ({ fieldArray, removable = true, remove, disableSpen
 
         {removable && (
           <Box>
-            <Track {...MODALS_EVENTS.REMOVE_RECIPIENT}>
-              <Button
-                data-testid="remove-recipient-btn"
-                onClick={onRemove}
-                aria-label="Remove recipient"
-                variant="text"
-                startIcon={<SvgIcon component={DeleteIcon} inheritViewBox fontSize="small" />}
-                size="compact"
-              >
-                Remove recipient
-              </Button>
-            </Track>
+            <Button
+              data-testid="remove-recipient-btn"
+              onClick={onRemove}
+              aria-label="Remove recipient"
+              variant="text"
+              startIcon={<SvgIcon component={DeleteIcon} inheritViewBox fontSize="small" />}
+              size="compact"
+            >
+              Remove recipient
+            </Button>
           </Box>
         )}
       </Stack>

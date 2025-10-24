@@ -1,5 +1,3 @@
-import { trackEvent } from '@/services/analytics'
-import { RECOVERY_EVENTS } from '@/services/analytics/events/recovery'
 import { Typography } from '@mui/material'
 import { useContext } from 'react'
 import type { PropsWithChildren, ReactElement } from 'react'
@@ -33,7 +31,6 @@ export function CancelRecoveryFlowReview({
   }, [setSafeTx, setSafeTxError, recovery, web3ReadOnly])
 
   const handleSubmit = () => {
-    trackEvent({ ...RECOVERY_EVENTS.SUBMIT_RECOVERY_CANCEL })
     onSubmit()
   }
 

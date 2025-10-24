@@ -2,7 +2,6 @@ import { useCallback, useContext, useEffect, type PropsWithChildren } from 'reac
 import { Typography } from '@mui/material'
 import EthHashInfo from '@/components/common/EthHashInfo'
 import { Errors, logError } from '@/services/exceptions'
-import { trackEvent, SETTINGS_EVENTS } from '@/services/analytics'
 import { createRemoveGuardTx } from '@/services/tx/tx-sender'
 import { type RemoveGuardFlowProps } from '.'
 import { SafeTxContext } from '@/components/tx-flow/SafeTxProvider'
@@ -26,7 +25,6 @@ export const ReviewRemoveGuard = ({
   }, [safeTxError])
 
   const onFormSubmit = useCallback(() => {
-    trackEvent(SETTINGS_EVENTS.MODULES.REMOVE_GUARD)
     onSubmit()
   }, [onSubmit])
 

@@ -21,7 +21,6 @@ import {
   useMediaQuery,
 } from '@mui/material'
 import SafeIcon from '@/components/common/SafeIcon'
-import { OVERVIEW_EVENTS, OVERVIEW_LABELS, PIN_SAFE_LABELS, trackEvent } from '@/services/analytics'
 import { AppRoutes } from '@/config/routes'
 import { useAppDispatch, useAppSelector } from '@/store'
 import css from './styles.module.css'
@@ -194,8 +193,6 @@ function usePinActions(
         variant: 'success',
       }),
     )
-
-    trackEvent({ ...OVERVIEW_EVENTS.PIN_SAFE, label: PIN_SAFE_LABELS.pin })
   }, [name, safes, allAddedSafes, dispatch, findOverview, address])
 
   const removeFromPinnedList = useCallback(() => {
@@ -211,8 +208,6 @@ function usePinActions(
         variant: 'success',
       }),
     )
-
-    trackEvent({ ...OVERVIEW_EVENTS.PIN_SAFE, label: PIN_SAFE_LABELS.unpin })
   }, [dispatch, name, address, safes])
 
   return { addToPinnedList, removeFromPinnedList }
@@ -240,19 +235,16 @@ const MultiAccountItem = ({ onLinkClick, multiSafeAccountItem, isSpaceSafe = fal
     isPinned,
     isCurrentSafe,
     isReadOnly,
-    isWelcomePage,
     deployedChainIds,
     isSpaceRoute,
   } = useMultiAccountItemData(multiSafeAccountItem)
   const { addToPinnedList, removeFromPinnedList } = usePinActions(address, name, sortedSafes, safeOverviews)
 
   const [expanded, setExpanded] = useState(isCurrentSafe)
-  const trackingLabel = isWelcomePage ? OVERVIEW_LABELS.login_page : OVERVIEW_LABELS.sidebar
 
   const toggleExpand = () => {
     setExpanded((prev) => {
       if (!prev && !isSpaceRoute) {
-        trackEvent({ ...OVERVIEW_EVENTS.EXPAND_MULTI_SAFE, label: trackingLabel })
       }
       return !prev
     })

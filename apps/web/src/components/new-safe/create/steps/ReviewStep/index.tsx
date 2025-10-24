@@ -26,13 +26,6 @@ import useIsWrongChain from '@/hooks/useIsWrongChain'
 import { useLeastRemainingRelays } from '@/hooks/useRemainingRelays'
 import useWalletCanPay from '@/hooks/useWalletCanPay'
 import useWallet from '@/hooks/wallets/useWallet'
-import {
-  CREATE_SAFE_CATEGORY,
-  CREATE_SAFE_EVENTS,
-  OVERVIEW_EVENTS,
-  trackEvent,
-  MixpanelEventParams,
-} from '@/services/analytics'
 import { gtmSetChainId, gtmSetSafeAddress } from '@/services/analytics/gtm'
 import { asError } from '@safe-global/utils/services/exceptions/utils'
 import { useAppDispatch, useAppSelector } from '@/store'
@@ -286,27 +279,10 @@ const ReviewStep = ({ data, onSubmit, onBack, setStep }: StepRenderProps<NewSafe
 
     gtmSetChainId(chain.chainId)
 
-    trackEvent(CREATE_SAFE_EVENTS.CREATED_SAFE, {
-      [MixpanelEventParams.SAFE_ADDRESS]: safeAddress,
-      [MixpanelEventParams.BLOCKCHAIN_NETWORK]: chain.chainName,
-      [MixpanelEventParams.NUMBER_OF_OWNERS]: props.safeAccountConfig.owners.length,
-      [MixpanelEventParams.THRESHOLD]: props.safeAccountConfig.threshold,
-      [MixpanelEventParams.ENTRY_POINT]: document.referrer || 'Direct',
-      [MixpanelEventParams.DEPLOYMENT_TYPE]:
-        isCounterfactualEnabled && payMethod === PayMethod.PayLater ? 'Counterfactual' : 'Direct',
-      [MixpanelEventParams.PAYMENT_METHOD]:
-        isCounterfactualEnabled && payMethod === PayMethod.PayLater
-          ? 'Pay-later'
-          : willRelay
-            ? 'Sponsored'
-            : 'Self-paid',
-    })
-
     try {
       if (isCounterfactualEnabled && payMethod === PayMethod.PayLater) {
         gtmSetSafeAddress(safeAddress)
 
-        trackEvent({ ...OVERVIEW_EVENTS.PROCEED_WITH_TX, label: 'counterfactual', category: CREATE_SAFE_CATEGORY })
         replayCounterfactualSafeDeployment(chain.chainId, safeAddress, props, data.name, dispatch, payMethod)
 
         return
@@ -336,9 +312,6 @@ const ReviewStep = ({ data, onSubmit, onBack, setStep }: StepRenderProps<NewSafe
           })
         }
 
-        trackEvent(CREATE_SAFE_EVENTS.SUBMIT_CREATE_SAFE)
-        trackEvent({ ...OVERVIEW_EVENTS.PROCEED_WITH_TX, label: 'deployment', category: CREATE_SAFE_CATEGORY })
-
         onSubmit(data)
       }
 
@@ -363,10 +336,6 @@ const ReviewStep = ({ data, onSubmit, onBack, setStep }: StepRenderProps<NewSafe
         ? 'User rejected signing.'
         : 'Error creating the Safe Account. Please try again later.'
       setSubmitError(submitError)
-
-      if (isWalletRejection(error)) {
-        trackEvent(CREATE_SAFE_EVENTS.REJECT_CREATE_SAFE)
-      }
     }
 
     setIsCreating(false)

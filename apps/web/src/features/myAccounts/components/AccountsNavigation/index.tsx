@@ -1,11 +1,9 @@
 import { AppRoutes } from '@/config/routes'
 import css from '@/features/myAccounts/styles.module.css'
-import { SPACE_EVENTS, SPACE_LABELS } from '@/services/analytics/events/spaces'
 import { Chip, Stack, Typography } from '@mui/material'
 import classNames from 'classnames'
 import { useRouter } from 'next/router'
 import Link from 'next/link'
-import { trackEvent } from '@/services/analytics'
 
 const AccountsNavigation = () => {
   const router = useRouter()
@@ -16,7 +14,6 @@ const AccountsNavigation = () => {
 
   const trackSpacesClick = () => {
     if (!isActiveNavigation(AppRoutes.welcome.spaces)) {
-      trackEvent({ ...SPACE_EVENTS.OPEN_SPACE_LIST_PAGE, label: SPACE_LABELS.accounts_page })
     }
   }
 

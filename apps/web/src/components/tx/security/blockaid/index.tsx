@@ -7,9 +7,6 @@ import { useHasFeature } from '@/hooks/useChains'
 import { ErrorBoundary } from '@sentry/react'
 import css from './styles.module.css'
 
-import Track from '@/components/common/Track'
-import { MODALS_EVENTS } from '@/services/analytics'
-
 import BlockaidIcon from '@/public/images/transactions/blockaid-icon.svg'
 import { SafeTxContext } from '@/components/tx-flow/SafeTxProvider'
 import { type SecurityWarningProps, mapSecuritySeverity } from '../utils'
@@ -50,16 +47,14 @@ export const Warning = ({
       </Alert>
       {needsRiskConfirmation && (
         <Box className={css.riskConfirmationBlock} sx={{ pl: 2 }}>
-          <Track {...MODALS_EVENTS.ACCEPT_RISK}>
-            <FormControlLabel
-              label={
-                <Typography variant="body2" color="static.main">
-                  I understand the risks and would like to sign this {isTransaction ? 'transaction' : 'message'}
-                </Typography>
-              }
-              control={<Checkbox checked={isRiskConfirmed} onChange={toggleConfirmation} color="primary" />}
-            />
-          </Track>
+          <FormControlLabel
+            label={
+              <Typography variant="body2" color="static.main">
+                I understand the risks and would like to sign this {isTransaction ? 'transaction' : 'message'}
+              </Typography>
+            }
+            control={<Checkbox checked={isRiskConfirmed} onChange={toggleConfirmation} color="primary" />}
+          />
         </Box>
       )}
     </Box>

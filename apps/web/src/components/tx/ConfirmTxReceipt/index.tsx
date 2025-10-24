@@ -4,8 +4,6 @@ import ExternalLink from '@/components/common/ExternalLink'
 import { type PropsWithChildren, useContext } from 'react'
 import { SafeTxContext } from '@/components/tx-flow/SafeTxProvider'
 import useTxPreview from '../confirmation-views/useTxPreview'
-import Track from '@/components/common/Track'
-import { MODALS_EVENTS } from '@/services/analytics'
 import useWallet from '@/hooks/wallets/useWallet'
 import { isHardwareWallet, isLedgerLive } from '@/utils/wallets'
 import { TxFlowStep } from '@/components/tx-flow/TxFlowStep'
@@ -19,11 +17,9 @@ const InfoSteps = [
     description: (
       <Typography>
         Signing is an irreversible action so make sure you know what you are signing.{' '}
-        <Track {...MODALS_EVENTS.SIGNING_ARTICLE}>
-          <ExternalLink href="https://help.safe.global/en/articles/276343-how-to-perform-basic-transactions-checks-on-safe-wallet">
-            Read more
-          </ExternalLink>
-        </Track>
+        <ExternalLink href="https://help.safe.global/en/articles/276343-how-to-perform-basic-transactions-checks-on-safe-wallet">
+          Read more
+        </ExternalLink>
         .
       </Typography>
     ),
@@ -42,10 +38,7 @@ const InfoSteps = [
     description: (
       <Typography>
         You can additionally cross-verify your transaction data in a third-party tool like{' '}
-        <Track {...MODALS_EVENTS.OPEN_SAFE_UTILS}>
-          <ExternalLink href="https://safeutils.openzeppelin.com/">Safe Utils</ExternalLink>
-        </Track>
-        .
+        <ExternalLink href="https://safeutils.openzeppelin.com/">Safe Utils</ExternalLink>.
       </Typography>
     ),
   },

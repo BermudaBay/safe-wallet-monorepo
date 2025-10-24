@@ -5,8 +5,6 @@ import ModalDialog from '@/components/common/ModalDialog'
 import ErrorMessage from '@/components/tx/ErrorMessage'
 import type { GetSpaceResponse } from '@safe-global/store/gateway/AUTO_GENERATED/spaces'
 import { useMembersDeclineInviteV1Mutation } from '@safe-global/store/gateway/AUTO_GENERATED/spaces'
-import { SPACE_EVENTS } from '@/services/analytics/events/spaces'
-import { trackEvent } from '@/services/analytics'
 import { showNotification } from '@/store/notificationsSlice'
 import { useAppDispatch } from '@/store'
 
@@ -22,7 +20,6 @@ const DeclineInviteDialog = ({ space, onClose }: DeclineInviteDialogProps) => {
 
   const handleConfirm = async () => {
     setErrorMessage('')
-    trackEvent({ ...SPACE_EVENTS.DECLINE_INVITE_SUBMIT })
     try {
       const { error } = await declineInvite({ spaceId: space.id })
 

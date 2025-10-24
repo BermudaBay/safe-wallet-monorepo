@@ -3,7 +3,6 @@ import useAsync, { type AsyncResult } from '@safe-global/utils/hooks/useAsync'
 import { useHasFeature } from '@/hooks/useChains'
 import useSafeInfo from '@/hooks/useSafeInfo'
 import { useSigner } from '@/hooks/wallets/useWallet'
-import { MODALS_EVENTS, trackEvent } from '@/services/analytics'
 import type { SecurityResponse } from '@safe-global/utils/services/security/modules/types'
 import type { SafeTransaction } from '@safe-global/types-kit'
 
@@ -45,12 +44,6 @@ export const useBlockaid = (
   )
 
   const loading = blockaidLoading
-
-  useEffect(() => {
-    if (!loading && blockaidPayload) {
-      trackEvent({ ...MODALS_EVENTS.BLOCKAID_RESULT, label: blockaidPayload.severity })
-    }
-  }, [loading, blockaidPayload])
 
   const errorMsg = useMemo(() => blockaidErrors ?? blockaidPayload?.payload?.error, [blockaidErrors, blockaidPayload])
 

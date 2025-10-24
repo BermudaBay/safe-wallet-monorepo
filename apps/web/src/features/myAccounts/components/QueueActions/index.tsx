@@ -4,8 +4,6 @@ import { type ReactNode, useCallback, type MouseEvent } from 'react'
 import { Chip, Typography, SvgIcon } from '@mui/material'
 import CheckIcon from '@mui/icons-material/Check'
 import TransactionsIcon from '@/public/images/transactions/transactions.svg'
-import Track from '@/components/common/Track'
-import { OVERVIEW_EVENTS } from '@/services/analytics/events/overview'
 import { AppRoutes } from '@/config/routes'
 import css from './styles.module.css'
 
@@ -59,23 +57,21 @@ const QueueActions = ({
   }
 
   return (
-    <Track {...OVERVIEW_EVENTS.OPEN_MISSING_SIGNATURES}>
-      <button onClick={onQueueClick} className={classnames(css.queueButton, { [css.isMobile]: isMobile })}>
-        {queued > 0 && (
-          <ChipLink>
-            <SvgIcon component={TransactionsIcon} inheritViewBox sx={{ fontSize: 'small' }} />
-            {queued} pending
-          </ChipLink>
-        )}
+    <button onClick={onQueueClick} className={classnames(css.queueButton, { [css.isMobile]: isMobile })}>
+      {queued > 0 && (
+        <ChipLink>
+          <SvgIcon component={TransactionsIcon} inheritViewBox sx={{ fontSize: 'small' }} />
+          {queued} pending
+        </ChipLink>
+      )}
 
-        {awaitingConfirmation > 0 && (
-          <ChipLink color="warning">
-            <SvgIcon component={CheckIcon} inheritViewBox sx={{ fontSize: 'small', color: 'warning' }} />
-            {awaitingConfirmation} to confirm
-          </ChipLink>
-        )}
-      </button>
-    </Track>
+      {awaitingConfirmation > 0 && (
+        <ChipLink color="warning">
+          <SvgIcon component={CheckIcon} inheritViewBox sx={{ fontSize: 'small', color: 'warning' }} />
+          {awaitingConfirmation} to confirm
+        </ChipLink>
+      )}
+    </button>
   )
 }
 

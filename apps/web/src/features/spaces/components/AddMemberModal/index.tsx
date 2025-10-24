@@ -21,8 +21,6 @@ import { useCurrentSpaceId } from 'src/features/spaces/hooks/useCurrentSpaceId'
 import { useRouter } from 'next/router'
 import { AppRoutes } from '@/config/routes'
 import { MemberRole } from '@/features/spaces/hooks/useSpaceMembers'
-import { trackEvent } from '@/services/analytics'
-import { SPACE_EVENTS } from '@/services/analytics/events/spaces'
 import { useAppDispatch } from '@/store'
 import { showNotification } from '@/store/notificationsSlice'
 import MemberInfoForm from '@/features/spaces/components/AddMemberModal/MemberInfoForm'
@@ -109,7 +107,6 @@ const AddMemberModal = ({ onClose }: { onClose: () => void }): ReactElement => {
 
     try {
       setIsSubmitting(true)
-      trackEvent({ ...SPACE_EVENTS.ADD_MEMBER })
       const response = await inviteMembers({
         spaceId: Number(spaceId),
         inviteUsersDto: { users: [{ address: data.address, role: data.role, name: data.name }] },

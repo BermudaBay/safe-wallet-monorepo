@@ -1,4 +1,4 @@
-import { trackEvent, WALLET_EVENTS } from '@/services/analytics'
+import { WALLET_EVENTS } from '@/services/analytics'
 import { TxEvent, txSubscribe } from '@/services/tx/txEvents'
 import { useEffect } from 'react'
 import useChainId from './useChainId'
@@ -17,13 +17,11 @@ export const useTxTracking = (): void => {
   const [trigger] = useLazyGetTransactionDetailsQuery()
 
   useEffect(() => {
-    const unsubFns = Object.entries(events).map(([txEvent, analyticsEvent]) =>
+    const unsubFns = Object.entries(events).map(([txEvent]) =>
       txSubscribe(txEvent as TxEvent, async (detail) => {
         const txId = 'txId' in detail ? detail.txId : undefined
         const txHash = 'txHash' in detail ? detail.txHash : undefined
         const id = txId || txHash
-
-        let origin = ''
 
         if (id) {
           try {
@@ -31,11 +29,6 @@ export const useTxTracking = (): void => {
             origin = txDetails?.safeAppInfo?.url || ''
           } catch {}
         }
-
-        trackEvent({
-          ...analyticsEvent,
-          label: origin,
-        })
       }),
     )
 

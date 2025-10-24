@@ -6,8 +6,6 @@ import AddressInputReadOnly from '@/components/common/AddressInputReadOnly'
 import NameInput from '@/components/common/NameInput'
 import type { ChainInfo } from '@safe-global/safe-gateway-typescript-sdk'
 import NetworkMultiSelectorInput from '@/components/common/NetworkSelector/NetworkMultiSelectorInput'
-import { trackEvent } from '@/services/analytics'
-import { SPACE_EVENTS } from '@/services/analytics/events/spaces'
 import useChains from '@/hooks/useChains'
 import type { ContactField } from './AddContact'
 import {
@@ -86,7 +84,6 @@ const EditContactDialog = ({ entry, onClose }: EditContactDialogProps) => {
 
     try {
       setIsSubmitting(true)
-      trackEvent({ ...SPACE_EVENTS.EDIT_ADDRESS_SUBMIT })
 
       const result = await upsertAddressBook({
         spaceId: Number(spaceId),

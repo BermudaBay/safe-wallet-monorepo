@@ -1,15 +1,11 @@
 import PlusIcon from '@/public/images/common/plus.svg'
 import { Button, Stack, Typography } from '@mui/material'
 import AddMemberModal from 'src/features/spaces/components/AddMemberModal'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import MembersList from '@/features/spaces/components/MembersList'
 import { useMembersSearch } from '@/features/spaces/hooks/useMembersSearch'
 import { useIsInvited, useSpaceMembersByStatus, useIsAdmin } from '@/features/spaces/hooks/useSpaceMembers'
 import PreviewInvite from '../InviteBanner/PreviewInvite'
-import { SPACE_LABELS } from '@/services/analytics/events/spaces'
-import Track from '@/components/common/Track'
-import { SPACE_EVENTS } from '@/services/analytics/events/spaces'
-import { trackEvent } from '@/services/analytics'
 import SearchInput from '../SearchInput'
 
 const SpaceMembers = () => {
@@ -21,12 +17,6 @@ const SpaceMembers = () => {
 
   const filteredMembers = useMembersSearch(activeMembers, searchQuery)
   const filteredInvites = useMembersSearch(invitedMembers, searchQuery)
-
-  useEffect(() => {
-    if (searchQuery) {
-      trackEvent({ ...SPACE_EVENTS.SEARCH_MEMBERS })
-    }
-  }, [searchQuery])
 
   return (
     <>
@@ -45,17 +35,15 @@ const SpaceMembers = () => {
       >
         <SearchInput onSearch={setSearchQuery} />
         {isAdmin && (
-          <Track {...SPACE_EVENTS.ADD_MEMBER_MODAL} label={SPACE_LABELS.members_page}>
-            <Button
-              data-testid="add-member-button"
-              variant="contained"
-              startIcon={<PlusIcon />}
-              onClick={() => setOpenAddMembersModal(true)}
-              sx={{ whiteSpace: 'nowrap' }}
-            >
-              Add member
-            </Button>
-          </Track>
+          <Button
+            data-testid="add-member-button"
+            variant="contained"
+            startIcon={<PlusIcon />}
+            onClick={() => setOpenAddMembersModal(true)}
+            sx={{ whiteSpace: 'nowrap' }}
+          >
+            Add member
+          </Button>
         )}
       </Stack>
       <>

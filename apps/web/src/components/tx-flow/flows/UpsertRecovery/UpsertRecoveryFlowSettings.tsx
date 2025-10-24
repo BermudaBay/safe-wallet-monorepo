@@ -1,5 +1,3 @@
-import { trackEvent } from '@/services/analytics'
-import { RECOVERY_EVENTS } from '@/services/analytics/events/recovery'
 import {
   Divider,
   CardActions,
@@ -32,7 +30,6 @@ import { RecovererWarning } from './RecovererSmartContractWarning'
 import ExternalLink from '@/components/common/ExternalLink'
 import { BRAND_NAME } from '@/config/constants'
 import { TOOLTIP_TITLES } from '../../common/constants'
-import Track from '@/components/common/Track'
 import type { RecoveryStateItem } from '@/features/recovery/services/recovery-state'
 
 import commonCss from '@/components/tx-flow/common/styles.module.css'
@@ -41,28 +38,8 @@ import NumberField from '@/components/common/NumberField'
 import { getDelay, isCustomDelaySelected } from './utils'
 import { HelpCenterArticle, HelperCenterArticleTitles } from '@safe-global/utils/config/constants'
 import { TxFlowContext, type TxFlowContextType } from '../../TxFlowProvider'
-import { isSmartContractWallet } from '@/utils/wallets'
-import { getSafeInfo } from '@safe-global/safe-gateway-typescript-sdk'
-import useChainId from '@/hooks/useChainId'
-
-enum AddressType {
-  EOA = 'EOA',
-  Safe = 'Safe',
-  Other = 'Other',
-}
-
-const getAddressType = async (address: string, chainId: string) => {
-  const isSmartContract = await isSmartContractWallet(chainId, address)
-  if (!isSmartContract) return AddressType.EOA
-
-  const isSafeContract = await getSafeInfo(chainId, address)
-  if (isSafeContract) return AddressType.Safe
-
-  return AddressType.Other
-}
 
 export function UpsertRecoveryFlowSettings({ delayModifier }: { delayModifier?: RecoveryStateItem }): ReactElement {
-  const chainId = useChainId()
   const { safeAddress } = useSafeInfo()
   const { data, onNext } = useContext<TxFlowContextType<UpsertRecoveryFlowProps>>(TxFlowContext)
   const [showAdvanced, setShowAdvanced] = useState(data?.[UpsertRecoveryFlowFields.expiry] !== '0')
@@ -106,21 +83,11 @@ export function UpsertRecoveryFlowSettings({ delayModifier }: { delayModifier?: 
 
   const onShowAdvanced = () => {
     setShowAdvanced((prev) => !prev)
-    trackEvent(RECOVERY_EVENTS.SHOW_ADVANCED)
   }
 
   const isDisabled = !understandsRisk || !isDirty || !!customDelayState.error
 
-  const isEdit = !!delayModifier
-
   const handleSubmit = async () => {
-    const addressType = await getAddressType(recoverer, chainId)
-    const creationEvent = isEdit ? RECOVERY_EVENTS.SUBMIT_RECOVERY_EDIT : RECOVERY_EVENTS.SUBMIT_RECOVERY_CREATE
-    const settings = `delay_${delay},expiry_${expiry},type_${addressType}`
-
-    trackEvent({ ...creationEvent })
-    trackEvent({ ...RECOVERY_EVENTS.RECOVERY_SETTINGS, label: settings })
-
     onNext({ expiry, delay, customDelay, selectedDelay, recoverer, moduleAddress: data?.moduleAddress })
   }
 
@@ -131,11 +98,9 @@ export function UpsertRecoveryFlowSettings({ delayModifier }: { delayModifier?: 
           <TxCard>
             <Alert severity="warning" sx={{ border: 'unset' }}>
               Your Recoverer will be able to reset your Account setup. Only select an address that you trust.{' '}
-              <Track {...RECOVERY_EVENTS.LEARN_MORE} label="recover-setup-flow">
-                <ExternalLink href={HelpCenterArticle.RECOVERY} title={HelperCenterArticleTitles.RECOVERY}>
-                  Learn more
-                </ExternalLink>
-              </Track>
+              <ExternalLink href={HelpCenterArticle.RECOVERY} title={HelperCenterArticleTitles.RECOVERY}>
+                Learn more
+              </ExternalLink>
             </Alert>
             <div>
               <Typography variant="h5" gutterBottom>

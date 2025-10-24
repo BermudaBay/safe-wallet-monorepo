@@ -6,8 +6,6 @@ import { useRouter } from 'next/router'
 import { useState } from 'react'
 import { showNotification } from '@/store/notificationsSlice'
 import { useAppDispatch } from '@/store'
-import { SPACE_EVENTS } from '@/services/analytics/events/spaces'
-import { trackEvent } from '@/services/analytics'
 
 const LeaveSpaceDialog = ({ space, onClose }: { space: GetSpaceResponse | undefined; onClose: () => void }) => {
   const [error, setError] = useState<string>()
@@ -29,7 +27,6 @@ const LeaveSpaceDialog = ({ space, onClose }: { space: GetSpaceResponse | undefi
 
       onClose()
 
-      trackEvent({ ...SPACE_EVENTS.LEAVE_SPACE })
       dispatch(
         showNotification({
           message: `Left space ${space.name}.`,

@@ -15,8 +15,6 @@ import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import DashboardMembersList from '@/features/spaces/components/Dashboard/DashboardMembersList'
 import { useSpaceMembersByStatus, useIsInvited } from '@/features/spaces/hooks/useSpaceMembers'
 import PreviewInvite from '../InviteBanner/PreviewInvite'
-import { SPACE_EVENTS } from '@/services/analytics/events/spaces'
-import Track from '@/components/common/Track'
 import AggregatedBalance from '@/features/spaces/components/Dashboard/AggregatedBalances'
 import useTrackSpace from '@/features/spaces/hooks/useTrackSpace'
 import { flattenSafeItems } from '@/features/myAccounts/hooks/useAllSafesGrouped'
@@ -70,11 +68,7 @@ const SpaceDashboard = () => {
               <Card data-testid="dashboard-safe-list" sx={{ p: 2 }}>
                 <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
                   <Typography variant="h5">Safe Accounts ({safeItems.length})</Typography>
-                  {spaceId && (
-                    <Track {...SPACE_EVENTS.VIEW_ALL_ACCOUNTS}>
-                      <ViewAllLink url={{ pathname: AppRoutes.spaces.safeAccounts, query: { spaceId } }} />
-                    </Track>
-                  )}
+                  {spaceId && <ViewAllLink url={{ pathname: AppRoutes.spaces.safeAccounts, query: { spaceId } }} />}
                 </Stack>
                 <SafesList safes={safesToDisplay} isSpaceSafe />
               </Card>
@@ -84,11 +78,7 @@ const SpaceDashboard = () => {
                 <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
                   <Typography variant="h5">Members ({activeMembers.length})</Typography>
 
-                  {spaceId && (
-                    <Track {...SPACE_EVENTS.VIEW_ALL_MEMBERS}>
-                      <ViewAllLink url={{ pathname: AppRoutes.spaces.members, query: { spaceId } }} />
-                    </Track>
-                  )}
+                  {spaceId && <ViewAllLink url={{ pathname: AppRoutes.spaces.members, query: { spaceId } }} />}
                 </Stack>
                 <DashboardMembersList members={membersToDisplay} />
               </Card>

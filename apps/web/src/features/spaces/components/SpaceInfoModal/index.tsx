@@ -18,8 +18,6 @@ import CreateSpaceInfo from '@/public/images/spaces/create_space_info.png'
 import Image from 'next/image'
 import { AppRoutes } from '@/config/routes'
 import Link from 'next/link'
-import { trackEvent } from '@/services/analytics'
-import { SPACE_EVENTS, SPACE_LABELS } from '@/services/analytics/events/spaces'
 import ExternalLink from '@/components/common/ExternalLink'
 
 const ListIcon = () => (
@@ -107,7 +105,6 @@ const SpaceInfoModal = ({
                     variant="contained"
                     color="primary"
                     onClick={() => {
-                      trackEvent({ ...SPACE_EVENTS.CREATE_SPACE_MODAL, label: SPACE_LABELS.info_modal })
                       onClose()
                       onCreateSpace()
                     }}
@@ -116,13 +113,7 @@ const SpaceInfoModal = ({
                   </Button>
                 ) : (
                   <Link href={AppRoutes.welcome.spaces} passHref legacyBehavior>
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      onClick={() =>
-                        trackEvent({ ...SPACE_EVENTS.OPEN_SPACE_LIST_PAGE, label: SPACE_LABELS.info_modal })
-                      }
-                    >
+                    <Button variant="contained" color="primary">
                       Create a space
                     </Button>
                   </Link>

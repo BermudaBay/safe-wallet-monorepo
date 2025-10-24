@@ -6,7 +6,6 @@ import useSafeAddress from './useSafeAddress'
 import type { CallOnlyTxData, DraftBatchItem } from '@/store/batchSlice'
 import { selectBatchBySafe, addTx, removeTx } from '@/store/batchSlice'
 import { type TransactionDetails } from '@safe-global/safe-gateway-typescript-sdk'
-import { BATCH_EVENTS, trackEvent } from '@/services/analytics'
 import { txDispatch, TxEvent } from '@/services/tx/txEvents'
 import { shallowEqual } from 'react-redux'
 import { isMultiSendCalldata } from '@/utils/transaction-calldata'
@@ -68,8 +67,6 @@ export const useUpdateBatch = () => {
       if (isMultisigExecutionInfo(txDetails.detailedExecutionInfo)) {
         txDispatch(TxEvent.BATCH_ADD, { txId: txDetails.txId, nonce: txDetails.detailedExecutionInfo.nonce })
       }
-
-      trackEvent({ ...BATCH_EVENTS.BATCH_TX_APPENDED, label: txDetails.txInfo.type })
     },
     [dispatch, chainId, safeAddress],
   )

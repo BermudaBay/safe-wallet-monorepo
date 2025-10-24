@@ -1,16 +1,12 @@
 import AddAccounts from '@/features/spaces/components/AddAccounts'
 import EmptySafeAccounts from '@/features/spaces/components/SafeAccounts/EmptySafeAccounts'
 import { Stack, Typography } from '@mui/material'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import SafesList from '@/features/myAccounts/components/SafesList'
 import { useSpaceSafes } from '@/features/spaces/hooks/useSpaceSafes'
 import { useSafesSearch } from '@/features/myAccounts/hooks/useSafesSearch'
 import { useIsAdmin, useIsInvited } from '@/features/spaces/hooks/useSpaceMembers'
 import PreviewInvite from '../InviteBanner/PreviewInvite'
-import { SPACE_LABELS } from '@/services/analytics/events/spaces'
-import { SPACE_EVENTS } from '@/services/analytics/events/spaces'
-import Track from '@/components/common/Track'
-import { trackEvent } from '@/services/analytics'
 import SearchInput from '../SearchInput'
 
 const SpaceSafeAccounts = () => {
@@ -21,12 +17,6 @@ const SpaceSafeAccounts = () => {
   const isInvited = useIsInvited()
 
   const safes = searchQuery ? filteredSafes : allSafes
-
-  useEffect(() => {
-    if (searchQuery) {
-      trackEvent({ ...SPACE_EVENTS.SEARCH_ACCOUNTS, label: SPACE_LABELS.accounts_page })
-    }
-  }, [searchQuery])
 
   return (
     <>
@@ -45,11 +35,7 @@ const SpaceSafeAccounts = () => {
       >
         <SearchInput onSearch={setSearchQuery} />
 
-        {isAdmin && (
-          <Track {...SPACE_EVENTS.ADD_ACCOUNTS_MODAL} label={SPACE_LABELS.accounts_page}>
-            <AddAccounts />
-          </Track>
-        )}
+        {isAdmin && <AddAccounts />}
       </Stack>
 
       {searchQuery && filteredSafes.length === 0 ? (

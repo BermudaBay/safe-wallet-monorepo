@@ -3,13 +3,11 @@ import EthHashInfo from '@/components/common/EthHashInfo'
 import ExternalLink from '@/components/common/ExternalLink'
 import ModalDialog from '@/components/common/ModalDialog'
 import QRCode from '@/components/common/QRCode'
-import Track from '@/components/common/Track'
 import FirstTxFlow from '@/features/counterfactual/FirstTxFlow'
 import { selectUndeployedSafe } from '@/features/counterfactual/store/undeployedSafesSlice'
 import useBalances from '@/hooks/useBalances'
 import { useCurrentChain } from '@/hooks/useChains'
 import useSafeInfo from '@/hooks/useSafeInfo'
-import { OVERVIEW_EVENTS } from '@/services/analytics'
 import { useAppDispatch, useAppSelector } from '@/store'
 import { selectSettings, setQrShortName } from '@/store/settingsSlice'
 import { selectOutgoingTransactions } from '@/store/txHistorySlice'
@@ -152,17 +150,15 @@ const AddFundsWidget = ({ completed }: { completed: boolean }) => {
               mt: 2,
             }}
           >
-            <Track {...OVERVIEW_EVENTS.ADD_FUNDS}>
-              <Button
-                data-testid="add-funds-btn"
-                onClick={toggleDialog}
-                variant="contained"
-                size="small"
-                sx={{ minHeight: '40px' }}
-              >
-                Add funds
-              </Button>
-            </Track>
+            <Button
+              data-testid="add-funds-btn"
+              onClick={toggleDialog}
+              variant="contained"
+              size="small"
+              sx={{ minHeight: '40px' }}
+            >
+              Add funds
+            </Button>
           </Box>
           <ModalDialog
             open={open}
@@ -280,18 +276,16 @@ const FirstTransactionWidget = ({ completed }: { completed: boolean }) => {
         {!completed && (
           <CheckWallet>
             {(isOk) => (
-              <Track {...OVERVIEW_EVENTS.NEW_TRANSACTION} label="onboarding">
-                <Button
-                  data-testid="create-tx-btn"
-                  onClick={() => setOpen(true)}
-                  variant="outlined"
-                  size="small"
-                  sx={{ mt: 2, minHeight: '40px' }}
-                  disabled={!isOk}
-                >
-                  Create transaction
-                </Button>
-              </Track>
+              <Button
+                data-testid="create-tx-btn"
+                onClick={() => setOpen(true)}
+                variant="outlined"
+                size="small"
+                sx={{ mt: 2, minHeight: '40px' }}
+                disabled={!isOk}
+              >
+                Create transaction
+              </Button>
             )}
           </CheckWallet>
         )}

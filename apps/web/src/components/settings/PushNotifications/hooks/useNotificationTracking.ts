@@ -6,39 +6,12 @@ import {
   createNotificationTrackingIndexedDb,
   parseNotificationTrackingKey,
 } from '@/services/push-notifications/tracking'
-import { trackEvent } from '@/services/analytics'
-import { PUSH_NOTIFICATION_EVENTS } from '@/services/analytics/events/push-notifications'
 import ErrorCodes from '@safe-global/utils/services/exceptions/ErrorCodes'
 import { logError } from '@/services/exceptions'
 import type { NotificationTracking, NotificationTrackingKey } from '@/services/push-notifications/tracking'
-import type { WebhookType } from '@/service-workers/firebase-messaging/webhook-types'
 import { useHasFeature } from '@/hooks/useChains'
 
 import { FEATURES } from '@safe-global/utils/utils/chains'
-
-const trackNotificationEvents = (
-  chainId: string,
-  type: WebhookType,
-  notificationCount: NotificationTracking[NotificationTrackingKey],
-) => {
-  // Shown notifications
-  for (let i = 0; i < notificationCount.shown; i++) {
-    trackEvent({
-      ...PUSH_NOTIFICATION_EVENTS.SHOW_NOTIFICATION,
-      label: type,
-      chainId,
-    })
-  }
-
-  // Opened notifications
-  for (let i = 0; i < notificationCount.opened; i++) {
-    trackEvent({
-      ...PUSH_NOTIFICATION_EVENTS.OPEN_NOTIFICATION,
-      label: type,
-      chainId,
-    })
-  }
-}
 
 const handleTrackCachedNotificationEvents = async (
   trackingStore: ReturnType<typeof createNotificationTrackingIndexedDb>,
@@ -53,8 +26,7 @@ const handleTrackCachedNotificationEvents = async (
         key,
         (notificationCount) => {
           if (notificationCount) {
-            const { chainId, type } = parseNotificationTrackingKey(key)
-            trackNotificationEvents(chainId, type, notificationCount)
+            parseNotificationTrackingKey(key)
           }
 
           // Return the default cache with 0 shown/opened events

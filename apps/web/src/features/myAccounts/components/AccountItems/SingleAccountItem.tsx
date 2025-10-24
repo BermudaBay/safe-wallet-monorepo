@@ -6,9 +6,6 @@ import { useCallback, useMemo, useRef } from 'react'
 import type { MouseEvent } from 'react'
 import { ListItemButton, Box, Typography, IconButton, SvgIcon, Skeleton, useTheme, useMediaQuery } from '@mui/material'
 import Link from 'next/link'
-import Track from '@/components/common/Track'
-import { OVERVIEW_EVENTS, OVERVIEW_LABELS, PIN_SAFE_LABELS, trackEvent } from '@/services/analytics'
-import { AppRoutes } from '@/config/routes'
 import { useAppDispatch, useAppSelector } from '@/store'
 import { selectChainById } from '@/store/chainsSlice'
 import ChainIndicator from '@/components/common/ChainIndicator'
@@ -64,7 +61,6 @@ const SingleAccountItem = ({
   const currChainId = useChainId()
   const router = useRouter()
   const isCurrentSafe = chainId === currChainId && sameAddress(safeAddress, address)
-  const isWelcomePage = router.pathname === AppRoutes.welcome.accounts
   const { address: walletAddress } = useWallet() ?? {}
   const elementRef = useRef<HTMLDivElement>(null)
   const isVisible = useOnceVisible(elementRef)
@@ -72,12 +68,6 @@ const SingleAccountItem = ({
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
 
   const dispatch = useAppDispatch()
-
-  const trackingLabel = isWelcomePage
-    ? OVERVIEW_LABELS.login_page
-    : isSpaceSafe
-      ? OVERVIEW_LABELS.space_page
-      : OVERVIEW_LABELS.sidebar
 
   const getHref = useGetHref(router)
 
@@ -132,8 +122,6 @@ const SingleAccountItem = ({
         variant: 'success',
       }),
     )
-
-    trackEvent({ ...OVERVIEW_EVENTS.PIN_SAFE, label: PIN_SAFE_LABELS.pin })
   }
 
   const removeFromPinnedList = () => {
@@ -147,8 +135,6 @@ const SingleAccountItem = ({
         variant: 'success',
       }),
     )
-
-    trackEvent({ ...OVERVIEW_EVENTS.PIN_SAFE, label: PIN_SAFE_LABELS.unpin })
   }
 
   const content = (
@@ -199,7 +185,6 @@ const SingleAccountItem = ({
             chain={chain}
             href={href}
             onLinkClick={onLinkClick}
-            trackingLabel={trackingLabel}
           />
         )}
       </Typography>
@@ -268,7 +253,6 @@ const SingleAccountItem = ({
           chain={chain}
           href={href}
           onLinkClick={onLinkClick}
-          trackingLabel={trackingLabel}
         />
       )}
     </>
@@ -299,11 +283,9 @@ const SingleAccountItem = ({
       })}
       onClick={onSelectSafe ? handleSelect : undefined}
     >
-      <Track {...OVERVIEW_EVENTS.OPEN_SAFE} label={trackingLabel}>
-        <Link onClick={onSelectSafe ? handleSelect : onLinkClick} href={href} className={css.safeLink}>
-          {content}
-        </Link>
-      </Track>
+      <Link onClick={onSelectSafe ? handleSelect : onLinkClick} href={href} className={css.safeLink}>
+        {content}
+      </Link>
 
       {showActions ? actions : null}
     </ListItemButton>

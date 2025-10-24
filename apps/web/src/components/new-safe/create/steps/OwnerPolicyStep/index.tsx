@@ -14,7 +14,6 @@ import { useSafeSetupHints } from '@/components/new-safe/create/steps/OwnerPolic
 import useSyncSafeCreationStep from '@/components/new-safe/create/useSyncSafeCreationStep'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import layoutCss from '@/components/new-safe/create/styles.module.css'
-import { CREATE_SAFE_EVENTS, trackEvent } from '@/services/analytics'
 import OwnerRow from '@/components/new-safe/OwnerRow'
 import { maybePlural } from '@safe-global/utils/utils/formatters'
 
@@ -84,16 +83,6 @@ const OwnerPolicyStep = ({
 
   const onFormSubmit = handleSubmit((data) => {
     onSubmit(data)
-
-    trackEvent({
-      ...CREATE_SAFE_EVENTS.OWNERS,
-      label: data.owners.length,
-    })
-
-    trackEvent({
-      ...CREATE_SAFE_EVENTS.THRESHOLD,
-      label: data.threshold,
-    })
   })
 
   return (

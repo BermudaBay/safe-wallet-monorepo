@@ -8,8 +8,6 @@ import type { ChainInfo } from '@safe-global/safe-gateway-typescript-sdk'
 import type { SafeOverview } from '@safe-global/store/gateway/AUTO_GENERATED/safes'
 import type { UrlObject } from 'url'
 import Link from 'next/link'
-import Track from '@/components/common/Track'
-import { OVERVIEW_EVENTS } from '@/services/analytics'
 
 const AccountStatusChip = ({ isActivating }: { isActivating: boolean }) => {
   return (
@@ -58,7 +56,6 @@ export const AccountInfoChips = ({
   chain,
   href,
   onLinkClick,
-  trackingLabel,
 }: {
   isActivating: boolean
   isReadOnly: boolean
@@ -68,7 +65,6 @@ export const AccountInfoChips = ({
   chain: ChainInfo | undefined
   href: UrlObject | string
   onLinkClick: (() => void) | undefined
-  trackingLabel: string
 }) => {
   const theme = useTheme()
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
@@ -79,11 +75,9 @@ export const AccountInfoChips = ({
       {undeployedSafe ? (
         <>
           {isMobile ? (
-            <Track {...OVERVIEW_EVENTS.OPEN_SAFE} label={trackingLabel}>
-              <Link onClick={onLinkClick} href={href}>
-                <AccountStatusChip isActivating={isActivating} />
-              </Link>
-            </Track>
+            <Link onClick={onLinkClick} href={href}>
+              <AccountStatusChip isActivating={isActivating} />
+            </Link>
           ) : (
             // For larger screens, the Chip is within the parent Link
             <AccountStatusChip isActivating={isActivating} />
@@ -92,11 +86,9 @@ export const AccountInfoChips = ({
       ) : isReadOnly ? (
         <>
           {isMobile ? (
-            <Track {...OVERVIEW_EVENTS.OPEN_SAFE} label={trackingLabel}>
-              <Link onClick={onLinkClick} href={href}>
-                <ReadOnlyChip />
-              </Link>
-            </Track>
+            <Link onClick={onLinkClick} href={href}>
+              <ReadOnlyChip />
+            </Link>
           ) : (
             // For larger screens, the Chip is within the parent Link
             <ReadOnlyChip />

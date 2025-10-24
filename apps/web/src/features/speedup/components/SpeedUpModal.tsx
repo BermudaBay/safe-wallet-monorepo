@@ -20,9 +20,6 @@ import { isWalletRejection } from '@/utils/wallets'
 import { type TransactionOptions } from '@safe-global/types-kit'
 import { PendingTxType, type PendingProcessingTx } from '@/store/pendingTxsSlice'
 import useAsync from '@safe-global/utils/hooks/useAsync'
-import { MODALS_EVENTS, trackEvent } from '@/services/analytics'
-import { TX_EVENTS } from '@/services/analytics/events/transactions'
-import { getTransactionTrackingType } from '@/services/analytics/tx-tracking'
 import { trackError } from '@/services/exceptions'
 import ErrorCodes from '@safe-global/utils/services/exceptions/ErrorCodes'
 import CheckWallet from '@/components/common/CheckWallet'
@@ -70,7 +67,6 @@ export const SpeedUpModal = ({
   const safeTxHasSignatures = !!safeTx?.signatures?.size ? true : false
 
   const onCancel = () => {
-    trackEvent(MODALS_EVENTS.CANCEL_SPEED_UP)
     handleClose()
   }
 
@@ -101,9 +97,7 @@ export const SpeedUpModal = ({
           safeAddress,
           safeTx.data.nonce,
         )
-        const { data: details } = await trigger({ chainId: chainInfo.chainId, txId })
-        const txType = getTransactionTrackingType(details)
-        trackEvent({ ...TX_EVENTS.SPEED_UP, label: txType })
+        await trigger({ chainId: chainInfo.chainId, txId })
       } else {
         await dispatchCustomTxSpeedUp(
           txOptions as Omit<TransactionOptions, 'nonce'> & { nonce: number },
@@ -115,7 +109,6 @@ export const SpeedUpModal = ({
           pendingTx.nonce,
         )
         // Currently all custom txs are batch executes
-        trackEvent({ ...TX_EVENTS.SPEED_UP, label: 'batch' })
       }
 
       if (txHash) {

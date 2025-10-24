@@ -7,8 +7,6 @@ import { Button, Tooltip } from '@mui/material'
 
 import useSafeInfo from '@/hooks/useSafeInfo'
 import { isMultisigExecutionInfo } from '@/utils/transaction-guards'
-import Track from '@/components/common/Track'
-import { TX_LIST_EVENTS } from '@/services/analytics/events/txList'
 import { ReplaceTxHoverContext } from '../GroupedTxListItems/ReplaceTxHoverProvider'
 import CheckWallet from '@/components/common/CheckWallet'
 import { useSafeSDK } from '@/hooks/coreSDK/safeCoreSDK'
@@ -54,19 +52,17 @@ const ExecuteTxButton = ({
         {(isOk) => (
           <Tooltip title={isOk && !isNext ? 'You must execute the transaction with the lowest nonce first' : ''}>
             <span>
-              <Track {...TX_LIST_EVENTS.EXECUTE}>
-                <Button
-                  onClick={onClick}
-                  onMouseEnter={onMouseEnter}
-                  onMouseLeave={onMouseLeave}
-                  variant="contained"
-                  disabled={!isOk || isDisabled}
-                  size={compact ? 'small' : 'stretched'}
-                  sx={{ minWidth: '106.5px', py: compact ? 0.8 : undefined }}
-                >
-                  Execute
-                </Button>
-              </Track>
+              <Button
+                onClick={onClick}
+                onMouseEnter={onMouseEnter}
+                onMouseLeave={onMouseLeave}
+                variant="contained"
+                disabled={!isOk || isDisabled}
+                size={compact ? 'small' : 'stretched'}
+                sx={{ minWidth: '106.5px', py: compact ? 0.8 : undefined }}
+              >
+                Execute
+              </Button>
             </span>
           </Tooltip>
         )}

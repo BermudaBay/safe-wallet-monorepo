@@ -37,8 +37,6 @@ import InfoBox from '@/components/safe-messages/InfoBox'
 import { DecodedMsg } from '@/components/safe-messages/DecodedMsg'
 import TxCard from '@/components/tx-flow/common/TxCard'
 import { dispatchPreparedSignature } from '@/services/safe-messages/safeMsgNotifications'
-import { trackEvent } from '@/services/analytics'
-import { TX_EVENTS, TX_TYPES } from '@/services/analytics/events/transactions'
 import { SafeTxContext } from '../../SafeTxProvider'
 import RiskConfirmationError from '@/components/tx/SignOrExecuteForm/RiskConfirmationError'
 import { TxSecurityContext } from '@/components/tx/security/shared/TxSecurityContext'
@@ -298,10 +296,6 @@ const SignMessage = ({ message, origin, requestId }: SignMessageProps): ReactEle
     if (updatedMessage) {
       setSafeMessage(updatedMessage)
     }
-
-    // Track first signature as creation
-    const isCreation = updatedMessage?.confirmations.length === 1
-    trackEvent({ ...(isCreation ? TX_EVENTS.CREATE : TX_EVENTS.CONFIRM), label: TX_TYPES.typed_message })
   }
 
   const onContinue = async () => {

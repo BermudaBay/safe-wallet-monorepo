@@ -24,8 +24,6 @@ import { useNotificationPreferences } from './hooks/useNotificationPreferences'
 import { GlobalPushNotifications } from './GlobalPushNotifications'
 import useIsSafeOwner from '@/hooks/useIsSafeOwner'
 import { IS_DEV } from '@/config/constants'
-import { trackEvent } from '@/services/analytics'
-import { PUSH_NOTIFICATION_EVENTS } from '@/services/analytics/events/push-notifications'
 import { AppRoutes } from '@/config/routes'
 import CheckWalletWithPermission from '@/components/common/CheckWalletWithPermission'
 import { useIsMac } from '@/hooks/useIsMac'
@@ -67,7 +65,6 @@ export const PushNotifications = (): ReactElement => {
 
     if (!preferences) {
       await registerNotifications({ [safe.chainId]: [safe.address.value] })
-      trackEvent(PUSH_NOTIFICATION_EVENTS.ENABLE_SAFE)
       setIsRegistering(false)
       return
     }
@@ -84,7 +81,6 @@ export const PushNotifications = (): ReactElement => {
       await unregisterSafeNotifications(safe.chainId, safe.address.value)
     }
 
-    trackEvent(PUSH_NOTIFICATION_EVENTS.DISABLE_SAFE)
     setIsRegistering(false)
   }
 
@@ -209,8 +205,6 @@ export const PushNotifications = (): ReactElement => {
                           [WebhookType.INCOMING_ETHER]: checked,
                           [WebhookType.INCOMING_TOKEN]: checked,
                         })
-
-                        trackEvent({ ...PUSH_NOTIFICATION_EVENTS.TOGGLE_INCOMING_TXS, label: checked })
                       }}
                     />
                   }
@@ -231,8 +225,6 @@ export const PushNotifications = (): ReactElement => {
                           [WebhookType.MODULE_TRANSACTION]: checked,
                           [WebhookType.EXECUTED_MULTISIG_TRANSACTION]: checked,
                         })
-
-                        trackEvent({ ...PUSH_NOTIFICATION_EVENTS.TOGGLE_OUTGOING_TXS, label: checked })
                       }}
                     />
                   }
@@ -250,8 +242,6 @@ export const PushNotifications = (): ReactElement => {
                             ...preferences,
                             [WebhookType.CONFIRMATION_REQUEST]: checked,
                           })
-
-                          trackEvent({ ...PUSH_NOTIFICATION_EVENTS.TOGGLE_CONFIRMATION_REQUEST, label: checked })
                         }
 
                         if (checked) {

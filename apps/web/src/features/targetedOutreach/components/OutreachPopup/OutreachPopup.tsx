@@ -10,8 +10,6 @@ import { closeOutreachBanner, openOutreachBanner, selectOutreachBanner } from '@
 import useLocalStorage, { useSessionStorage } from '@/services/local-storage/useLocalStorage'
 import useShowOutreachPopup from '@/features/targetedOutreach/hooks/useShowOutreachPopup'
 import { ACTIVE_OUTREACH, OUTREACH_LS_KEY, OUTREACH_SS_KEY } from '@/features/targetedOutreach/constants'
-import Track from '@/components/common/Track'
-import { OUTREACH_EVENTS } from '@/services/analytics/events/outreach'
 import SafeThemeProvider from '@/components/theme/SafeThemeProvider'
 import useChainId from '@/hooks/useChainId'
 import useSafeAddress from '@/hooks/useSafeAddress'
@@ -107,27 +105,21 @@ const OutreachPopup = (): ReactElement | null => {
                   In 1 minute, tell us why you use {'Safe{Wallet}'}. Your input will help us create a better, smarter
                   wallet experience for you!
                 </Typography>
-                <Track {...OUTREACH_EVENTS.OPEN_SURVEY}>
-                  <Link rel="noreferrer noopener" target="_blank" href={outreachUrl}>
-                    <Button fullWidth variant="contained" onClick={handleOpenSurvey}>
-                      Get Involved
-                    </Button>
-                  </Link>
-                </Track>
-                <Track {...OUTREACH_EVENTS.ASK_AGAIN_LATER}>
-                  <Button fullWidth variant="text" onClick={handleAskAgainLater}>
-                    Ask me later
+                <Link rel="noreferrer noopener" target="_blank" href={outreachUrl}>
+                  <Button fullWidth variant="contained" onClick={handleOpenSurvey}>
+                    Get Involved
                   </Button>
-                </Track>
+                </Link>
+                <Button fullWidth variant="text" onClick={handleAskAgainLater}>
+                  Ask me later
+                </Button>
                 <Typography variant="body2" color="primary.light" mx="auto">
                   It&apos;ll only take 1 minute.
                 </Typography>
               </Stack>
-              <Track {...OUTREACH_EVENTS.CLOSE_POPUP}>
-                <IconButton className={css.close} aria-label="close outreach popup" onClick={handleClose}>
-                  <Close />
-                </IconButton>
-              </Track>
+              <IconButton className={css.close} aria-label="close outreach popup" onClick={handleClose}>
+                <Close />
+              </IconButton>
             </Paper>
           </Box>
         </ThemeProvider>

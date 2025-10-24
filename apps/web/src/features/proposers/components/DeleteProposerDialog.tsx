@@ -1,10 +1,8 @@
 import CheckWallet from '@/components/common/CheckWallet'
-import Track from '@/components/common/Track'
 import { signProposerData, signProposerTypedData } from '@/features/proposers/utils/utils'
 import NetworkWarning from '@/components/new-safe/create/NetworkWarning'
 import useWallet from '@/hooks/wallets/useWallet'
 import DeleteIcon from '@/public/images/common/delete.svg'
-import { SETTINGS_EVENTS, trackEvent } from '@/services/analytics'
 import { useAppDispatch } from '@/store'
 import { showNotification } from '@/store/notificationsSlice'
 import { shortenAddress } from '@safe-global/utils/utils/formatters'
@@ -90,8 +88,6 @@ const InternalDeleteProposer = ({ wallet, safeAddress, chainId, proposer }: Dele
         }).unwrap()
       }
 
-      trackEvent(SETTINGS_EVENTS.PROPOSERS.SUBMIT_REMOVE_PROPOSER)
-
       dispatch(
         showNotification({
           variant: 'success',
@@ -110,7 +106,6 @@ const InternalDeleteProposer = ({ wallet, safeAddress, chainId, proposer }: Dele
   }
 
   const onCancel = () => {
-    trackEvent(SETTINGS_EVENTS.PROPOSERS.CANCEL_REMOVE_PROPOSER)
     setOpen(false)
     setIsLoading(false)
     setError(undefined)
@@ -122,29 +117,27 @@ const InternalDeleteProposer = ({ wallet, safeAddress, chainId, proposer }: Dele
     <>
       <CheckWallet>
         {(isOk) => (
-          <Track {...SETTINGS_EVENTS.PROPOSERS.REMOVE_PROPOSER}>
-            <Tooltip
-              title={
-                isOk && canDelete
-                  ? 'Delete proposer'
-                  : isOk && !canDelete
-                    ? 'Only the owner of this proposer or the proposer itself can delete them'
-                    : undefined
-              }
-            >
-              <span>
-                <IconButton
-                  data-testid="delete-proposer-btn"
-                  onClick={() => setOpen(true)}
-                  color="error"
-                  size="small"
-                  disabled={!isOk || !canDelete}
-                >
-                  <SvgIcon component={DeleteIcon} inheritViewBox color="error" fontSize="small" />
-                </IconButton>
-              </span>
-            </Tooltip>
-          </Track>
+          <Tooltip
+            title={
+              isOk && canDelete
+                ? 'Delete proposer'
+                : isOk && !canDelete
+                  ? 'Only the owner of this proposer or the proposer itself can delete them'
+                  : undefined
+            }
+          >
+            <span>
+              <IconButton
+                data-testid="delete-proposer-btn"
+                onClick={() => setOpen(true)}
+                color="error"
+                size="small"
+                disabled={!isOk || !canDelete}
+              >
+                <SvgIcon component={DeleteIcon} inheritViewBox color="error" fontSize="small" />
+              </IconButton>
+            </span>
+          </Tooltip>
         )}
       </CheckWallet>
 

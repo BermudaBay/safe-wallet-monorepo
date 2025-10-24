@@ -5,8 +5,6 @@ import type { ReactElement } from 'react'
 import { useContext } from 'react'
 import { isMultisigExecutionInfo } from '@/utils/transaction-guards'
 import useIsPending from '@/hooks/useIsPending'
-import Track from '@/components/common/Track'
-import { TX_LIST_EVENTS } from '@/services/analytics/events/txList'
 import CheckWallet from '@/components/common/CheckWallet'
 import { useSafeSDK } from '@/hooks/coreSDK/safeCoreSDK'
 import { TxModalContext } from '@/components/tx-flow'
@@ -35,17 +33,15 @@ const RejectTxButton = ({
   return (
     <CheckWallet>
       {(isOk) => (
-        <Track {...TX_LIST_EVENTS.REJECT}>
-          <Button
-            data-testid="reject-btn"
-            onClick={openReplacementModal}
-            variant="danger"
-            disabled={!isOk || isDisabled}
-            size="stretched"
-          >
-            Reject
-          </Button>
-        </Track>
+        <Button
+          data-testid="reject-btn"
+          onClick={openReplacementModal}
+          variant="danger"
+          disabled={!isOk || isDisabled}
+          size="stretched"
+        >
+          Reject
+        </Button>
       )}
     </CheckWallet>
   )

@@ -3,16 +3,9 @@ import Link from 'next/link'
 import { Button, Paper, Typography } from '@mui/material'
 import DefiIcon from '@/public/images/balances/defi.svg'
 import { AppRoutes } from '@/config/routes'
-import Track from '@/components/common/Track'
-import { POSITIONS_EVENTS } from '@/services/analytics/events/positions'
-import { MixpanelEventParams } from '@/services/analytics/mixpanel-events'
 import { useIsEarnPromoEnabled } from '@/features/earn/hooks/useIsEarnFeatureEnabled'
 
-type PositionsEmptyProps = {
-  entryPoint?: string
-}
-
-const PositionsEmpty = ({ entryPoint = 'Dashboard' }: PositionsEmptyProps) => {
+const PositionsEmpty = () => {
   const router = useRouter()
   const isEarnFeatureEnabled = useIsEarnPromoEnabled()
 
@@ -25,18 +18,11 @@ const PositionsEmpty = ({ entryPoint = 'Dashboard' }: PositionsEmptyProps) => {
       </Typography>
 
       {isEarnFeatureEnabled && (
-        <Track
-          {...POSITIONS_EVENTS.EMPTY_POSITIONS_EXPLORE_CLICKED}
-          mixpanelParams={{
-            [MixpanelEventParams.ENTRY_POINT]: entryPoint,
-          }}
-        >
-          <Link href={{ pathname: AppRoutes.earn, query: { safe: router.query.safe } }} passHref>
-            <Button size="small" sx={{ mt: 1 }}>
-              Explore Earn
-            </Button>
-          </Link>
-        </Track>
+        <Link href={{ pathname: AppRoutes.earn, query: { safe: router.query.safe } }} passHref>
+          <Button size="small" sx={{ mt: 1 }}>
+            Explore Earn
+          </Button>
+        </Link>
       )}
     </Paper>
   )

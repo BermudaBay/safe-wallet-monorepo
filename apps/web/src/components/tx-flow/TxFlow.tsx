@@ -10,7 +10,6 @@ import { ConfirmTxReceipt } from '../tx/ConfirmTxReceipt'
 import { TxChecks, TxNote, SignerSelect, Blockaid } from './features'
 import { Batching, ComboSubmit, Counterfactual, Execute, ExecuteThroughRole, Propose, Sign } from './actions'
 import { SlotProvider } from './slots'
-import { useTrackTimeSpent } from '../tx/SignOrExecuteForm/tracking'
 
 type SubmitCallbackProps = { txId?: string; isExecuted?: boolean }
 export type SubmitCallback = (args?: SubmitCallbackProps) => void
@@ -52,7 +51,7 @@ export const TxFlow = <T extends unknown>({
   eventCategory,
   ...txLayoutProps
 }: TxFlowProps<T>) => {
-  const { step, data, nextStep, prevStep } = useTxStepper(initialData, eventCategory)
+  const { step, data, nextStep, prevStep } = useTxStepper(initialData)
 
   const childrenArray = Array.isArray(children) ? children : [children]
 
@@ -61,14 +60,11 @@ export const TxFlow = <T extends unknown>({
     [step, childrenArray.length],
   )
 
-  const trackTimeSpent = useTrackTimeSpent()
-
   const handleFlowSubmit = useCallback<SubmitCallback>(
     (props) => {
       onSubmit?.({ ...props, data })
-      trackTimeSpent()
     },
-    [onSubmit, data, trackTimeSpent],
+    [onSubmit, data],
   )
 
   return (

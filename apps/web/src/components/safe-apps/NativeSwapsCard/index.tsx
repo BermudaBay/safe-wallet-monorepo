@@ -4,8 +4,6 @@ import Typography from '@mui/material/Typography'
 import { Button, Paper, Stack } from '@mui/material'
 import SafeAppIconCard from '../SafeAppIconCard'
 import css from './styles.module.css'
-import { SWAP_EVENTS, SWAP_LABELS } from '@/services/analytics/events/swaps'
-import Track from '@/components/common/Track'
 import Link from 'next/link'
 import { AppRoutes } from '@/config/routes'
 import { useRouter } from 'next/router'
@@ -52,13 +50,12 @@ const NativeSwapsCard = () => {
             gap: 2,
           }}
         >
-          <Track {...SWAP_EVENTS.OPEN_SWAPS} label={SWAP_LABELS.safeAppsPromoWidget}>
-            <Link href={{ pathname: AppRoutes.swap, query: { safe: router.query.safe } }} passHref legacyBehavior>
-              <Button variant="contained" size="small">
-                Try now
-              </Button>
-            </Link>
-          </Track>
+          <Link href={{ pathname: AppRoutes.swap, query: { safe: router.query.safe } }} passHref legacyBehavior>
+            <Button variant="contained" size="small">
+              Try now
+            </Button>
+          </Link>
+
           <Button onClick={() => setIsSwapsCardVisible(false)} size="small" variant="text" sx={{ px: '16px' }}>
             Don&apos;t show
           </Button>

@@ -1,4 +1,3 @@
-import { OVERVIEW_EVENTS, trackEvent } from '@/services/analytics'
 import dynamic from 'next/dynamic'
 import React, { useContext } from 'react'
 import { Button, CircularProgress, Tooltip, Typography } from '@mui/material'
@@ -19,7 +18,6 @@ const ActivateAccountButton = () => {
   const isProcessing = undeployedSafe?.status.status !== PendingSafeStatus.AWAITING_EXECUTION
 
   const activateAccount = () => {
-    trackEvent({ ...OVERVIEW_EVENTS.CHOOSE_TRANSACTION_TYPE, label: 'activate_now' })
     setTxFlow(<ActivateAccountFlow />)
   }
 

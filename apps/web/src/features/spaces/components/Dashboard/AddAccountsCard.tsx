@@ -5,8 +5,6 @@ import EmptyDashboard from '@/public/images/spaces/empty_dashboard.png'
 import EmptyDashboardDark from '@/public/images/spaces/empty_dashboard_dark.png'
 
 import css from './styles.module.css'
-import { SPACE_EVENTS, SPACE_LABELS } from '@/services/analytics/events/spaces'
-import Track from '@/components/common/Track'
 import { useDarkMode } from '@/hooks/useDarkMode'
 
 const AddAccountsCard = () => {
@@ -25,9 +23,7 @@ const AddAccountsCard = () => {
             added to the space.
           </Typography>
 
-          <Track {...SPACE_EVENTS.ADD_ACCOUNTS_MODAL} label={SPACE_LABELS.space_dashboard_card}>
-            <AddAccounts />
-          </Track>
+          <AddAccounts />
         </Box>
 
         <Box>

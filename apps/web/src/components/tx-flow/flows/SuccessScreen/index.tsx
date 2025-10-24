@@ -19,8 +19,6 @@ import { getTxLink } from '@/utils/tx-link'
 import useTxDetails from '@/hooks/useTxDetails'
 import { usePredictSafeAddressFromTxDetails } from '@/hooks/usePredictSafeAddressFromTxDetails'
 import { AppRoutes } from '@/config/routes'
-import { NESTED_SAFE_EVENTS, NESTED_SAFE_LABELS } from '@/services/analytics/events/nested-safes'
-import Track from '@/components/common/Track'
 
 interface Props {
   /** The ID assigned to the transaction in the client-gateway */
@@ -128,23 +126,21 @@ const SuccessScreen = ({ txId, txHash }: Props) => {
 
         {!isSwapOrder &&
           (predictedSafeAddress ? (
-            <Track {...NESTED_SAFE_EVENTS.OPEN_NESTED_SAFE} label={NESTED_SAFE_LABELS.success_screen}>
-              <Link
-                href={{ pathname: AppRoutes.home, query: { safe: `${chain?.shortName}:${predictedSafeAddress}` } }}
-                passHref
-                legacyBehavior
+            <Link
+              href={{ pathname: AppRoutes.home, query: { safe: `${chain?.shortName}:${predictedSafeAddress}` } }}
+              passHref
+              legacyBehavior
+            >
+              <Button
+                data-testid="open-nested-safe-btn"
+                variant="contained"
+                size="small"
+                onClick={onClose}
+                disabled={!isSuccess}
               >
-                <Button
-                  data-testid="open-nested-safe-btn"
-                  variant="contained"
-                  size="small"
-                  onClick={onClose}
-                  disabled={!isSuccess}
-                >
-                  Go to Nested Safe
-                </Button>
-              </Link>
-            </Track>
+                Go to Nested Safe
+              </Button>
+            </Link>
           ) : (
             <Button data-testid="finish-transaction-btn" variant="contained" size="small" onClick={onClose}>
               Finish

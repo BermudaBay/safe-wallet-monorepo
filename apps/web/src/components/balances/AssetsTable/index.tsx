@@ -6,27 +6,22 @@ import TokenAmount from '@/components/common/TokenAmount'
 import TokenIcon from '@/components/common/TokenIcon'
 import EnhancedTable, { type EnhancedTableProps } from '@/components/common/EnhancedTable'
 import TokenExplorerLink from '@/components/common/TokenExplorerLink'
-import Track from '@/components/common/Track'
-import { ASSETS_EVENTS } from '@/services/analytics/events/assets'
 import { VisibilityOutlined } from '@mui/icons-material'
 import TokenMenu from '../TokenMenu'
 import useBalances from '@/hooks/useBalances'
 import { useHideAssets, useVisibleAssets } from './useHideAssets'
 import AddFundsCTA from '@/components/common/AddFunds'
 import SwapButton from '@/features/swap/components/SwapButton'
-import { SWAP_LABELS } from '@/services/analytics/events/swaps'
 import SendButton from './SendButton'
 import useIsSwapFeatureEnabled from '@/features/swap/hooks/useIsSwapFeatureEnabled'
 import { useIsEarnPromoEnabled } from '@/features/earn/hooks/useIsEarnFeatureEnabled'
 import useIsStakingPromoEnabled from '@/features/stake/hooks/useIsStakingBannerEnabled'
-import { STAKE_LABELS } from '@/services/analytics/events/stake'
 import StakeButton from '@/features/stake/components/StakeButton'
 import { TokenType } from '@safe-global/safe-gateway-typescript-sdk'
 import { type Balance } from '@safe-global/store/gateway/AUTO_GENERATED/balances'
 import { FiatChange } from './FiatChange'
 import { FiatBalance } from './FiatBalance'
 import EarnButton from '@/features/earn/components/EarnButton'
-import { EARN_LABELS } from '@/services/analytics/events/earn'
 import { isEligibleEarnToken } from '@/features/earn/utils'
 import useChainId from '@/hooks/useChainId'
 import FiatValue from '@/components/common/FiatValue'
@@ -191,11 +186,11 @@ const AssetsTable = ({
                   </Stack>
 
                   {isStakingPromoEnabled && item.tokenInfo.type === TokenType.NATIVE_TOKEN && (
-                    <StakeButton tokenInfo={item.tokenInfo} trackingLabel={STAKE_LABELS.asset} />
+                    <StakeButton tokenInfo={item.tokenInfo} />
                   )}
 
                   {isEarnPromoEnabled && isEligibleEarnToken(chainId, item.tokenInfo.address) && (
-                    <EarnButton tokenInfo={item.tokenInfo} trackingLabel={EARN_LABELS.asset} />
+                    <EarnButton tokenInfo={item.tokenInfo} />
                   )}
                 </div>
               ),
@@ -277,24 +272,20 @@ const AssetsTable = ({
                   <Stack direction="row" gap={1} alignItems="center" bgcolor="background.paper" p={1}>
                     <SendButton tokenInfo={item.tokenInfo} />
 
-                    {isSwapFeatureEnabled && (
-                      <SwapButton tokenInfo={item.tokenInfo} amount="0" trackingLabel={SWAP_LABELS.asset} />
-                    )}
+                    {isSwapFeatureEnabled && <SwapButton tokenInfo={item.tokenInfo} amount="0" />}
 
                     {showHiddenAssets ? (
                       <Checkbox size="small" checked={isSelected} onClick={() => toggleAsset(item.tokenInfo.address)} />
                     ) : (
-                      <Track {...ASSETS_EVENTS.HIDE_TOKEN}>
-                        <Tooltip title="Hide asset" arrow disableInteractive>
-                          <IconButton
-                            disabled={hidingAsset !== undefined}
-                            size="medium"
-                            onClick={() => hideAsset(item.tokenInfo.address)}
-                          >
-                            <VisibilityOutlined fontSize="small" />
-                          </IconButton>
-                        </Tooltip>
-                      </Track>
+                      <Tooltip title="Hide asset" arrow disableInteractive>
+                        <IconButton
+                          disabled={hidingAsset !== undefined}
+                          size="medium"
+                          onClick={() => hideAsset(item.tokenInfo.address)}
+                        >
+                          <VisibilityOutlined fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
                     )}
                   </Stack>
                 </Stack>

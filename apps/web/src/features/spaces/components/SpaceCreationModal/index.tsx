@@ -7,8 +7,6 @@ import SpaceIcon from '@/public/images/spaces/space.svg'
 import ModalDialog from '@/components/common/ModalDialog'
 import NameInput from '@/components/common/NameInput'
 import { AppRoutes } from '@/config/routes'
-import { trackEvent } from '@/services/analytics'
-import { SPACE_EVENTS } from '@/services/analytics/events/spaces'
 import { showNotification } from '@/store/notificationsSlice'
 import { useAppDispatch } from '@/store'
 import ExternalLink from '@/components/common/ExternalLink'
@@ -27,7 +25,6 @@ function SpaceCreationModal({ onClose }: { onClose: () => void }): ReactElement 
 
     try {
       setIsSubmitting(true)
-      trackEvent({ ...SPACE_EVENTS.CREATE_SPACE })
       const response = await createSpaceWithUser({ createSpaceDto: { name: data.name } })
 
       if (response.data) {

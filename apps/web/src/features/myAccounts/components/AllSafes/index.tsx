@@ -1,14 +1,10 @@
 import ConnectWalletButton from '@/components/common/ConnectWallet/ConnectWalletButton'
-import Track from '@/components/common/Track'
-import { AppRoutes } from '@/config/routes'
 import SafesList from '@/features/myAccounts/components/SafesList'
 import type { AllSafeItems } from '@/features/myAccounts/hooks/useAllSafesGrouped'
 import css from '@/features/myAccounts/styles.module.css'
 import useWallet from '@/hooks/wallets/useWallet'
-import { OVERVIEW_EVENTS, OVERVIEW_LABELS } from '@/services/analytics'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import { Accordion, AccordionDetails, AccordionSummary, Box, Typography } from '@mui/material'
-import { useRouter } from 'next/router'
 
 const AllSafes = ({
   allSafes,
@@ -20,10 +16,6 @@ const AllSafes = ({
   isSidebar: boolean
 }) => {
   const wallet = useWallet()
-  const router = useRouter()
-
-  const isLoginPage = router.pathname === AppRoutes.welcome.accounts
-  const trackingLabel = isLoginPage ? OVERVIEW_LABELS.login_page : OVERVIEW_LABELS.sidebar
 
   return (
     <Accordion sx={{ border: 'none' }} defaultExpanded={!isSidebar} slotProps={{ transition: { unmountOnExit: true } }}>
@@ -67,9 +59,7 @@ const AllSafes = ({
             {!wallet ? (
               <>
                 <Box mb={2}>Connect a wallet to view your Safe Accounts or to create a new one</Box>
-                <Track {...OVERVIEW_EVENTS.OPEN_ONBOARD} label={trackingLabel}>
-                  <ConnectWalletButton text="Connect a wallet" contained />
-                </Track>
+                <ConnectWalletButton text="Connect a wallet" contained />
               </>
             ) : (
               "You don't have any safes yet"

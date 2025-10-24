@@ -31,11 +31,8 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material'
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
-import { trackEvent } from '@/services/analytics'
-import { SPACE_EVENTS, SPACE_LABELS } from '@/services/analytics/events/spaces'
-import Track from '@/components/common/Track'
 import { useIsAdmin } from '@/features/spaces/hooks/useSpaceMembers'
 import { useSpaceSafes } from '@/features/spaces/hooks/useSpaceSafes'
 import { showNotification } from '@/store/notificationsSlice'
@@ -98,7 +95,6 @@ const AddAccounts = () => {
   const selectedSafesLength = getSelectedSafes(selectedSafes, spaceSafes).length
 
   const onSubmit = handleSubmit(async (data) => {
-    trackEvent({ ...SPACE_EVENTS.ADD_ACCOUNTS })
     const safesToAdd = getSelectedSafes(data.selectedSafes, spaceSafes).map(([key]) => {
       const [chainId, address] = key.split(':')
       return { chainId, address }
@@ -155,12 +151,6 @@ const AddAccounts = () => {
     setValue('selectedSafes', {}) // Reset doesn't seem to work consistently with an object
     setOpen(false)
   }
-
-  useEffect(() => {
-    if (searchQuery) {
-      trackEvent({ ...SPACE_EVENTS.SEARCH_ACCOUNTS, label: SPACE_LABELS.add_accounts_modal })
-    }
-  }, [searchQuery])
 
   return (
     <>
@@ -232,9 +222,7 @@ const AddAccounts = () => {
                   {searchQuery ? <SafesList safes={filteredSafes} /> : <SafesList safes={allSafes} />}
 
                   <Box p={2}>
-                    <Track {...SPACE_EVENTS.ADD_ACCOUNT_MANUALLY_MODAL}>
-                      <AddManually handleAddSafe={handleAddSafe} />
-                    </Track>
+                    <AddManually handleAddSafe={handleAddSafe} />
                   </Box>
 
                   {error && (

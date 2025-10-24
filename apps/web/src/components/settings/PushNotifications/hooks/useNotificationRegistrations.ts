@@ -4,8 +4,6 @@ import isEmpty from 'lodash/isEmpty'
 import { useAppDispatch } from '@/store'
 import { showNotification } from '@/store/notificationsSlice'
 import { useNotificationPreferences } from './useNotificationPreferences'
-import { trackEvent } from '@/services/analytics'
-import { PUSH_NOTIFICATION_EVENTS } from '@/services/analytics/events/push-notifications'
 import { getRegisterDevicePayload } from '../logic'
 import { logError } from '@/services/exceptions'
 import ErrorCodes from '@safe-global/utils/services/exceptions/ErrorCodes'
@@ -71,11 +69,6 @@ export const useNotificationRegistrations = (): {
       // Set the token version to V2 to indicate that the user has registered their token for the new notification service
       setTokenVersion(NotificationsTokenVersion.V2, safesToRegister)
 
-      trackEvent({
-        ...PUSH_NOTIFICATION_EVENTS.REGISTER_SAFES,
-        label: totalRegistered,
-      })
-
       dispatch(
         showNotification({
           message: `You will now receive notifications for ${
@@ -92,7 +85,6 @@ export const useNotificationRegistrations = (): {
     if (uuid) {
       return registrationFlow(unregisterSafe(chainId, safeAddress, uuid), () => {
         deletePreferences({ [chainId]: [safeAddress] })
-        trackEvent(PUSH_NOTIFICATION_EVENTS.UNREGISTER_SAFE)
       })
     }
   }
@@ -101,7 +93,6 @@ export const useNotificationRegistrations = (): {
     if (uuid) {
       return registrationFlow(unregisterDevice(chainId, uuid), () => {
         deleteAllChainPreferences(chainId)
-        trackEvent(PUSH_NOTIFICATION_EVENTS.UNREGISTER_DEVICE)
       })
     }
   }

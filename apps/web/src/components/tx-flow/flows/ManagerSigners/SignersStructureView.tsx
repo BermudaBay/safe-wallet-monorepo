@@ -22,8 +22,6 @@ import OwnerRow from '@/components/new-safe/OwnerRow'
 import { maybePlural } from '@safe-global/utils/utils/formatters'
 import { ManageSignersFormFields } from '.'
 import { TxFlowContext } from '../../TxFlowProvider'
-import { SETTINGS_EVENTS, SETTINGS_LABELS, trackEvent } from '@/services/analytics'
-import Track from '@/components/common/Track'
 import type { TxFlowContextType } from '../../TxFlowProvider'
 import type { ManageSignersForm } from '.'
 import type { UseFormReturn, UseFieldArrayReturn } from 'react-hook-form'
@@ -75,7 +73,6 @@ function Signers({
 }: Pick<Props, 'fieldArray' | 'onAdd' | 'onRemove'>): ReactElement {
   const onRemove = (index: number) => {
     _onRemove(index)
-    trackEvent({ ...SETTINGS_EVENTS.SETUP.REMOVE_OWNER, label: SETTINGS_LABELS.manage_signers })
   }
 
   return (
@@ -90,18 +87,16 @@ function Signers({
         />
       ))}
 
-      <Track {...SETTINGS_EVENTS.SETUP.ADD_OWNER} label={SETTINGS_LABELS.manage_signers}>
-        <Button
-          data-testid="add-new-signer"
-          variant="text"
-          onClick={onAdd}
-          startIcon={<SvgIcon component={AddIcon} inheritViewBox fontSize="small" />}
-          size="large"
-          sx={{ mt: -1, mb: 3 }}
-        >
-          Add new signer
-        </Button>
-      </Track>
+      <Button
+        data-testid="add-new-signer"
+        variant="text"
+        onClick={onAdd}
+        startIcon={<SvgIcon component={AddIcon} inheritViewBox fontSize="small" />}
+        size="large"
+        sx={{ mt: -1, mb: 3 }}
+      >
+        Add new signer
+      </Button>
     </>
   )
 }
@@ -134,7 +129,6 @@ function Threshold({ formMethods, newOwners }: Pick<Props, 'formMethods' | 'newO
             render={({ field }) => {
               const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
                 field.onChange(event)
-                trackEvent({ ...SETTINGS_EVENTS.SETUP.CHANGE_THRESHOLD, label: SETTINGS_LABELS.manage_signers })
               }
 
               return (

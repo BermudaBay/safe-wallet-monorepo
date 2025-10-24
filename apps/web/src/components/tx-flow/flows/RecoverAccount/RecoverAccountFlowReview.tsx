@@ -1,5 +1,3 @@
-import { trackEvent } from '@/services/analytics'
-import { RECOVERY_EVENTS } from '@/services/analytics/events/recovery'
 import { CardActions, Button, Typography, Divider, Box, CircularProgress } from '@mui/material'
 import { useContext, useEffect, useState } from 'react'
 import type { ReactElement } from 'react'
@@ -104,7 +102,6 @@ export function RecoverAccountFlowReview({ params }: { params: RecoverAccountFlo
         signerAddress: wallet.address,
         overrides,
       })
-      trackEvent({ ...RECOVERY_EVENTS.SUBMIT_RECOVERY_ATTEMPT })
     } catch (_err) {
       const err = asError(_err)
       if (isWalletRejection(err)) {

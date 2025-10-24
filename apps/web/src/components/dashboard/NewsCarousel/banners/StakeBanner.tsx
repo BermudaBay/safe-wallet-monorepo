@@ -2,12 +2,10 @@ import css from '@/components/dashboard/NewsCarousel/banners/styles.module.css'
 import { Box, Button, Card, IconButton, Stack, Typography } from '@mui/material'
 import Image from 'next/image'
 import EarnIllustrationLight from '@/public/images/common/earn-illustration-light.png'
-import Track from '@/components/common/Track'
 import Link from 'next/link'
 import { AppRoutes } from '@/config/routes'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import CloseIcon from '@mui/icons-material/Close'
-import { OVERVIEW_EVENTS } from '@/services/analytics'
 import { useRouter } from 'next/router'
 
 export const stakeBannerID = 'stakeBanner'
@@ -29,27 +27,23 @@ const StakeBanner = ({ onDismiss }: { onDismiss: () => void }) => {
             staking for other options. Staking involves risks like slashing.
           </Typography>
 
-          <Track {...OVERVIEW_EVENTS.OPEN_STAKING_WIDGET}>
-            <Link href={AppRoutes.stake && { pathname: AppRoutes.stake, query: { safe: router.query.safe } }} passHref>
-              <Button
-                endIcon={<ChevronRightIcon fontSize="small" />}
-                variant="text"
-                size="compact"
-                sx={{ mt: 1, p: 0.5 }}
-                color="static"
-              >
-                Stake ETH
-              </Button>
-            </Link>
-          </Track>
+          <Link href={AppRoutes.stake && { pathname: AppRoutes.stake, query: { safe: router.query.safe } }} passHref>
+            <Button
+              endIcon={<ChevronRightIcon fontSize="small" />}
+              variant="text"
+              size="compact"
+              sx={{ mt: 1, p: 0.5 }}
+              color="static"
+            >
+              Stake ETH
+            </Button>
+          </Link>
         </Box>
       </Stack>
 
-      <Track {...OVERVIEW_EVENTS.HIDE_STAKING_BANNER}>
-        <IconButton className={css.closeButton} aria-label="close" onClick={onDismiss}>
-          <CloseIcon fontSize="small" color="border" />
-        </IconButton>
-      </Track>
+      <IconButton className={css.closeButton} aria-label="close" onClick={onDismiss}>
+        <CloseIcon fontSize="small" color="border" />
+      </IconButton>
     </Card>
   )
 }

@@ -10,8 +10,6 @@ import { Button, DialogActions, DialogContent, MenuItem, Select, Stack, Box } fr
 import { getSafeInfo } from '@safe-global/safe-gateway-typescript-sdk'
 import React, { useCallback, useState } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
-import { SPACE_EVENTS } from '@/services/analytics/events/spaces'
-import { trackEvent } from '@/services/analytics'
 
 export type AddManuallyFormValues = {
   address: string
@@ -36,7 +34,6 @@ const AddManually = ({ handleAddSafe }: { handleAddSafe: (data: AddManuallyFormV
   const selectedChain = configs.find((chain) => chain.chainId === chainId)
 
   const onSubmit = handleSubmit((data) => {
-    trackEvent({ ...SPACE_EVENTS.ADD_ACCOUNT_MANUALLY })
     handleAddSafe(data)
     onClose()
   })

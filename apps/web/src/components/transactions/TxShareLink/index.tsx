@@ -2,7 +2,7 @@ import { Accordion, AccordionDetails, AccordionSummary, Box, Button, Paper, SvgI
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 
 import ShareIcon from '@/public/images/messages/link.svg'
-import { CopyDeeplinkLabels, trackEvent, TX_LIST_EVENTS } from '@/services/analytics'
+import { CopyDeeplinkLabels } from '@/services/analytics'
 import TxShareLink from './TxShareLink'
 
 import css from './styles.module.css'
@@ -11,14 +11,8 @@ import { useCurrentChain } from '@/hooks/useChains'
 import ExplorerButton from '@/components/common/ExplorerButton'
 
 function TxShareAccordion({ noExpand = false }: { noExpand: boolean }) {
-  const onExpand = (_: React.SyntheticEvent, expanded: boolean) => {
-    if (expanded) {
-      trackEvent(TX_LIST_EVENTS.OPEN_SHARE_BLOCK)
-    }
-  }
-
   return (
-    <Accordion className={css.accordion} onChange={onExpand} disabled={noExpand}>
+    <Accordion className={css.accordion} disabled={noExpand}>
       <AccordionSummary expandIcon={noExpand ? null : <ExpandMoreIcon />} className={css.summary}>
         <Typography data-testid="share-block-header" className={css.header}>
           Share link{!noExpand && ' with other signers'}

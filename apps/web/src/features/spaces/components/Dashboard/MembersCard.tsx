@@ -5,9 +5,6 @@ import { Typography, Paper, Box, Button, SvgIcon, Tooltip } from '@mui/material'
 import { useState } from 'react'
 import { useIsAdmin } from '@/features/spaces/hooks/useSpaceMembers'
 import AddMemberModal from '../AddMemberModal'
-import { SPACE_LABELS } from '@/services/analytics/events/spaces'
-import Track from '@/components/common/Track'
-import { SPACE_EVENTS } from '@/services/analytics/events/spaces'
 
 const MembersCard = () => {
   const [openAddMembersModal, setOpenAddMembersModal] = useState(false)
@@ -27,18 +24,16 @@ const MembersCard = () => {
           </Box>
           <Tooltip title={isButtonDisabled ? 'You need to be an Admin to add members' : ''} placement="top">
             <Box component="span" sx={{ position: 'absolute', top: 0, right: 0 }}>
-              <Track {...SPACE_EVENTS.ADD_MEMBER_MODAL} label={SPACE_LABELS.space_dashboard_card}>
-                <Button
-                  data-testid="add-member-button"
-                  onClick={handleInviteClick}
-                  variant={isButtonDisabled ? 'contained' : 'outlined'}
-                  size="compact"
-                  aria-label="Invite team members"
-                  disabled={isButtonDisabled}
-                >
-                  Add members
-                </Button>
-              </Track>
+              <Button
+                data-testid="add-member-button"
+                onClick={handleInviteClick}
+                variant={isButtonDisabled ? 'contained' : 'outlined'}
+                size="compact"
+                aria-label="Invite team members"
+                disabled={isButtonDisabled}
+              >
+                Add members
+              </Button>
             </Box>
           </Tooltip>
         </Box>

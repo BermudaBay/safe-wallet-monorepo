@@ -3,14 +3,11 @@ import LightbulbIcon from '@/public/images/common/lightbulb.svg'
 import { Typography, Paper, Box, Button, SvgIcon } from '@mui/material'
 import SpaceInfoModal from '../SpaceInfoModal'
 import { useState } from 'react'
-import { SPACE_EVENTS, SPACE_LABELS } from '@/services/analytics/events/spaces'
-import { trackEvent } from '@/services/analytics'
 
 const SpacesCTACard = () => {
   const [isInfoOpen, setIsInfoOpen] = useState<boolean>(false)
 
   const handleLearnMore = () => {
-    trackEvent({ ...SPACE_EVENTS.INFO_MODAL, label: SPACE_LABELS.space_dashboard_card })
     setIsInfoOpen(true)
   }
 

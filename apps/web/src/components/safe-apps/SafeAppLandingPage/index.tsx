@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { Box, CircularProgress, Paper, Grid2 as Grid } from '@mui/material'
-import { OVERVIEW_EVENTS, SAFE_APPS_EVENTS, trackEvent, trackSafeAppEvent } from '@/services/analytics'
+import { SAFE_APPS_EVENTS, trackSafeAppEvent } from '@/services/analytics'
 import { useSafeAppFromBackend } from '@/hooks/safe-apps/useSafeAppFromBackend'
 import { useSafeAppFromManifest } from '@/hooks/safe-apps/useSafeAppFromManifest'
 import { SafeAppDetails } from '@/components/safe-apps/SafeAppLandingPage/SafeAppDetails'
@@ -38,8 +38,6 @@ const SafeAppLanding = ({ appUrl, chain }: Props) => {
 
   const handleConnectWallet = async () => {
     if (!onboard) return
-
-    trackEvent(OVERVIEW_EVENTS.OPEN_ONBOARD)
 
     onboard.connectWallet().catch((e) => logError(Errors._107, e))
   }
