@@ -25,7 +25,7 @@ import WarningIcon from '@/public/images/notifications/warning.svg'
 import Track from '@/components/common/Track'
 import { MODALS_EVENTS } from '@/services/analytics'
 import useAsync from '@safe-global/utils/hooks/useAsync'
-import { getSafeInfo } from '@safe-global/safe-gateway-typescript-sdk'
+import { getSafeInfo } from '@/utils/get-safe-info'
 
 const renderSimulationStatus = (isSuccess: boolean, isError: boolean, isCallTraceError: boolean) => {
   if (!isSuccess || isError) {

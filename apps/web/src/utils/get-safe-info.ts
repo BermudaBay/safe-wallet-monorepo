@@ -1,0 +1,59 @@
+import { JsonRpcProvider, Contract } from 'ethers'
+import { getSafeInfo as getInfo, ImplementationVersionState, SafeInfo } from '@safe-global/safe-gateway-typescript-sdk'
+
+export async function getSafeInfo(chainId: string, address: string): Promise<SafeInfo> {
+  // Try to load Safe info via the official API.
+  try {
+    // Await promise so we can use try catch when it's rejected.
+    const result = await getInfo(chainId, address)
+    return result
+  } catch {}
+
+  // Try to load Safe info via on-chain data fetching.
+  try {
+    const provider = new JsonRpcProvider(process.env.NEXT_PUBLIC_JSON_RPC_URL!)
+    const contract = new Contract(
+      address,
+      [
+        'function getOwners() external view returns (address[])',
+        'function getThreshold() external view returns (uint256)',
+      ],
+      provider,
+    )
+
+    const owners = await contract.getOwners()
+    const threshold = await contract.getThreshold()
+
+    const result: SafeInfo = {
+      address: {
+        value: address,
+      },
+      chainId,
+      // TODO: Read nonce from chain.
+      // Using a dummy value right now which should be high enough to transact.
+      nonce: 4711,
+      threshold: Number(threshold),
+      owners: owners.map((address: string) => ({
+        value: address,
+      })),
+      implementation: {
+        value: process.env.NEXT_PUBLIC_MASTERCOPY!,
+      },
+      implementationVersionState: ImplementationVersionState.UP_TO_DATE,
+      collectiblesTag: null,
+      txQueuedTag: null,
+      txHistoryTag: null,
+      messagesTag: null,
+      modules: null,
+      // TODO: Read fallback handler address from chain.
+      fallbackHandler: null,
+      guard: null,
+      version: '1.5.0',
+    }
+
+    return result
+  } catch {}
+
+  // Throw error if no Safe info can be found.
+  throw new Error(`Safe information for Safe with address ${address} on chain ${chainId} not found`)
+}

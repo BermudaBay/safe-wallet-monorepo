@@ -1,5 +1,5 @@
 import { SvgIcon, Typography } from '@mui/material'
-import { getSafeInfo } from '@safe-global/safe-gateway-typescript-sdk'
+import { getSafeInfo } from '@/utils/get-safe-info'
 import { useState, useEffect } from 'react'
 import { useWatch } from 'react-hook-form'
 import { isAddress } from 'ethers'
