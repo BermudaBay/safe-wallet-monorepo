@@ -74,7 +74,7 @@ yarn workspace <workspace-name> <script>
 Example:
 
 ```bash
-yarn workspace @safe-global/web start
+yarn workspace @safe-global/web dev
 ```
 
 - **Add a dependency to a specific workspace:**
