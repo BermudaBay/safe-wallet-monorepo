@@ -1,5 +1,3 @@
-import Analytics from '@/services/analytics/Analytics'
-import { SentryErrorBoundary } from '@/services/sentry'
 import type { ReactNode } from 'react'
 import { type ReactElement } from 'react'
 import { type AppProps } from 'next/app'
@@ -25,13 +23,10 @@ import useSafeNotifications from '@/hooks/useSafeNotifications'
 import useTxPendingStatuses from '@/hooks/useTxPendingStatuses'
 import { useInitSession } from '@/hooks/useInitSession'
 import Notifications from '@/components/common/Notifications'
-import CookieAndTermBanner from 'src/components/common/CookieAndTermBanner'
 import { useDarkMode } from '@/hooks/useDarkMode'
 import { useTxTracking } from '@/hooks/useTxTracking'
 import { useSafeMsgTracking } from '@/hooks/messages/useSafeMsgTracking'
-import useGtm from '@/services/analytics/useGtm'
 import useBeamer from '@/hooks/Beamer/useBeamer'
-import ErrorBoundary from '@/components/common/ErrorBoundary'
 import createEmotionCache from '@/utils/createEmotionCache'
 import MetaTags from '@/components/common/MetaTags'
 import useAdjustUrl from '@/hooks/useAdjustUrl'
@@ -39,19 +34,13 @@ import useSafeMessageNotifications from '@/hooks/messages/useSafeMessageNotifica
 import useSafeMessagePendingStatuses from '@/hooks/messages/useSafeMessagePendingStatuses'
 import useChangedValue from '@/hooks/useChangedValue'
 import { TxModalProvider } from '@/components/tx-flow'
-import { useNotificationTracking } from '@/components/settings/PushNotifications/hooks/useNotificationTracking'
 import Recovery from '@/features/recovery/components/Recovery'
 import WalletProvider from '@/components/common/WalletProvider'
 import CounterfactualHooks from '@/features/counterfactual/CounterfactualHooks'
 import PkModulePopup from '@/services/private-key-module/PkModulePopup'
-import GeoblockingProvider from '@/components/common/GeoblockingProvider'
 import { useVisitedSafes } from '@/features/myAccounts/hooks/useVisitedSafes'
-import OutreachPopup from '@/features/targetedOutreach/components/OutreachPopup'
 import { GATEWAY_URL } from '@/config/gateway'
-import { useDatadog } from '@/services/datadog'
-import useMixpanel from '@/services/analytics/useMixpanel'
 import { AddressBookSourceProvider } from '@/components/common/AddressBookSourceProvider'
-import { useSafeLabsTerms } from '@/hooks/useSafeLabsTerms'
 
 const reduxStore = makeStore()
 
@@ -60,10 +49,6 @@ const InitApp = (): null => {
   setNewGatewayBaseUrl(GATEWAY_URL)
   useHydrateStore(reduxStore)
   useAdjustUrl()
-  useDatadog()
-  useGtm()
-  useMixpanel()
-  useNotificationTracking()
   useInitSession()
   useLoadableStores()
   useInitOnboard()
@@ -78,7 +63,6 @@ const InitApp = (): null => {
   useSafeMsgTracking()
   useBeamer()
   useVisitedSafes()
-  useSafeLabsTerms() // Automatically disconnect wallets if terms not accepted and feature is enabled
 
   return null
 }
@@ -97,15 +81,11 @@ export const AppProviders = ({ children }: { children: ReactNode | ReactNode[] }
     <SafeThemeProvider mode={themeMode}>
       {(safeTheme: Theme) => (
         <ThemeProvider theme={safeTheme}>
-          <SentryErrorBoundary showDialog fallback={ErrorBoundary}>
-            <WalletProvider>
-              <GeoblockingProvider>
-                <TxModalProvider>
-                  <AddressBookSourceProvider>{children}</AddressBookSourceProvider>
-                </TxModalProvider>
-              </GeoblockingProvider>
-            </WalletProvider>
-          </SentryErrorBoundary>
+          <WalletProvider>
+            <TxModalProvider>
+              <AddressBookSourceProvider>{children}</AddressBookSourceProvider>
+            </TxModalProvider>
+          </WalletProvider>
         </ThemeProvider>
       )}
     </SafeThemeProvider>
@@ -114,16 +94,6 @@ export const AppProviders = ({ children }: { children: ReactNode | ReactNode[] }
 
 interface SafeWalletAppProps extends AppProps {
   emotionCache?: EmotionCache
-}
-
-const TermsGate = ({ children }: { children: ReactNode }) => {
-  const { shouldShowContent } = useSafeLabsTerms()
-
-  if (!shouldShowContent) {
-    return null
-  }
-
-  return <>{children}</>
 }
 
 const SafeWalletApp = ({
@@ -147,25 +117,17 @@ const SafeWalletApp = ({
 
           <InitApp />
 
-          <TermsGate>
-            <PageLayout pathname={router.pathname}>
-              <Component {...pageProps} key={safeKey} />
-            </PageLayout>
+          <PageLayout pathname={router.pathname}>
+            <Component {...pageProps} key={safeKey} />
+          </PageLayout>
 
-            <CookieAndTermBanner />
+          <Notifications />
 
-            <OutreachPopup />
+          <Recovery />
 
-            <Notifications />
+          <CounterfactualHooks />
 
-            <Recovery />
-
-            <CounterfactualHooks />
-
-            <Analytics />
-
-            <PkModulePopup />
-          </TermsGate>
+          <PkModulePopup />
         </AppProviders>
       </CacheProvider>
     </Provider>
