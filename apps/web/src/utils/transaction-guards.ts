@@ -134,7 +134,7 @@ export const isMigrateToL2TxData = (value: TransactionData | undefined, chainId:
     chainId &&
     value?.hexData &&
     isMultiSendCalldata(value?.hexData) &&
-    hasMatchingDeployment(getMultiSendDeployments, value.to.value, chainId, ['1.3.0', '1.4.1'])
+    hasMatchingDeployment(getMultiSendDeployments, value.to.value, chainId, ['1.3.0', '1.4.1', '1.5.0'])
   ) {
     // Its a multiSend to the MultiSend contract (not CallOnly)
     const decodedMultiSend = decodeMultiSendData(value.hexData)
@@ -465,7 +465,7 @@ export const isOnChainSignMessageTxData = (data: TransactionData | undefined, ch
   const isDelegateCall = data?.operation === Operation.DELEGATE
   const isSignMessageLib =
     toAddress !== undefined &&
-    hasMatchingDeployment(getSignMessageLibDeployments, toAddress, chainId, ['1.3.0', '1.4.1'])
+    hasMatchingDeployment(getSignMessageLibDeployments, toAddress, chainId, ['1.3.0', '1.4.1', '1.5.0'])
   return Boolean(data && data.hexData?.startsWith(signMessageSelector) && isSignMessageLib && isDelegateCall)
 }
 
