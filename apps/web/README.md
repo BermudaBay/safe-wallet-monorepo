@@ -80,7 +80,7 @@ If you don't provide some of the variables, the corresponding features will be d
 From the root of the monorepo:
 
 ```bash
-yarn workspace @safe-global/web start
+yarn workspace @safe-global/web dev
 ```
 
 Or directly from the `apps/web` directory:
