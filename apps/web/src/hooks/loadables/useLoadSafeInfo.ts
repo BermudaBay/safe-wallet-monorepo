@@ -2,7 +2,7 @@ import { selectUndeployedSafe } from '@/features/counterfactual/store/undeployed
 import { getUndeployedSafeInfo } from '@/features/counterfactual/utils'
 import { useAppSelector } from '@/store'
 import { useEffect, useMemo } from 'react'
-import { getSafeInfo } from '@safe-global/safe-gateway-typescript-sdk'
+import { getSafeInfo } from '@/utils/get-safe-info'
 import { type SafeState } from '@safe-global/store/gateway/AUTO_GENERATED/safes'
 import useAsync, { type AsyncResult } from '@safe-global/utils/hooks/useAsync'
 import { useChainId } from '../useChainId'

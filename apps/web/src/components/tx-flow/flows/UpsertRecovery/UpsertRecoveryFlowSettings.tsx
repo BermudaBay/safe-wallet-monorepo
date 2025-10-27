@@ -42,7 +42,7 @@ import { getDelay, isCustomDelaySelected } from './utils'
 import { HelpCenterArticle, HelperCenterArticleTitles } from '@safe-global/utils/config/constants'
 import { TxFlowContext, type TxFlowContextType } from '../../TxFlowProvider'
 import { isSmartContractWallet } from '@/utils/wallets'
-import { getSafeInfo } from '@safe-global/safe-gateway-typescript-sdk'
+import { getSafeInfo } from '@/utils/get-safe-info'
 import useChainId from '@/hooks/useChainId'
 
 enum AddressType {

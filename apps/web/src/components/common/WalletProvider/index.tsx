@@ -1,7 +1,7 @@
 import { createContext, type ReactElement, type ReactNode, useEffect, useState, useMemo } from 'react'
 import useOnboard, { type ConnectedWallet, getConnectedWallet } from '@/hooks/wallets/useOnboard'
 import useAsync from '@safe-global/utils/hooks/useAsync'
-import { getSafeInfo } from '@safe-global/safe-gateway-typescript-sdk'
+import { getSafeInfo } from '@/utils/get-safe-info'
 import { useWeb3ReadOnly } from '@/hooks/wallets/web3'
 import { useCurrentChain } from '@/hooks/useChains'
 import { useRouter } from 'next/router'
