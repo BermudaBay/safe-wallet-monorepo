@@ -2,7 +2,6 @@ import { useCurrentChain } from '@/hooks/useChains'
 import { useContext, useEffect, type PropsWithChildren } from 'react'
 
 import useSafeInfo from '@/hooks/useSafeInfo'
-import { trackEvent, SETTINGS_EVENTS } from '@/services/analytics'
 import { createSwapOwnerTx, createAddOwnerTx } from '@/services/tx/tx-sender'
 import { useAppDispatch } from '@/store'
 import { upsertAddressBookEntries } from '@/store/addressBookSlice'
@@ -53,9 +52,6 @@ export const ReviewOwner = ({
         }),
       )
     }
-
-    trackEvent({ ...SETTINGS_EVENTS.SETUP.THRESHOLD, label: safe.threshold })
-    trackEvent({ ...SETTINGS_EVENTS.SETUP.OWNERS, label: safe.owners.length })
   }
 
   const handleSubmit = () => {

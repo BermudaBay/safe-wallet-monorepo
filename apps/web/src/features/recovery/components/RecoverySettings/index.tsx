@@ -1,5 +1,3 @@
-import Track from '@/components/common/Track'
-import { RECOVERY_EVENTS } from '@/services/analytics/events/recovery'
 import { Box, Button, Grid, Paper, SvgIcon, Tooltip, Typography } from '@mui/material'
 import { type ReactElement, useContext, useMemo } from 'react'
 
@@ -126,15 +124,13 @@ function RecoverySettings(): ReactElement {
             {isRecoveryEnabled
               ? 'The trusted Recoverer will be able to recover your Safe Account if you ever lose access. You can change Recoverers or alter your recovery setup at any time.'
               : 'Choose a trusted Recoverer to recover your Safe Account if you ever lose access. Enabling the Account recovery module will require a transaction.'}{' '}
-            <Track {...RECOVERY_EVENTS.LEARN_MORE} label="settings">
-              <ExternalLink href={HelpCenterArticle.RECOVERY} title={HelperCenterArticleTitles.RECOVERY}>
-                Learn more
-              </ExternalLink>
-            </Track>
+            <ExternalLink href={HelpCenterArticle.RECOVERY} title={HelperCenterArticleTitles.RECOVERY}>
+              Learn more
+            </ExternalLink>
           </Typography>
 
           {!isRecoveryEnabled ? (
-            <SetupRecoveryButton eventLabel="settings" />
+            <SetupRecoveryButton />
           ) : rows ? (
             <EnhancedTable rows={rows} headCells={headCells} />
           ) : null}
@@ -144,23 +140,21 @@ function RecoverySettings(): ReactElement {
   )
 }
 
-export const SetupRecoveryButton = ({ eventLabel }: { eventLabel: string }) => {
+export const SetupRecoveryButton = () => {
   const { setTxFlow } = useContext(TxModalContext)
   return (
     <>
       <CheckWallet>
         {(isOk) => (
-          <Track {...RECOVERY_EVENTS.SETUP_RECOVERY} label={eventLabel}>
-            <Button
-              data-testid="setup-recovery-btn"
-              variant="contained"
-              disabled={!isOk}
-              onClick={() => setTxFlow(<UpsertRecoveryFlow />)}
-              sx={{ mt: 2 }}
-            >
-              Set up recovery
-            </Button>
-          </Track>
+          <Button
+            data-testid="setup-recovery-btn"
+            variant="contained"
+            disabled={!isOk}
+            onClick={() => setTxFlow(<UpsertRecoveryFlow />)}
+            sx={{ mt: 2 }}
+          >
+            Set up recovery
+          </Button>
         )}
       </CheckWallet>
     </>

@@ -37,8 +37,6 @@ import { useRemoteSafeApps } from '@/hooks/safe-apps/useRemoteSafeApps'
 import CSVAirdropAppModal from './CSVAirdropAppModal'
 import { InsufficientFundsValidationError } from '@/components/common/TokenAmountInput'
 import { useHasFeature } from '@/hooks/useChains'
-import Track from '@/components/common/Track'
-import { MODALS_EVENTS } from '@/services/analytics'
 import { FEATURES } from '@safe-global/utils/utils/chains'
 import { TxFlowContext, type TxFlowContextType } from '../../TxFlowProvider'
 
@@ -184,18 +182,17 @@ export const CreateTokenTransfer = ({ txNonce }: CreateTokenTransferProps): Reac
             {canBatch && (
               <>
                 <Stack direction="row" alignItems="center" justifyContent="space-between" mb={4}>
-                  <Track {...MODALS_EVENTS.ADD_RECIPIENT}>
-                    <Button
-                      data-testid="add-recipient-btn"
-                      variant="text"
-                      onClick={addRecipient}
-                      disabled={!canAddMoreRecipients}
-                      startIcon={<SvgIcon component={AddIcon} inheritViewBox fontSize="small" />}
-                      size="large"
-                    >
-                      Add recipient
-                    </Button>
-                  </Track>
+                  <Button
+                    data-testid="add-recipient-btn"
+                    variant="text"
+                    onClick={addRecipient}
+                    disabled={!canAddMoreRecipients}
+                    startIcon={<SvgIcon component={AddIcon} inheritViewBox fontSize="small" />}
+                    size="large"
+                  >
+                    Add recipient
+                  </Button>
+
                   <Typography
                     data-testid="recipients-count"
                     variant="body2"

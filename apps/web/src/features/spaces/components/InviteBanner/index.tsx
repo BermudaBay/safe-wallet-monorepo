@@ -8,11 +8,8 @@ import { AppRoutes } from '@/config/routes'
 import css from './styles.module.css'
 import EthHashInfo from '@/components/common/EthHashInfo'
 import { useUsersGetWithWalletsV1Query } from '@safe-global/store/gateway/AUTO_GENERATED/users'
-import { SPACE_EVENTS, SPACE_LABELS } from '@/services/analytics/events/spaces'
-import Track from '@/components/common/Track'
 import AcceptButton from './AcceptButton'
 import DeclineButton from './DeclineButton'
-import { trackEvent } from '@/services/analytics'
 import { MemberStatus } from '@/features/spaces/hooks/useSpaceMembers'
 import { useAppSelector } from '@/store'
 import { isAuthenticated } from '@/store/authSlice'
@@ -59,11 +56,7 @@ const SpaceListInvite = ({ space }: SpaceListInvite) => {
       </Typography>
 
       <Link href={{ pathname: AppRoutes.spaces.index, query: { spaceId: id } }} passHref legacyBehavior>
-        <MUILink
-          underline="none"
-          sx={{ display: 'block' }}
-          onClick={() => trackEvent({ ...SPACE_EVENTS.VIEW_INVITING_SPACE })}
-        >
+        <MUILink underline="none" sx={{ display: 'block' }}>
           <Card sx={{ p: 2, backgroundColor: 'background.main', '&:hover': { backgroundColor: 'background.light' } }}>
             <Box className={css.spacesListInviteContent}>
               <Stack direction="row" spacing={2} alignItems="center" flexGrow={1}>
@@ -77,12 +70,8 @@ const SpaceListInvite = ({ space }: SpaceListInvite) => {
               </Stack>
 
               <Stack direction="row" spacing={1}>
-                <Track {...SPACE_EVENTS.ACCEPT_INVITE} label={SPACE_LABELS.space_list_page}>
-                  <AcceptButton space={space} />
-                </Track>
-                <Track {...SPACE_EVENTS.DECLINE_INVITE} label={SPACE_LABELS.space_list_page}>
-                  <DeclineButton space={space} />
-                </Track>
+                <AcceptButton space={space} />
+                <DeclineButton space={space} />
               </Stack>
             </Box>
           </Card>

@@ -3,8 +3,6 @@ import EarnIllustrationLight from '@/public/images/common/earn-illustration-ligh
 import Image from 'next/image'
 import css from './styles.module.css'
 import CloseIcon from '@mui/icons-material/Close'
-import Track from '@/components/common/Track'
-import { EARN_EVENTS, EARN_LABELS } from '@/services/analytics/events/earn'
 import Link from 'next/link'
 import { AppRoutes } from '@/config/routes'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
@@ -31,27 +29,23 @@ const EarnBanner = ({ onDismiss }: { onDismiss: () => void }) => {
             Deposit stablecoins, wstETH, ETH, and WBTC and let your assets compound in minutes.
           </Typography>
 
-          <Track {...EARN_EVENTS.OPEN_EARN_PAGE} label={EARN_LABELS.safe_dashboard_banner}>
-            <Link href={AppRoutes.earn && { pathname: AppRoutes.earn, query: { safe: router.query.safe } }} passHref>
-              <Button
-                endIcon={<ChevronRightIcon fontSize="small" />}
-                variant="text"
-                size="compact"
-                sx={{ mt: 1, p: 0.5 }}
-                color="static"
-              >
-                Try now
-              </Button>
-            </Link>
-          </Track>
+          <Link href={AppRoutes.earn && { pathname: AppRoutes.earn, query: { safe: router.query.safe } }} passHref>
+            <Button
+              endIcon={<ChevronRightIcon fontSize="small" />}
+              variant="text"
+              size="compact"
+              sx={{ mt: 1, p: 0.5 }}
+              color="static"
+            >
+              Try now
+            </Button>
+          </Link>
         </Box>
       </Stack>
 
-      <Track {...EARN_EVENTS.HIDE_EARN_BANNER}>
-        <IconButton className={css.closeButton} aria-label="close" onClick={onDismiss}>
-          <CloseIcon fontSize="small" color="border" />
-        </IconButton>
-      </Track>
+      <IconButton className={css.closeButton} aria-label="close" onClick={onDismiss}>
+        <CloseIcon fontSize="small" color="border" />
+      </IconButton>
     </Card>
   )
 }

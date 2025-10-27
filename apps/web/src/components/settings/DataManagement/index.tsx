@@ -16,8 +16,6 @@ import { FileListCard } from '@/components/settings/DataManagement/FileListCard'
 import { selectAllVisitedSafes, visitedSafesSlice } from '@/store/visitedSafesSlice'
 
 import css from './styles.module.css'
-import Track from '@/components/common/Track'
-import { OVERVIEW_EVENTS, OVERVIEW_LABELS } from '@/services/analytics'
 import { ClearPendingTxs } from '../ClearPendingTxs'
 
 const getExportFileName = () => {
@@ -95,11 +93,9 @@ const DataManagement = () => {
               }
               title={<b>{exportFileName}</b>}
               action={
-                <Track {...OVERVIEW_EVENTS.EXPORT_DATA} label={OVERVIEW_LABELS.settings}>
-                  <Button variant="contained" className={css.exportIcon} onClick={exportAppData}>
-                    <SvgIcon component={ExportIcon} inheritViewBox fontSize="small" />
-                  </Button>
-                </Track>
+                <Button variant="contained" className={css.exportIcon} onClick={exportAppData}>
+                  <SvgIcon component={ExportIcon} inheritViewBox fontSize="small" />
+                </Button>
               }
               addedSafes={addedSafes}
               addressBook={addressBook}

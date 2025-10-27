@@ -5,8 +5,6 @@ import { getTotalFeeFormatted } from '@/hooks/useGasPrice'
 import useSafeInfo from '@/hooks/useSafeInfo'
 import useWalletCanPay from '@/hooks/useWalletCanPay'
 import useWallet from '@/hooks/wallets/useWallet'
-import { OVERVIEW_EVENTS, trackEvent, WALLET_EVENTS } from '@/services/analytics'
-import { TX_EVENTS, TX_TYPES } from '@/services/analytics/events/transactions'
 import madProps from '@/utils/mad-props'
 import React, { type ReactElement, type SyntheticEvent, useContext, useState } from 'react'
 import { CircularProgress, Box, Button, CardActions, Divider, Alert } from '@mui/material'
@@ -77,13 +75,7 @@ export const CounterfactualForm = ({
     const txOptions = getTxOptions(advancedParams, currentChain)
 
     try {
-      trackEvent({ ...OVERVIEW_EVENTS.PROCEED_WITH_TX, label: TX_TYPES.activate_with_tx })
-
       await deploySafeAndExecuteTx(txOptions, wallet, safeAddress, safeTx, wallet?.provider)
-
-      trackEvent({ ...TX_EVENTS.CREATE, label: TX_TYPES.activate_with_tx })
-      trackEvent({ ...TX_EVENTS.EXECUTE, label: TX_TYPES.activate_with_tx })
-      trackEvent(WALLET_EVENTS.ONCHAIN_INTERACTION)
     } catch (_err) {
       const err = asError(_err)
       trackError(Errors._804, err)

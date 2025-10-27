@@ -2,7 +2,6 @@ import { AppRoutes } from '@/config/routes'
 import { useIsRecoverySupported } from '@/features/recovery/hooks/useIsRecoverySupported'
 import useRecovery from '@/features/recovery/hooks/useRecovery'
 import dynamic from 'next/dynamic'
-import { OVERVIEW_EVENTS, trackEvent } from '@/services/analytics'
 import { useRouter } from 'next/router'
 import { useContext } from 'react'
 import { Grid } from '@mui/material'
@@ -34,27 +33,22 @@ const FirstTxFlow = ({ open, onClose }: { open: boolean; onClose: () => void }) 
   }
 
   const onSendToken = () => {
-    trackEvent({ ...OVERVIEW_EVENTS.CHOOSE_TRANSACTION_TYPE, label: 'send_token' })
     setTxFlow(<TokenTransferFlow />)
   }
 
   const onActivateSafe = () => {
-    trackEvent({ ...OVERVIEW_EVENTS.CHOOSE_TRANSACTION_TYPE, label: 'activate_safe' })
     setTxFlow(<ActivateAccountFlow />)
   }
 
   const onAddSigner = () => {
-    trackEvent({ ...OVERVIEW_EVENTS.CHOOSE_TRANSACTION_TYPE, label: 'add_signer' })
     setTxFlow(<AddOwnerFlow />)
   }
 
   const onRecovery = () => {
-    trackEvent({ ...OVERVIEW_EVENTS.CHOOSE_TRANSACTION_TYPE, label: 'setup_recovery' })
     setTxFlow(<UpsertRecoveryFlow />)
   }
 
   const onSwap = () => {
-    trackEvent({ ...OVERVIEW_EVENTS.CHOOSE_TRANSACTION_TYPE, label: 'swap' })
     router.push(
       isSwapFeatureEnabled
         ? { pathname: AppRoutes.swap, query: router.query }
@@ -65,7 +59,6 @@ const FirstTxFlow = ({ open, onClose }: { open: boolean; onClose: () => void }) 
   const onCustomTransaction = () => {
     if (!txBuilder) return
 
-    trackEvent({ ...OVERVIEW_EVENTS.CHOOSE_TRANSACTION_TYPE, label: 'tx_builder' })
     router.push(txBuilder.link)
   }
 

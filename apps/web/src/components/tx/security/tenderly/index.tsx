@@ -22,8 +22,6 @@ import { TxInfoContext } from '@/components/tx-flow/TxInfoProvider'
 import { SafeTxContext } from '@/components/tx-flow/SafeTxProvider'
 import InfoIcon from '@/public/images/notifications/info.svg'
 import WarningIcon from '@/public/images/notifications/warning.svg'
-import Track from '@/components/common/Track'
-import { MODALS_EVENTS } from '@/services/analytics'
 import useAsync from '@safe-global/utils/hooks/useAsync'
 import { getSafeInfo } from '@safe-global/safe-gateway-typescript-sdk'
 
@@ -176,18 +174,16 @@ const TxSimulationBlock = ({
           ) : isFinished ? (
             renderSimulationStatus(isSuccess, isError, isCallTraceError)
           ) : (
-            <Track {...MODALS_EVENTS.SIMULATE_TX}>
-              <Button
-                data-testid="simulate-btn"
-                variant="outlined"
-                size="small"
-                className={css.simulate}
-                onClick={handleSimulation}
-                disabled={!transactions || disabled}
-              >
-                Simulate
-              </Button>
-            </Track>
+            <Button
+              data-testid="simulate-btn"
+              variant="outlined"
+              size="small"
+              className={css.simulate}
+              onClick={handleSimulation}
+              disabled={!transactions || disabled}
+            >
+              Simulate
+            </Button>
           )}
         </div>
       </Paper>

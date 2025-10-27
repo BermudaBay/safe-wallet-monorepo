@@ -27,8 +27,6 @@ import commonCss from '@/components/tx-flow/common/styles.module.css'
 import { TxModalContext } from '@/components/tx-flow'
 import useGasPrice from '@/hooks/useGasPrice'
 import type { Overrides } from 'ethers'
-import { trackEvent } from '@/services/analytics'
-import { TX_EVENTS, TX_TYPES } from '@/services/analytics/events/transactions'
 import { isWalletRejection } from '@/utils/wallets'
 import WalletRejectionError from '@/components/tx/SignOrExecuteForm/WalletRejectionError'
 import useUserNonce from '@/components/tx/AdvancedParams/useUserNonce'
@@ -152,8 +150,6 @@ export const ReviewBatch = ({ params }: { params: ExecuteBatchFlowProps }) => {
       setIsSubmittable(true)
       return
     }
-
-    trackEvent({ ...TX_EVENTS.EXECUTE, label: TX_TYPES.bulk_execute })
   }
 
   const submitDisabled = loading || !isSubmittable || !gasPrice

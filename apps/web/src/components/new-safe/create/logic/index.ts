@@ -6,7 +6,6 @@ import { getSafeInfo, type SafeInfo, type ChainInfo, relayTransaction } from '@s
 import { getReadOnlyProxyFactoryContract } from '@/services/contracts/safeContracts'
 import type { UrlObject } from 'url'
 import { AppRoutes } from '@/config/routes'
-import { SAFE_APPS_EVENTS, trackEvent } from '@/services/analytics'
 import Safe, { predictSafeAddress, SafeProvider } from '@safe-global/protocol-kit'
 import type { PredictedSafeProps } from '@safe-global/protocol-kit'
 
@@ -170,9 +169,6 @@ export const getRedirect = (
   }
 
   // Otherwise, redirect to the provided URL (e.g. from a Safe App)
-
-  // Track the redirect to Safe App
-  trackEvent(SAFE_APPS_EVENTS.SHARED_APP_OPEN_AFTER_SAFE_CREATION)
 
   // We're prepending the safe address directly here because the `router.push` doesn't parse
   // The URL for already existing query params

@@ -10,13 +10,11 @@ import {
 import { WalletConnectContext } from '@/features/walletconnect/WalletConnectContext'
 import useChains from '@/hooks/useChains'
 import useSafeInfo from '@/hooks/useSafeInfo'
-import { trackEvent } from '@/services/analytics'
-import { WALLETCONNECT_EVENTS } from '@/services/analytics/events/walletconnect'
 
 import { Button, Checkbox, CircularProgress, Divider, FormControlLabel, Typography } from '@mui/material'
 import type { WalletKitTypes } from '@reown/walletkit'
 import type { ChangeEvent, ReactElement } from 'react'
-import { useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import { useCallback, useContext, useMemo, useState } from 'react'
 import { CompatibilityWarning } from './CompatibilityWarning'
 import ProposalVerification from './ProposalVerification'
 import css from './styles.module.css'
@@ -38,7 +36,6 @@ const WcProposalForm = ({ proposal, onApprove, onReject }: ProposalFormProps): R
   const [understandsRisk, setUnderstandsRisk] = useState(false)
   const { proposer } = proposal.params
   const { isScam, origin } = proposal.verifyContext.verified
-  const url = proposer.metadata.url || origin
 
   const isSafePass = isSafePassApp(origin)
   const sanctionedAddress = useSanctionedAddress(isSafePass)
@@ -57,39 +54,9 @@ const WcProposalForm = ({ proposal, onApprove, onReject }: ProposalFormProps): R
     !!loading ||
     (Boolean(sanctionedAddress) && isSafePass)
 
-  const onCheckboxClick = useCallback(
-    (_: ChangeEvent, checked: boolean) => {
-      setUnderstandsRisk(checked)
-
-      if (checked) {
-        trackEvent({
-          ...WALLETCONNECT_EVENTS.ACCEPT_RISK,
-          label: url,
-        })
-      }
-    },
-    [url],
-  )
-
-  // Track risk/scam/bridge warnings
-  useEffect(() => {
-    if (isHighRisk || isBlocked) {
-      trackEvent({
-        ...WALLETCONNECT_EVENTS.SHOW_RISK,
-        label: url,
-      })
-    }
-  }, [isHighRisk, isBlocked, url])
-
-  // Track unsupported chain warnings
-  useEffect(() => {
-    if (isUnsupportedChain) {
-      trackEvent({
-        ...WALLETCONNECT_EVENTS.UNSUPPORTED_CHAIN,
-        label: url,
-      })
-    }
-  }, [url, isUnsupportedChain])
+  const onCheckboxClick = useCallback((_: ChangeEvent, checked: boolean) => {
+    setUnderstandsRisk(checked)
+  }, [])
 
   return (
     <div className={css.container}>

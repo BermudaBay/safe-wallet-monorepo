@@ -28,8 +28,6 @@ import { useAddressBooksUpsertAddressBookItemsV1Mutation } from '@safe-global/st
 import { useCurrentSpaceId } from '@/features/spaces/hooks/useCurrentSpaceId'
 import { showNotification } from '@/store/notificationsSlice'
 import { useAppDispatch } from '@/store'
-import { trackEvent } from '@/services/analytics'
-import { SPACE_EVENTS } from '@/services/analytics/events/spaces'
 
 export type ImportContactsFormValues = {
   contacts: Record<string, string | undefined> // e.g. "1:0x123": "Alice"
@@ -93,8 +91,6 @@ const ImportAddressBookDialog = ({ handleClose }: { handleClose: () => void }) =
           groupKey: 'import-contacts-success',
         }),
       )
-
-      trackEvent(SPACE_EVENTS.IMPORT_ADDRESS_BOOK_SUBMIT)
 
       handleClose()
     } catch (e) {

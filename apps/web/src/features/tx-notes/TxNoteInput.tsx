@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 import { InputAdornment, Stack, TextField, Typography, SvgIcon, Box } from '@mui/material'
-import { MODALS_EVENTS, trackEvent } from '@/services/analytics'
+
 import { useForm } from 'react-hook-form'
 import InfoOutlinedIcon from '@/public/images/notifications/info.svg'
 
@@ -11,7 +11,7 @@ export const TxNoteInput = ({ onChange }: { onChange: (note: string) => void }) 
     register,
     watch,
     reset,
-    formState: { isDirty },
+    formState: {},
   } = useForm<{ note: string }>()
 
   const note = watch('note') || ''
@@ -27,14 +27,6 @@ export const TxNoteInput = ({ onChange }: { onChange: (note: string) => void }) 
     // Reset the isDirty state when the user focuses on the input
     reset({ note })
   }, [reset, note])
-
-  const onBlur = useCallback(() => {
-    if (isDirty && note.length > 0) {
-      // Track the event only if the note is dirty and not empty
-      // This prevents tracking the event when the user focuses and blurs the input without changing the note
-      trackEvent(MODALS_EVENTS.SUBMIT_TX_NOTE)
-    }
-  }, [isDirty, note])
 
   return (
     <>
@@ -60,7 +52,6 @@ export const TxNoteInput = ({ onChange }: { onChange: (note: string) => void }) 
         }}
         {...register('note')}
         onInput={onInput}
-        onBlur={onBlur}
         onFocus={onFocus}
       />
 

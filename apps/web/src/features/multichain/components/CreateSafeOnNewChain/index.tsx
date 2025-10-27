@@ -3,7 +3,6 @@ import NetworkInput from '@/components/common/NetworkInput'
 import { updateAddressBook } from '@/components/new-safe/create/logic/address-book'
 import ErrorMessage from '@/components/tx/ErrorMessage'
 import useAddressBook from '@/hooks/useAddressBook'
-import { CREATE_SAFE_CATEGORY, CREATE_SAFE_EVENTS, OVERVIEW_EVENTS, trackEvent } from '@/services/analytics'
 import { gtmSetChainId } from '@/services/analytics/gtm'
 import { showNotification } from '@/store/notificationsSlice'
 import { Box, Button, CircularProgress, DialogActions, DialogContent, Stack, Typography } from '@mui/material'
@@ -72,7 +71,6 @@ const ReplaySafeDialog = ({
   const [safeCreationData, safeCreationDataError, safeCreationDataLoading] = safeCreationResult
 
   const onCancel = () => {
-    trackEvent({ ...OVERVIEW_EVENTS.CANCEL_ADD_NEW_NETWORK })
     onClose()
   }
 
@@ -101,8 +99,6 @@ const ReplaySafeDialog = ({
 
       gtmSetChainId(selectedChain.chainId)
 
-      trackEvent({ ...OVERVIEW_EVENTS.SUBMIT_ADD_NEW_NETWORK, label: selectedChain.chainId })
-
       // 2. Replay Safe creation and add it to the counterfactual Safes
       replayCounterfactualSafeDeployment(
         selectedChain.chainId,
@@ -113,17 +109,12 @@ const ReplaySafeDialog = ({
         PayMethod.PayLater,
       )
 
-      trackEvent({ ...OVERVIEW_EVENTS.PROCEED_WITH_TX, label: 'counterfactual', category: CREATE_SAFE_CATEGORY })
-      trackEvent({ ...CREATE_SAFE_EVENTS.CREATED_SAFE, label: 'counterfactual' })
-
       router.push({
         pathname: UNDEPLOYED_SAFE_BLOCKED_ROUTES.includes(router.pathname) ? AppRoutes.home : router.pathname,
         query: {
           safe: `${selectedChain.shortName}:${safeAddress}`,
         },
       })
-
-      trackEvent({ ...OVERVIEW_EVENTS.SWITCH_NETWORK, label: selectedChain.chainId })
 
       dispatch(
         updateAddressBook(

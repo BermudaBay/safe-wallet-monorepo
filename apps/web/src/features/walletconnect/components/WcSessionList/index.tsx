@@ -2,8 +2,6 @@ import SafeAppIconCard from '@/components/safe-apps/SafeAppIconCard'
 import { getPeerName } from '@/features/walletconnect/services/utils'
 import { WalletConnectContext, WCLoadingState } from '@/features/walletconnect/WalletConnectContext'
 import useSafeInfo from '@/hooks/useSafeInfo'
-import { trackEvent } from '@/services/analytics'
-import { WALLETCONNECT_EVENTS } from '@/services/analytics/events/walletconnect'
 import { asError } from '@safe-global/utils/services/exceptions/utils'
 import { Button, CircularProgress, List, ListItem, ListItemAvatar, ListItemIcon, ListItemText } from '@mui/material'
 import type { SessionTypes } from '@walletconnect/types'
@@ -28,9 +26,6 @@ const WcSessionListItem = ({ session }: { session: SessionTypes.Struct }) => {
 
   const onDisconnect = useCallback(async () => {
     if (!walletConnect) return
-
-    const label = session.peer.metadata.url
-    trackEvent({ ...WALLETCONNECT_EVENTS.DISCONNECT_CLICK, label })
 
     setLoading(WCLoadingState.DISCONNECT)
 

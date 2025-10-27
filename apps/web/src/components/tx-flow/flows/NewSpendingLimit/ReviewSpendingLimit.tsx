@@ -9,7 +9,6 @@ import { getResetTimeOptions } from '@/components/transactions/TxDetails/TxData/
 import SendAmountBlock from '@/components/tx-flow/flows/TokenTransfer/SendAmountBlock'
 import useBalances from '@/hooks/useBalances'
 import useChainId from '@/hooks/useChainId'
-import { trackEvent, SETTINGS_EVENTS } from '@/services/analytics'
 import { createNewSpendingLimitTx } from '@/services/tx/tx-sender'
 import { selectSpendingLimits } from '@/store/spendingLimitsSlice'
 import { formatVisualAmount, safeParseUnits } from '@safe-global/utils/utils/formatters'
@@ -79,11 +78,6 @@ export const ReviewSpendingLimit = ({ onSubmit, children }: ReviewTransactionPro
   }, [isOneTime, data?.resetTime, chainId])
 
   const onFormSubmit = () => {
-    trackEvent({
-      ...SETTINGS_EVENTS.SPENDING_LIMIT.RESET_PERIOD,
-      label: resetTime,
-    })
-
     onSubmit()
   }
 

@@ -9,7 +9,6 @@ import { useMemo, type ReactElement } from 'react'
 import ModalDialog from '@/components/common/ModalDialog'
 import { type AddressBookState, selectAllAddressBooks } from '@/store/addressBookSlice'
 import { useAppSelector } from '@/store'
-import { trackEvent, ADDRESS_BOOK_EVENTS } from '@/services/analytics'
 import ExternalLink from '@/components/common/ExternalLink'
 import madProps from '@/utils/mad-props'
 import { HelpCenterArticle } from '@safe-global/utils/config/constants'
@@ -52,8 +51,6 @@ function ExportDialog({
 
   const onSubmit = (e: SyntheticEvent) => {
     e.preventDefault()
-
-    trackEvent(ADDRESS_BOOK_EVENTS.EXPORT)
 
     setTimeout(() => {
       handleClose()

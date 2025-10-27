@@ -12,8 +12,6 @@ import { AppRoutes } from '@/config/routes'
 import { useAppDispatch, useAppSelector } from '@/store'
 import { isAuthenticated } from '@/store/authSlice'
 import { useUsersGetWithWalletsV1Query } from '@safe-global/store/gateway/AUTO_GENERATED/users'
-import { SPACE_EVENTS } from '@/services/analytics/events/spaces'
-import { trackEvent } from '@/services/analytics'
 import { showNotification } from '@/store/notificationsSlice'
 import ExternalLink from '@/components/common/ExternalLink'
 
@@ -33,7 +31,6 @@ function AcceptInviteDialog({ space, onClose }: { space: GetSpaceResponse; onClo
 
   const onSubmit = handleSubmit(async (data) => {
     setError(undefined)
-    trackEvent({ ...SPACE_EVENTS.ACCEPT_INVITE_SUBMIT })
 
     try {
       setIsSubmitting(true)

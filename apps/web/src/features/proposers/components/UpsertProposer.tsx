@@ -8,7 +8,6 @@ import { signProposerData, signProposerTypedData } from '@/features/proposers/ut
 import useChainId from '@/hooks/useChainId'
 import useSafeAddress from '@/hooks/useSafeAddress'
 import useWallet from '@/hooks/wallets/useWallet'
-import { SETTINGS_EVENTS, trackEvent } from '@/services/analytics'
 import { getAssertedChainSigner } from '@/services/tx/tx-sender/sdk'
 import { useAppDispatch } from '@/store'
 import { showNotification } from '@/store/notificationsSlice'
@@ -113,10 +112,6 @@ const UpsertProposer = ({ onClose, onSuccess, proposer }: UpsertProposerProps) =
         await addDelegateV2({ chainId, createDelegateDto }).unwrap()
       }
 
-      trackEvent(
-        isEditing ? SETTINGS_EVENTS.PROPOSERS.SUBMIT_EDIT_PROPOSER : SETTINGS_EVENTS.PROPOSERS.SUBMIT_ADD_PROPOSER,
-      )
-
       dispatch(
         showNotification({
           variant: 'success',
@@ -141,9 +136,6 @@ const UpsertProposer = ({ onClose, onSuccess, proposer }: UpsertProposerProps) =
   }
 
   const onCancel = () => {
-    trackEvent(
-      isEditing ? SETTINGS_EVENTS.PROPOSERS.CANCEL_EDIT_PROPOSER : SETTINGS_EVENTS.PROPOSERS.CANCEL_ADD_PROPOSER,
-    )
     onClose()
   }
 

@@ -13,9 +13,6 @@ import SpaceCreationModal from '../SpaceCreationModal'
 import { useCurrentSpaceId } from 'src/features/spaces/hooks/useCurrentSpaceId'
 import { useAppSelector } from '@/store'
 import { isAuthenticated } from '@/store/authSlice'
-import { SPACE_LABELS } from '@/services/analytics/events/spaces'
-import { trackEvent } from '@/services/analytics'
-import { SPACE_EVENTS } from '@/services/analytics/events/spaces'
 import { getNonDeclinedSpaces } from '@/features/spaces/utils'
 import { useUsersGetWithWalletsV1Query } from '@safe-global/store/gateway/AUTO_GENERATED/users'
 
@@ -120,7 +117,6 @@ const SpaceSidebarSelector = () => {
             onClick={() => {
               handleClose()
               setIsCreationModalOpen(true)
-              trackEvent({ ...SPACE_EVENTS.CREATE_SPACE_MODAL, label: SPACE_LABELS.space_selector })
             }}
             sx={{ fontWeight: 700 }}
           >
@@ -130,7 +126,7 @@ const SpaceSidebarSelector = () => {
           <MenuItem
             onClick={() => {
               handleClose()
-              trackEvent({ ...SPACE_EVENTS.OPEN_SPACE_LIST_PAGE, label: SPACE_LABELS.space_selector })
+
               router.push(AppRoutes.welcome.spaces)
             }}
             sx={{ fontWeight: 700 }}

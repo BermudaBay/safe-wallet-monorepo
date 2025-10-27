@@ -4,11 +4,6 @@ import { Button, type ButtonProps } from '@mui/material'
 
 import { useTxBuilderApp } from '@/hooks/safe-apps/useTxBuilderApp'
 import { AppRoutes } from '@/config/routes'
-import Track from '@/components/common/Track'
-import { MODALS_EVENTS, trackEvent } from '@/services/analytics'
-import { SWAP_EVENTS, SWAP_LABELS } from '@/services/analytics/events/swaps'
-import { MixpanelEventParams } from '@/services/analytics/mixpanel-events'
-import { GA_LABEL_TO_MIXPANEL_PROPERTY } from '@/services/analytics/ga-mixpanel-mapping'
 import { useContext } from 'react'
 import { TxModalContext } from '..'
 import SwapIcon from '@/public/images/common/swap.svg'
@@ -22,18 +17,16 @@ const buttonSx = {
 
 export const SendTokensButton = ({ onClick, sx }: { onClick: () => void; sx?: ButtonProps['sx'] }) => {
   return (
-    <Track {...MODALS_EVENTS.SEND_FUNDS}>
-      <Button
-        data-testid="send-tokens-btn"
-        onClick={onClick}
-        variant="contained"
-        sx={sx ?? buttonSx}
-        fullWidth
-        startIcon={<AssetsIcon width={20} />}
-      >
-        Send tokens
-      </Button>
-    </Track>
+    <Button
+      data-testid="send-tokens-btn"
+      onClick={onClick}
+      variant="contained"
+      sx={sx ?? buttonSx}
+      fullWidth
+      startIcon={<AssetsIcon width={20} />}
+    >
+      Send tokens
+    </Button>
   )
 }
 
@@ -48,19 +41,17 @@ export const TxBuilderButton = () => {
   const onClick = isTxBuilder ? () => setTxFlow(undefined) : undefined
 
   return (
-    <Track {...MODALS_EVENTS.CONTRACT_INTERACTION}>
-      <Link href={txBuilder.link} passHref style={{ width: '100%' }}>
-        <Button
-          variant="outlined"
-          sx={buttonSx}
-          fullWidth
-          onClick={onClick}
-          startIcon={<img src={txBuilder.app.iconUrl} height={24} width="auto" alt={txBuilder.app.name} />}
-        >
-          Transaction Builder
-        </Button>
-      </Link>
-    </Track>
+    <Link href={txBuilder.link} passHref style={{ width: '100%' }}>
+      <Button
+        variant="outlined"
+        sx={buttonSx}
+        fullWidth
+        onClick={onClick}
+        startIcon={<img src={txBuilder.app.iconUrl} height={24} width="auto" alt={txBuilder.app.name} />}
+      >
+        Transaction Builder
+      </Button>
+    </Link>
   )
 }
 
@@ -73,13 +64,6 @@ export const MakeASwapButton = () => {
   const isSwapPage = router.pathname === AppRoutes.swap
 
   const onClick = () => {
-    trackEvent(
-      { ...SWAP_EVENTS.OPEN_SWAPS, label: SWAP_LABELS.newTransaction },
-      {
-        [MixpanelEventParams.ENTRY_POINT]: GA_LABEL_TO_MIXPANEL_PROPERTY[SWAP_LABELS.newTransaction],
-      },
-    )
-
     if (isSwapPage) {
       setTxFlow(undefined)
     } else {

@@ -16,8 +16,6 @@ import { useLeastRemainingRelays } from '@/hooks/useRemainingRelays'
 import useSafeInfo from '@/hooks/useSafeInfo'
 import useWalletCanPay from '@/hooks/useWalletCanPay'
 import useWallet from '@/hooks/wallets/useWallet'
-import { OVERVIEW_EVENTS, trackEvent, WALLET_EVENTS } from '@/services/analytics'
-import { TX_EVENTS, TX_TYPES } from '@/services/analytics/events/transactions'
 import { asError } from '@safe-global/utils/services/exceptions/utils'
 import { useAppSelector } from '@/store'
 import { hasRemainingRelays } from '@/utils/relaying'
@@ -100,10 +98,6 @@ const ActivateAccountFlow = () => {
   const isMultichainSafe = sameAddress(safeAccountConfig?.to, safeToL2SetupAddress)
 
   const onSubmit = (txHash?: string) => {
-    trackEvent({ ...TX_EVENTS.CREATE, label: TX_TYPES.activate_without_tx })
-    trackEvent({ ...TX_EVENTS.EXECUTE, label: TX_TYPES.activate_without_tx })
-    trackEvent(WALLET_EVENTS.ONCHAIN_INTERACTION)
-
     if (txHash) {
       safeCreationDispatch(SafeCreationEvent.PROCESSING, { groupKey: CF_TX_GROUP_KEY, txHash, safeAddress })
     }
@@ -112,8 +106,6 @@ const ActivateAccountFlow = () => {
 
   const createSafe = async () => {
     if (!wallet || !chain) return
-
-    trackEvent({ ...OVERVIEW_EVENTS.PROCEED_WITH_TX, label: TX_TYPES.activate_without_tx })
 
     setIsSubmittable(false)
     setSubmitError(undefined)

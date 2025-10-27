@@ -3,8 +3,6 @@ import css from '@/components/tx/ApprovalEditor/styles.module.css'
 import type { ApprovalInfo } from './hooks/useApprovalInfos'
 
 import { ApprovalValueField } from './ApprovalValueField'
-import Track from '@/components/common/Track'
-import { MODALS_EVENTS } from '@/services/analytics'
 import { useFormContext } from 'react-hook-form'
 import get from 'lodash/get'
 import { EditOutlined } from '@mui/icons-material'
@@ -54,17 +52,15 @@ const EditableApprovalItem = ({
 
       <ApprovalValueField name={name} tx={approval} readOnly={readOnly} />
 
-      <Track {...MODALS_EVENTS.EDIT_APPROVALS} label={readOnly ? 'edit' : 'save'}>
-        {readOnly ? (
-          <IconButton color="border" onClick={handleEditMode} title="Edit">
-            <SvgIcon fontSize="small" component={EditOutlined} inheritViewBox />
-          </IconButton>
-        ) : (
-          <Button title="Save" variant="text" size="small" onClick={handleSave} disabled={!!fieldErrors || !isDirty}>
-            Save
-          </Button>
-        )}
-      </Track>
+      {readOnly ? (
+        <IconButton color="border" onClick={handleEditMode} title="Edit">
+          <SvgIcon fontSize="small" component={EditOutlined} inheritViewBox />
+        </IconButton>
+      ) : (
+        <Button title="Save" variant="text" size="small" onClick={handleSave} disabled={!!fieldErrors || !isDirty}>
+          Save
+        </Button>
+      )}
     </Stack>
   )
 }

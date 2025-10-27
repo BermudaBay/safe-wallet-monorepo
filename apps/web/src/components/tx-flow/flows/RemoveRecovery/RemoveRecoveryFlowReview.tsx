@@ -1,5 +1,3 @@
-import { trackEvent } from '@/services/analytics'
-import { RECOVERY_EVENTS } from '@/services/analytics/events/recovery'
 import { Typography } from '@mui/material'
 import { useCallback, useContext, useEffect } from 'react'
 import type { PropsWithChildren, ReactElement } from 'react'
@@ -22,7 +20,6 @@ export function RemoveRecoveryFlowReview({
   }, [delayModifier.address, setSafeTx, setSafeTxError])
 
   const onFormSubmit = useCallback(() => {
-    trackEvent({ ...RECOVERY_EVENTS.SUBMIT_RECOVERY_REMOVE })
     onSubmit()
   }, [onSubmit])
 

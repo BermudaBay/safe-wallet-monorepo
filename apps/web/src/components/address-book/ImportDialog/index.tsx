@@ -11,7 +11,6 @@ import { upsertAddressBookEntries } from '@/store/addressBookSlice'
 import { useAppDispatch } from '@/store'
 
 import css from './styles.module.css'
-import { trackEvent, ADDRESS_BOOK_EVENTS } from '@/services/analytics'
 import { abCsvReaderValidator, abOnUploadValidator } from './validation'
 import ErrorMessage from '@/components/tx/ErrorMessage'
 import { Errors, logError } from '@/services/exceptions'
@@ -63,8 +62,6 @@ const ImportDialog = ({ handleClose }: { handleClose: () => void }): ReactElemen
       const [address, name, chainId] = entry
       dispatch(upsertAddressBookEntries({ address, name, chainIds: [chainId.trim()] }))
     }
-
-    trackEvent({ ...ADDRESS_BOOK_EVENTS.IMPORT, label: entries.length })
 
     handleClose()
   }

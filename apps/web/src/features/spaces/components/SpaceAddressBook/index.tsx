@@ -1,8 +1,6 @@
 import { Stack, Typography } from '@mui/material'
 import { useIsInvited, useIsAdmin } from '@/features/spaces/hooks/useSpaceMembers'
 import PreviewInvite from '../InviteBanner/PreviewInvite'
-import Track from '@/components/common/Track'
-import { SPACE_EVENTS } from '@/services/analytics/events/spaces'
 import AddContact from './AddContact'
 import EmptyAddressBook from '@/features/spaces/components/SpaceAddressBook/EmptyAddressBook'
 import SpaceAddressBookTable from './SpaceAddressBookTable'
@@ -41,9 +39,7 @@ const SpaceAddressBook = () => {
         {isAdmin && (
           <Stack direction="row" gap={1}>
             <ImportAddressBook />
-            <Track {...SPACE_EVENTS.ADD_ADDRESS}>
-              <AddContact />
-            </Track>
+            <AddContact />
           </Stack>
         )}
       </Stack>

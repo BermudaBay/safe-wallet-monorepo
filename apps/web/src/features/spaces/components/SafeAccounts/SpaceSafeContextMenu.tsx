@@ -15,8 +15,6 @@ import EntryDialog from '@/components/address-book/EntryDialog'
 import { useAppSelector } from '@/store'
 import { selectAllAddressBooks } from '@/store/addressBookSlice'
 import { isMultiChainSafeItem } from '@/features/multichain/utils/utils'
-import { SPACE_EVENTS } from '@/services/analytics/events/spaces'
-import { trackEvent } from '@/services/analytics'
 import { useIsAdmin } from '@/features/spaces/hooks/useSpaceMembers'
 
 enum ModalType {
@@ -48,7 +46,6 @@ const SpaceSafeContextMenu = ({ safeItem }: { safeItem: SafeItem | MultiChainSaf
 
   const handleOpenModal = (e: MouseEvent, type: keyof typeof open) => {
     e.stopPropagation()
-    if (type === ModalType.REMOVE) trackEvent({ ...SPACE_EVENTS.DELETE_ACCOUNT_MODAL })
     setAnchorEl(undefined)
     setOpen((prev) => ({ ...prev, [type]: true }))
   }

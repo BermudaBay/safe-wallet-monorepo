@@ -2,18 +2,15 @@ import { type ReactElement, useContext, useMemo, useCallback } from 'react'
 import { Button, Card, Box, Stack } from '@mui/material'
 import { useRouter } from 'next/router'
 import Link from 'next/link'
-import Track from '@/components/common/Track'
 import QrCodeButton from '@/components/sidebar/QrCodeButton'
 import { TxModalContext } from '@/components/tx-flow'
 import { NewTxFlow } from '@/components/tx-flow/flows'
 import SwapIcon from '@/public/images/common/swap.svg'
-import { OVERVIEW_EVENTS, trackEvent } from '@/services/analytics'
 import useSafeInfo from '@/hooks/useSafeInfo'
 import { useVisibleBalances } from '@/hooks/useVisibleBalances'
 import ArrowIconNW from '@/public/images/common/arrow-top-right.svg'
 import ArrowIconSE from '@/public/images/common/arrow-se.svg'
 import { AppRoutes } from '@/config/routes'
-import { SWAP_EVENTS, SWAP_LABELS } from '@/services/analytics/events/swaps'
 import useIsSwapFeatureEnabled from '@/features/swap/hooks/useIsSwapFeatureEnabled'
 import TotalAssetValue from '@/components/balances/TotalAssetValue'
 import CheckWallet from '@/components/common/CheckWallet'
@@ -31,7 +28,6 @@ const Overview = (): ReactElement => {
 
   const handleOnSend = useCallback(() => {
     setTxFlow(<NewTxFlow />, undefined, false)
-    trackEvent(OVERVIEW_EVENTS.NEW_TRANSACTION)
   }, [setTxFlow])
 
   const items = useMemo(() => {
@@ -103,7 +99,7 @@ const Overview = (): ReactElement => {
                       )
 
                       return (
-                        <Track {...SWAP_EVENTS.OPEN_SWAPS} label={SWAP_LABELS.dashboard}>
+                        <>
                           {isOk ? (
                             <Link href={{ pathname: AppRoutes.swap, query: router.query }} passHref type="button">
                               {btn}
@@ -111,7 +107,7 @@ const Overview = (): ReactElement => {
                           ) : (
                             btn
                           )}
-                        </Track>
+                        </>
                       )
                     }}
                   </CheckWallet>
@@ -119,21 +115,19 @@ const Overview = (): ReactElement => {
               )}
 
               <Box flex={1}>
-                <Track {...OVERVIEW_EVENTS.SHOW_QR} label="dashboard">
-                  <QrCodeButton>
-                    <Button
-                      size="compact"
-                      variant="contained"
-                      color="background"
-                      disableElevation
-                      startIcon={<ArrowIconSE fontSize="small" />}
-                      sx={{ height: '42px' }}
-                      fullWidth
-                    >
-                      Receive
-                    </Button>
-                  </QrCodeButton>
-                </Track>
+                <QrCodeButton>
+                  <Button
+                    size="compact"
+                    variant="contained"
+                    color="background"
+                    disableElevation
+                    startIcon={<ArrowIconSE fontSize="small" />}
+                    sx={{ height: '42px' }}
+                    fullWidth
+                  >
+                    Receive
+                  </Button>
+                </QrCodeButton>
               </Box>
             </Stack>
           )}

@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { type SyntheticEvent, type ReactElement, memo, useMemo } from 'react'
+import { type ReactElement, memo, useMemo } from 'react'
 import { isNativeTokenTransfer, isTransferTxInfo } from '@/utils/transaction-guards'
 import {
   Accordion,
@@ -13,7 +13,6 @@ import {
   Typography,
 } from '@mui/material'
 import { TransactionInfoType, type TransactionDetails } from '@safe-global/safe-gateway-typescript-sdk'
-import { trackEvent, MODALS_EVENTS } from '@/services/analytics'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import accordionCss from '@/styles/accordion.module.css'
 import HelpTooltip from './HelpTooltip'
@@ -84,10 +83,6 @@ export const Divider = () => (
     sx={{ ml: '-16px !important' }}
   />
 )
-
-const onChangeExpand = (_: SyntheticEvent, expanded: boolean) => {
-  trackEvent({ ...MODALS_EVENTS.TX_DETAILS, label: expanded ? 'Open' : 'Close' })
-}
 
 const ColorCodedTxAccordion = ({ txInfo, txData, children, defaultExpanded }: DecodedTxProps): ReactElement => {
   const isDarkMode = useDarkMode()

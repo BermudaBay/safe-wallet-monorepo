@@ -4,7 +4,6 @@ import css from './styles.module.css'
 import { type DraftBatchItem } from '@/store/batchSlice'
 
 import DeleteIcon from '@/public/images/common/delete.svg'
-import { BATCH_EVENTS, trackEvent } from '@/services/analytics'
 import SingleTxDecoded from '@/components/transactions/TxDetails/TxData/DecodedData/SingleTxDecoded'
 import {
   type AddressEx,
@@ -51,7 +50,6 @@ const BatchTxItem = ({
       e.stopPropagation()
       if (confirm('Are you sure you want to delete this transaction?')) {
         onDelete?.(id)
-        trackEvent(BATCH_EVENTS.BATCH_DELETE_TX)
       }
     },
     [onDelete, id],

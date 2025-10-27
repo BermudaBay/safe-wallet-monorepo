@@ -8,7 +8,6 @@ import SidebarNavigation from '@/components/sidebar/SidebarNavigation'
 import SidebarFooter from '@/components/sidebar/SidebarFooter'
 
 import css from './styles.module.css'
-import { trackEvent, OVERVIEW_EVENTS } from '@/services/analytics'
 import MyAccounts from '@/features/myAccounts'
 
 const Sidebar = (): ReactElement => {
@@ -16,8 +15,6 @@ const Sidebar = (): ReactElement => {
 
   const onDrawerToggle = useCallback(() => {
     setIsDrawerOpen((isOpen) => {
-      trackEvent({ ...OVERVIEW_EVENTS.SIDEBAR, label: isOpen ? 'Close' : 'Open' })
-
       return !isOpen
     })
   }, [])

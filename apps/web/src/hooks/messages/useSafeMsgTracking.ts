@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 
-import { trackEvent, WALLET_EVENTS } from '@/services/analytics'
+import { WALLET_EVENTS } from '@/services/analytics'
 import { SafeMsgEvent, safeMsgSubscribe } from '@/services/safe-messages/safeMsgEvents'
 
 const safeMsgEvents = {
@@ -10,10 +10,8 @@ const safeMsgEvents = {
 
 export const useSafeMsgTracking = (): void => {
   useEffect(() => {
-    const unsubFns = Object.entries(safeMsgEvents).map(([safeMsgEvent, analyticsEvent]) =>
-      safeMsgSubscribe(safeMsgEvent as SafeMsgEvent, () => {
-        trackEvent(analyticsEvent)
-      }),
+    const unsubFns = Object.entries(safeMsgEvents).map(([safeMsgEvent]) =>
+      safeMsgSubscribe(safeMsgEvent as SafeMsgEvent, () => {}),
     )
 
     return () => {

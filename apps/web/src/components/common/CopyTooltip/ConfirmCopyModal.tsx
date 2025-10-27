@@ -12,8 +12,8 @@ import {
   Box,
 } from '@mui/material'
 import WarningIcon from '@/public/images/notifications/warning.svg'
-import { type ReactElement, useEffect, type SyntheticEvent } from 'react'
-import { trackEvent, TX_LIST_EVENTS } from '@/services/analytics'
+import { type ReactElement, type SyntheticEvent } from 'react'
+import { TX_LIST_EVENTS } from '@/services/analytics'
 import Track from '../Track'
 
 import css from './styles.module.css'
@@ -26,12 +26,6 @@ export type ConfirmCopyModalProps = {
 }
 
 const ConfirmCopyModal = ({ open, onClose, onCopy, children }: ConfirmCopyModalProps) => {
-  useEffect(() => {
-    if (open) {
-      trackEvent(TX_LIST_EVENTS.COPY_WARNING_SHOWN)
-    }
-  }, [open])
-
   return (
     <Dialog open={open} onClose={onClose}>
       <DialogTitle>

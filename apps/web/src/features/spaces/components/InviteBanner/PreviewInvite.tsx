@@ -6,9 +6,6 @@ import { useCurrentSpaceId } from 'src/features/spaces/hooks/useCurrentSpaceId'
 import { isAuthenticated } from '@/store/authSlice'
 import { useAppSelector } from '@/store'
 import AcceptButton from './AcceptButton'
-import { SPACE_LABELS } from '@/services/analytics/events/spaces'
-import Track from '@/components/common/Track'
-import { SPACE_EVENTS } from '@/services/analytics/events/spaces'
 import DeclineButton from './DeclineButton'
 import EthHashInfo from '@/components/common/EthHashInfo'
 import { useUsersGetWithWalletsV1Query } from '@safe-global/store/gateway/AUTO_GENERATED/users'
@@ -57,12 +54,8 @@ const PreviewInvite = () => {
           )}
         </Typography>
         <Stack direction="row" spacing={1}>
-          <Track {...SPACE_EVENTS.ACCEPT_INVITE} label={SPACE_LABELS.preview_banner}>
-            <AcceptButton space={space} />
-          </Track>
-          <Track {...SPACE_EVENTS.DECLINE_INVITE} label={SPACE_LABELS.preview_banner}>
-            <DeclineButton space={space} />
-          </Track>
+          <AcceptButton space={space} />
+          <DeclineButton space={space} />
         </Stack>
       </Box>
     </Paper>

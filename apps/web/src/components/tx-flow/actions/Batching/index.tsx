@@ -10,7 +10,6 @@ import { type SlotComponentProps, SlotName, withSlot } from '../../slots'
 import { asError } from '@safe-global/utils/services/exceptions/utils'
 import { Errors, logError } from '@/services/exceptions'
 import SplitMenuButton from '@/components/common/SplitMenuButton'
-import { BATCH_EVENTS, trackEvent } from '@/services/analytics'
 import { TxCardActions } from '../../common/TxCard'
 import { Box, Divider } from '@mui/material'
 import commonCss from '@/components/tx-flow/common/styles.module.css'
@@ -37,8 +36,6 @@ const Batching = ({
     if (!safeTx) return
 
     onSubmit?.()
-
-    trackEvent(BATCH_EVENTS.BATCH_APPEND)
 
     setIsSubmitLoading(true)
     setIsRejectedByUser(false)

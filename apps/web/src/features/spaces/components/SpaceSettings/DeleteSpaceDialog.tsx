@@ -19,8 +19,6 @@ import { useRouter } from 'next/router'
 import { useState } from 'react'
 import { showNotification } from '@/store/notificationsSlice'
 import { useAppDispatch } from '@/store'
-import { SPACE_EVENTS } from '@/services/analytics/events/spaces'
-import { trackEvent } from '@/services/analytics'
 
 const ListIcon = ({ variant }: { variant: 'success' | 'danger' }) => {
   const Icon = variant === 'success' ? CheckIcon : CloseIcon
@@ -48,7 +46,6 @@ const DeleteSpaceDialog = ({ space, onClose }: { space: GetSpaceResponse | undef
 
       onClose()
 
-      trackEvent({ ...SPACE_EVENTS.DELETE_SPACE })
       dispatch(
         showNotification({
           message: `Deleted space ${space.name}.`,

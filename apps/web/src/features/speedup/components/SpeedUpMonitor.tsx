@@ -10,7 +10,6 @@ import { useWeb3ReadOnly } from '@/hooks/wallets/web3'
 import { isSmartContract } from '@/utils/wallets'
 import useWallet from '@/hooks/wallets/useWallet'
 import { isSpeedableTx } from '@/features/speedup/utils/IsSpeedableTx'
-import { MODALS_EVENTS, trackEvent } from '@/services/analytics'
 import { useHasFeature } from '@/hooks/useChains'
 
 import { FEATURES } from '@safe-global/utils/utils/chains'
@@ -46,7 +45,6 @@ export const SpeedUpMonitor = ({ txId, pendingTx, modalTrigger = 'alertBox' }: S
   const onOpen: MouseEventHandler = (e) => {
     e.stopPropagation()
     setOpenSpeedUpModal(true)
-    trackEvent(MODALS_EVENTS.OPEN_SPEED_UP_MODAL)
   }
 
   return (

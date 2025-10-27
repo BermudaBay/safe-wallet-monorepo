@@ -22,10 +22,6 @@ import PositionsHeader from '@/features/positions/components/PositionsHeader'
 import Position from '@/features/positions/components/Position'
 import usePositions from '@/features/positions/hooks/usePositions'
 import PositionsEmpty from '@/features/positions/components/PositionsEmpty'
-import Track from '@/components/common/Track'
-import { trackEvent } from '@/services/analytics'
-import { POSITIONS_EVENTS, POSITIONS_LABELS } from '@/services/analytics/events/positions'
-import { MixpanelEventParams } from '@/services/analytics/mixpanel-events'
 
 const MAX_PROTOCOLS = 4
 
@@ -148,17 +144,7 @@ const PositionsWidget = () => {
           </Tooltip>
         </Stack>
 
-        {protocols.length > 0 && (
-          <Track
-            {...POSITIONS_EVENTS.POSITIONS_VIEW_ALL_CLICKED}
-            mixpanelParams={{
-              [MixpanelEventParams.TOTAL_VALUE_OF_PORTFOLIO]: positionsFiatTotal || 0,
-              [MixpanelEventParams.ENTRY_POINT]: 'Dashboard',
-            }}
-          >
-            <ViewAllLink url={viewAllUrl} text="View all" />
-          </Track>
-        )}
+        {protocols.length > 0 && <ViewAllLink url={viewAllUrl} text="View all" />}
       </Stack>
 
       <Box mb={1} sx={{ px: 1.5 }}>
@@ -175,10 +161,9 @@ const PositionsWidget = () => {
 
       <Box>
         {protocols.length === 0 ? (
-          <PositionsEmpty entryPoint="Dashboard" />
+          <PositionsEmpty />
         ) : (
           protocols.map((protocol, protocolIndex) => {
-            const protocolValue = Number(protocol.fiatTotal) || 0
             const isLast = protocolIndex === protocols.length - 1
 
             return (
@@ -189,15 +174,6 @@ const PositionsWidget = () => {
                 variant="elevation"
                 sx={{
                   borderBottom: 'none !important',
-                }}
-                onChange={(_, expanded) => {
-                  if (expanded) {
-                    trackEvent(POSITIONS_EVENTS.POSITION_EXPANDED, {
-                      [MixpanelEventParams.PROTOCOL_NAME]: protocol.protocol,
-                      [MixpanelEventParams.LOCATION]: POSITIONS_LABELS.dashboard,
-                      [MixpanelEventParams.AMOUNT_USD]: protocolValue,
-                    })
-                  }
                 }}
               >
                 <AccordionSummary

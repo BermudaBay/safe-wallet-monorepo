@@ -13,8 +13,6 @@ import { TxModalContext } from '@/components/tx-flow'
 import EnhancedTable from '@/components/common/EnhancedTable'
 import useSafeInfo from '@/hooks/useSafeInfo'
 import { useGetOwnedSafesQuery } from '@/store/slices'
-import { NESTED_SAFE_EVENTS } from '@/services/analytics/events/nested-safes'
-import Track from '@/components/common/Track'
 import { useHasFeature } from '@/hooks/useChains'
 
 import tableCss from '@/components/common/EnhancedTable/styles.module.css'
@@ -47,15 +45,13 @@ export function NestedSafesList(): ReactElement | null {
               <div className={tableCss.actions}>
                 <CheckWallet>
                   {(isOk) => (
-                    <Track {...NESTED_SAFE_EVENTS.RENAME}>
-                      <Tooltip title={isOk ? 'Rename nested Safe' : undefined}>
-                        <span>
-                          <IconButton onClick={() => setAddressToRename(nestedSafe)} size="small" disabled={!isOk}>
-                            <SvgIcon component={EditIcon} inheritViewBox fontSize="small" color="border" />
-                          </IconButton>
-                        </span>
-                      </Tooltip>
-                    </Track>
+                    <Tooltip title={isOk ? 'Rename nested Safe' : undefined}>
+                      <span>
+                        <IconButton onClick={() => setAddressToRename(nestedSafe)} size="small" disabled={!isOk}>
+                          <SvgIcon component={EditIcon} inheritViewBox fontSize="small" color="border" />
+                        </IconButton>
+                      </span>
+                    </Tooltip>
                   )}
                 </CheckWallet>
               </div>

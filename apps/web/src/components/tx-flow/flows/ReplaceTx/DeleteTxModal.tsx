@@ -24,9 +24,6 @@ import ErrorMessage from '@/components/tx/ErrorMessage'
 import ExternalLink from '@/components/common/ExternalLink'
 import ChainIndicator from '@/components/common/ChainIndicator'
 import { txDispatch, TxEvent } from '@/services/tx/txEvents'
-import { REJECT_TX_EVENTS } from '@/services/analytics/events/reject-tx'
-import { trackEvent } from '@/services/analytics'
-import { isWalletRejection } from '@/utils/wallets'
 import CheckWallet from '@/components/common/CheckWallet'
 import ChainSwitcher from '@/components/common/ChainSwitcher'
 
@@ -53,12 +50,10 @@ const InternalDeleteTxModal = ({
   const onConfirm = async () => {
     setError(undefined)
     setIsLoading(true)
-    trackEvent(REJECT_TX_EVENTS.DELETE_CONFIRM)
 
     if (!wallet?.provider || !safeAddress || !chainId || !safeTxHash) {
       setIsLoading(false)
       setError(new Error('Please connect your wallet first'))
-      trackEvent(REJECT_TX_EVENTS.DELETE_FAIL)
       return
     }
 
@@ -74,18 +69,15 @@ const InternalDeleteTxModal = ({
     } catch (error) {
       setIsLoading(false)
       setError(error as Error)
-      trackEvent(isWalletRejection(error as Error) ? REJECT_TX_EVENTS.DELETE_CANCEL : REJECT_TX_EVENTS.DELETE_FAIL)
       return
     }
 
     setIsLoading(false)
     txDispatch(TxEvent.DELETED, { safeTxHash })
     onSuccess()
-    trackEvent(REJECT_TX_EVENTS.DELETE_SUCCESS)
   }
 
   const onCancel = () => {
-    trackEvent(REJECT_TX_EVENTS.DELETE_CANCEL)
     onClose()
   }
 

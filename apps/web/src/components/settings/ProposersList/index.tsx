@@ -2,14 +2,12 @@ import { Chip } from '@/components/common/Chip'
 import EnhancedTable from '@/components/common/EnhancedTable'
 import tableCss from '@/components/common/EnhancedTable/styles.module.css'
 import OnlyOwner from '@/components/common/OnlyOwner'
-import Track from '@/components/common/Track'
 import UpsertProposer from '@/features/proposers/components/UpsertProposer'
 import DeleteProposerDialog from '@/features/proposers/components/DeleteProposerDialog'
 import EditProposerDialog from '@/features/proposers/components/EditProposerDialog'
 import { useHasFeature } from '@/hooks/useChains'
 import useProposers from '@/hooks/useProposers'
 import AddIcon from '@/public/images/common/add.svg'
-import { SETTINGS_EVENTS } from '@/services/analytics'
 import { Box, Button, Grid, Paper, SvgIcon, Typography } from '@mui/material'
 import EthHashInfo from '@/components/common/EthHashInfo'
 import ExternalLink from '@/components/common/ExternalLink'
@@ -104,22 +102,20 @@ const ProposersList = () => {
               <Box mb={2}>
                 <OnlyOwner>
                   {(isOk) => (
-                    <Track {...SETTINGS_EVENTS.PROPOSERS.ADD_PROPOSER}>
-                      <Tooltip title={isUndeployedSafe ? SafeNotActivated : ''}>
-                        <span>
-                          <Button
-                            data-testid="add-proposer-btn"
-                            onClick={onAdd}
-                            variant="text"
-                            startIcon={<SvgIcon component={AddIcon} inheritViewBox fontSize="small" />}
-                            disabled={!isOk || isUndeployedSafe}
-                            size="compact"
-                          >
-                            Add proposer
-                          </Button>
-                        </span>
-                      </Tooltip>
-                    </Track>
+                    <Tooltip title={isUndeployedSafe ? SafeNotActivated : ''}>
+                      <span>
+                        <Button
+                          data-testid="add-proposer-btn"
+                          onClick={onAdd}
+                          variant="text"
+                          startIcon={<SvgIcon component={AddIcon} inheritViewBox fontSize="small" />}
+                          disabled={!isOk || isUndeployedSafe}
+                          size="compact"
+                        >
+                          Add proposer
+                        </Button>
+                      </span>
+                    </Tooltip>
                   )}
                 </OnlyOwner>
               </Box>

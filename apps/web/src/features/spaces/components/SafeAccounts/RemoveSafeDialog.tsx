@@ -3,8 +3,6 @@ import { isMultiChainSafeItem } from '@/features/multichain/utils/utils'
 import type { SafeItem } from '@/features/myAccounts/hooks/useAllSafes'
 import type { MultiChainSafeItem } from '@/features/myAccounts/hooks/useAllSafesGrouped'
 import { useCurrentSpaceId } from '@/features/spaces/hooks/useCurrentSpaceId'
-import { trackEvent } from '@/services/analytics'
-import { SPACE_EVENTS } from '@/services/analytics/events/spaces'
 import { Alert } from '@mui/material'
 import Button from '@mui/material/Button'
 import DialogActions from '@mui/material/DialogActions'
@@ -38,7 +36,6 @@ const RemoveSafeDialog = ({
 
   const handleConfirm = async () => {
     const safeAccounts = getToBeDeletedSafeAccounts(safeItem)
-    trackEvent({ ...SPACE_EVENTS.DELETE_ACCOUNT })
 
     try {
       const result = await removeSafeAccounts({

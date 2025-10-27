@@ -6,7 +6,6 @@ import CheckIcon from '@/public/images/common/check.svg'
 import StarIcon from '@/public/images/common/star.svg'
 import EyeIcon from '@/public/images/common/eye.svg'
 import FiatIcon from '@/public/images/common/fiat.svg'
-import Track from '@/components/common/Track'
 import useBalances from '@/hooks/useBalances'
 import { EligibleEarnTokens, VaultAPYs } from '@/features/earn/constants'
 import useChainId from '@/hooks/useChainId'
@@ -22,8 +21,6 @@ import classNames from 'classnames'
 import { useDarkMode } from '@/hooks/useDarkMode'
 import { useRouter } from 'next/router'
 import { AppRoutes } from '@/config/routes'
-import { trackEvent } from '@/services/analytics'
-import { EARN_EVENTS, EARN_LABELS } from '@/services/analytics/events/earn'
 import ExternalLink from '@/components/common/ExternalLink'
 import { APYDisclaimer, EARN_HELP_ARTICLE, ApproximateAPY } from '@/features/earn/constants'
 
@@ -73,9 +70,7 @@ export const EarnBannerCopy = () => {
 
       <Typography variant="body1" className={css.content} mt={2}>
         Deposit stablecoins, wstETH, ETH, and WBTC straight from your account and let your assets compound in minutes.{' '}
-        <Track {...EARN_EVENTS.OPEN_EARN_LEARN_MORE} label={EARN_LABELS.safe_dashboard_banner}>
-          <ExternalLink href={EARN_HELP_ARTICLE}>Learn more</ExternalLink>
-        </Track>
+        <ExternalLink href={EARN_HELP_ARTICLE}>Learn more</ExternalLink>
       </Typography>
     </>
   )
@@ -103,11 +98,9 @@ const EarnInfo = ({ onGetStarted }: { onGetStarted: () => void }) => {
 
             <Grid container size={{ xs: 12 }} textAlign="center" spacing={2}>
               <Grid size={{ xs: 12, md: 'auto' }}>
-                <Track {...EARN_EVENTS.GET_STARTED_WITH_EARN}>
-                  <Button fullWidth variant="contained" onClick={onGetStarted}>
-                    Get started
-                  </Button>
-                </Track>
+                <Button fullWidth variant="contained" onClick={onGetStarted}>
+                  Get started
+                </Button>
               </Grid>
             </Grid>
           </Grid>
@@ -193,8 +186,6 @@ const EarnInfo = ({ onGetStarted }: { onGetStarted: () => void }) => {
 
                 const onEarnClick = () => {
                   onGetStarted()
-
-                  trackEvent({ ...EARN_EVENTS.OPEN_EARN_PAGE, label: EARN_LABELS.info_asset })
 
                   router.push({
                     pathname: AppRoutes.earn,

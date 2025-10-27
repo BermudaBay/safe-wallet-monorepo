@@ -12,7 +12,7 @@ import { TokenTransferFlow } from '@/components/tx-flow/flows'
 import type { Transfer } from '@safe-global/safe-gateway-typescript-sdk'
 import { ZERO_ADDRESS } from '@safe-global/protocol-kit/dist/src/utils/constants'
 import { isERC20Transfer, isNativeTokenTransfer, isOutgoingTransfer } from '@/utils/transaction-guards'
-import { trackEvent, TX_LIST_EVENTS } from '@/services/analytics'
+import { TX_LIST_EVENTS } from '@/services/analytics'
 import { safeFormatUnits } from '@safe-global/utils/utils/formatters'
 import CheckWallet from '@/components/common/CheckWallet'
 import { TxModalContext } from '@/components/tx-flow'
@@ -49,13 +49,9 @@ const TransferActions = ({
     setAnchorEl(undefined)
   }
 
-  const handleOpenModal = (type: keyof typeof open, event?: typeof TX_LIST_EVENTS.ADDRESS_BOOK) => () => {
+  const handleOpenModal = (type: keyof typeof open) => () => {
     handleCloseContextMenu()
     setOpen((prev) => ({ ...prev, [type]: true }))
-
-    if (event) {
-      trackEvent(event)
-    }
   }
 
   const handleCloseModal = () => {

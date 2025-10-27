@@ -1,8 +1,6 @@
 import { Typography, Paper, Box, Button, SvgIcon, Chip, Stack } from '@mui/material'
 import css from '@/features/spaces/components/Dashboard/styles.module.css'
 import AddressBookIcon from '@/public/images/sidebar/address-book.svg'
-import { trackEvent } from '@/services/analytics'
-import { SPACE_EVENTS, SPACE_LABELS } from '@/services/analytics/events/spaces'
 import { useState } from 'react'
 import ImportAddressBookDialog from '@/features/spaces/components/SpaceAddressBook/Import/ImportAddressBookDialog'
 import useGetSpaceAddressBook from '@/features/spaces/hooks/useGetSpaceAddressBook'
@@ -14,7 +12,6 @@ const AddressBookCard = () => {
   const addressBookItems = useGetSpaceAddressBook()
 
   const handleImport = () => {
-    trackEvent({ ...SPACE_EVENTS.IMPORT_ADDRESS_BOOK, label: SPACE_LABELS.space_dashboard_card })
     setOpen(true)
   }
 

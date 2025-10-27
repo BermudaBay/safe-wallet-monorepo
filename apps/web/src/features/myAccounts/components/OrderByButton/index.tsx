@@ -4,7 +4,6 @@ import ContextMenu from '@/components/common/ContextMenu'
 import TransactionsIcon from '@/public/images/transactions/transactions.svg'
 import CheckIcon from '@/public/images/common/check.svg'
 import { OrderByOption } from '@/store/orderByPreferenceSlice'
-import { OVERVIEW_EVENTS, trackEvent } from '@/services/analytics'
 
 type OrderByButtonProps = {
   orderBy: OrderByOption
@@ -28,7 +27,6 @@ const OrderByButton = ({ orderBy: orderBy, onOrderByChange: onOrderByChange }: O
   }
 
   const handleOrderByChange = (newOrderBy: OrderByOption) => {
-    trackEvent({ ...OVERVIEW_EVENTS.SORT_SAFES, label: orderByLabels[newOrderBy] })
     onOrderByChange(newOrderBy)
     handleClose()
   }

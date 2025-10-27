@@ -12,8 +12,6 @@ import Link from 'next/link'
 import { AppRoutes } from '@/config/routes'
 import { useAppSelector } from '@/store'
 import ExternalLink from '@/components/common/ExternalLink'
-import { MODALS_EVENTS } from '@/services/analytics'
-import Track from '@/components/common/Track'
 import useAsync from '@safe-global/utils/hooks/useAsync'
 import { getSafeTransaction } from '@/utils/transactions'
 import { isMultisigDetailedExecutionInfo } from '@/utils/transaction-guards'
@@ -107,32 +105,31 @@ const NestedTxSuccessScreen = ({ txId }: Props) => {
             <EthHashInfo address={cachedPendingTx.safeAddress} name={currentSafeAddress} shortAddress={false} />
           </Box>
         </Stack>
-        <Track {...MODALS_EVENTS.OPEN_PARENT_TX}>
-          <Link
-            href={
-              isSafeTxHash
-                ? {
-                    pathname: AppRoutes.transactions.tx,
-                    query: {
-                      safe: cachedPendingTx.signerAddress,
-                      chainId: cachedPendingTx.chainId,
-                      id: cachedPendingTx.txHashOrParentSafeTxHash,
-                    },
-                  }
-                : {
-                    pathname: AppRoutes.transactions.queue,
-                    query: {
-                      safe: cachedPendingTx.signerAddress,
-                      chainId: cachedPendingTx.chainId,
-                    },
-                  }
-            }
-            passHref
-            legacyBehavior
-          >
-            <ExternalLink mode="button">Open the transaction</ExternalLink>
-          </Link>
-        </Track>
+
+        <Link
+          href={
+            isSafeTxHash
+              ? {
+                  pathname: AppRoutes.transactions.tx,
+                  query: {
+                    safe: cachedPendingTx.signerAddress,
+                    chainId: cachedPendingTx.chainId,
+                    id: cachedPendingTx.txHashOrParentSafeTxHash,
+                  },
+                }
+              : {
+                  pathname: AppRoutes.transactions.queue,
+                  query: {
+                    safe: cachedPendingTx.signerAddress,
+                    chainId: cachedPendingTx.chainId,
+                  },
+                }
+          }
+          passHref
+          legacyBehavior
+        >
+          <ExternalLink mode="button">Open the transaction</ExternalLink>
+        </Link>
       </Box>
     </Container>
   )

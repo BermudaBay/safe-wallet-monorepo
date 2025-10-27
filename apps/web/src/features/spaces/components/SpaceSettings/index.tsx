@@ -8,8 +8,6 @@ import { useIsAdmin, useIsInvited, useIsActiceMember } from '@/features/spaces/h
 import PreviewInvite from '@/features/spaces/components/InviteBanner/PreviewInvite'
 import DeleteSpaceDialog from '@/features/spaces/components/SpaceSettings/DeleteSpaceDialog'
 import UpdateSpaceForm from '@/features/spaces/components/SpaceSettings/UpdateSpaceForm'
-import { trackEvent } from '@/services/analytics'
-import { SPACE_EVENTS, SPACE_LABELS } from '@/services/analytics/events/spaces'
 import ExternalLink from '@/components/common/ExternalLink'
 import { AppRoutes } from '@/config/routes'
 import LeaveSpaceDialog from './LeaveSpaceDialog'
@@ -61,7 +59,6 @@ const SpaceSettings = () => {
                     data-testid="space-leave-button"
                     onClick={() => {
                       setLeaveSpaceOpen(true)
-                      trackEvent({ ...SPACE_EVENTS.LEAVE_SPACE_MODAL, label: SPACE_LABELS.space_settings })
                     }}
                     variant={isAdmin ? 'outlined' : 'danger'}
                     color="error"
@@ -78,7 +75,6 @@ const SpaceSettings = () => {
                   variant="danger"
                   onClick={() => {
                     setDeleteSpaceOpen(true)
-                    trackEvent({ ...SPACE_EVENTS.DELETE_SPACE_MODAL, label: SPACE_LABELS.space_settings })
                   }}
                 >
                   Delete space

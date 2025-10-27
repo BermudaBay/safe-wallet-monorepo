@@ -8,9 +8,7 @@ import { type ReactElement } from 'react'
 import MethodCall from '../DecodedData/MethodCall'
 import { MethodDetails } from '../DecodedData/MethodDetails'
 import ExternalLink from '@/components/common/ExternalLink'
-import Track from '@/components/common/Track'
 import Link from 'next/link'
-import { MODALS_EVENTS } from '@/services/analytics'
 import { AppRoutes } from '@/config/routes'
 import { useSignedHash } from './useSignedHash'
 import { useCurrentChain } from '@/hooks/useChains'
@@ -52,25 +50,23 @@ export const NestedTransaction = ({
             chain &&
             txData &&
             signedHash && (
-              <Track {...MODALS_EVENTS.OPEN_NESTED_TX}>
-                <Link
-                  href={{
-                    pathname: AppRoutes.transactions.tx,
-                    query: {
-                      safe: `${chain?.shortName}:${txData.to.value}`,
-                      id: signedHash,
-                    },
-                  }}
-                  passHref
-                  legacyBehavior
-                >
-                  <ExternalLink color="text.secondary">
-                    <Typography variant="body2" fontWeight={700}>
-                      Open
-                    </Typography>
-                  </ExternalLink>
-                </Link>
-              </Track>
+              <Link
+                href={{
+                  pathname: AppRoutes.transactions.tx,
+                  query: {
+                    safe: `${chain?.shortName}:${txData.to.value}`,
+                    id: signedHash,
+                  },
+                }}
+                passHref
+                legacyBehavior
+              >
+                <ExternalLink color="text.secondary">
+                  <Typography variant="body2" fontWeight={700}>
+                    Open
+                  </Typography>
+                </ExternalLink>
+              </Link>
             )
           }
           title={<Typography variant="h5">Nested transaction</Typography>}

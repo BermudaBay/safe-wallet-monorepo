@@ -13,7 +13,6 @@ import { useAppDispatch } from '@/store'
 import { useRouter } from 'next/router'
 import { addOrUpdateSafe } from '@/store/addedSafesSlice'
 import { defaultSafeInfo } from '@safe-global/store/slices/SafeInfo/utils'
-import { LOAD_SAFE_EVENTS, OPEN_SAFE_LABELS, OVERVIEW_EVENTS, trackEvent } from '@/services/analytics'
 import { AppRoutes } from '@/config/routes'
 import ReviewRow from '@/components/new-safe/ReviewRow'
 import { upsertAddressBookEntries } from '@/store/addressBookSlice'
@@ -67,18 +66,6 @@ const SafeReviewStep = ({ data, onBack }: StepRenderProps<LoadSafeFormData>) => 
         }),
       )
     }
-
-    trackEvent({
-      ...LOAD_SAFE_EVENTS.OWNERS,
-      label: data.owners.length,
-    })
-
-    trackEvent({
-      ...LOAD_SAFE_EVENTS.THRESHOLD,
-      label: data.threshold,
-    })
-
-    trackEvent({ ...OVERVIEW_EVENTS.OPEN_SAFE, label: OPEN_SAFE_LABELS.after_add })
 
     router.push({
       pathname: AppRoutes.home,

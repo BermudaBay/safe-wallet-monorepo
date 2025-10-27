@@ -7,8 +7,6 @@ import AddressInput from '@/components/common/AddressInput'
 import NameInput from '@/components/common/NameInput'
 import type { ChainInfo } from '@safe-global/safe-gateway-typescript-sdk'
 import NetworkMultiSelectorInput from '@/components/common/NetworkSelector/NetworkMultiSelectorInput'
-import { trackEvent } from '@/services/analytics'
-import { SPACE_EVENTS } from '@/services/analytics/events/spaces'
 import useChains from '@/hooks/useChains'
 import { useAddressBooksUpsertAddressBookItemsV1Mutation } from '@safe-global/store/gateway/AUTO_GENERATED/spaces'
 import { useCurrentSpaceId } from '@/features/spaces/hooks/useCurrentSpaceId'
@@ -68,7 +66,6 @@ const AddContact = () => {
 
     try {
       setIsSubmitting(true)
-      trackEvent({ ...SPACE_EVENTS.ADD_ADDRESS_SUBMIT })
 
       const result = await upsertAddressBook({
         spaceId: Number(spaceId),

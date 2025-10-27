@@ -10,8 +10,6 @@ import { useState } from 'react'
 import { useIsAdmin } from '@/features/spaces/hooks/useSpaceMembers'
 import EditMemberDialog from '@/features/spaces/components/MembersList/EditMemberDialog'
 import { isAdmin as checkIsAdmin, isActiveAdmin, MemberStatus } from '@/features/spaces/hooks/useSpaceMembers'
-import { SPACE_EVENTS, SPACE_LABELS } from '@/services/analytics/events/spaces'
-import Track from '@/components/common/Track'
 import { useAdminCount } from '@/features/spaces/hooks/useIsLastActiveAdmin'
 
 const headCells = [
@@ -68,14 +66,9 @@ export const RemoveMemberButton = ({
         placement="top"
       >
         <Box component="span">
-          <Track
-            {...SPACE_EVENTS.REMOVE_MEMBER_MODAL}
-            label={isInvite ? SPACE_LABELS.invite_list : SPACE_LABELS.member_list}
-          >
-            <IconButton disabled={disabled} onClick={() => setOpenRemoveMemberDialog(true)} size="small">
-              <SvgIcon component={DeleteIcon} inheritViewBox color={disabled ? 'disabled' : 'error'} fontSize="small" />
-            </IconButton>
-          </Track>
+          <IconButton disabled={disabled} onClick={() => setOpenRemoveMemberDialog(true)} size="small">
+            <SvgIcon component={DeleteIcon} inheritViewBox color={disabled ? 'disabled' : 'error'} fontSize="small" />
+          </IconButton>
         </Box>
       </Tooltip>
       {openRemoveMemberDialog && (

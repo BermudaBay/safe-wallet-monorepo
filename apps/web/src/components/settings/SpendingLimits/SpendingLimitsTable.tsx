@@ -8,8 +8,6 @@ import { useContext, useMemo } from 'react'
 import type { SpendingLimitState } from '@/store/spendingLimitsSlice'
 import { RemoveSpendingLimitFlow } from '@/components/tx-flow/flows'
 import { TxModalContext } from '@/components/tx-flow'
-import Track from '@/components/common/Track'
-import { SETTINGS_EVENTS } from '@/services/analytics/events/settings'
 import TokenIcon from '@/components/common/TokenIcon'
 import SpendingLimitLabel from '@/components/common/SpendingLimitLabel'
 import CheckWallet from '@/components/common/CheckWallet'
@@ -119,17 +117,15 @@ export const SpendingLimitsTable = ({
                   content: (
                     <CheckWallet>
                       {(isOk) => (
-                        <Track {...SETTINGS_EVENTS.SPENDING_LIMIT.REMOVE_LIMIT}>
-                          <IconButton
-                            data-testid="delete-btn"
-                            onClick={() => setTxFlow(<RemoveSpendingLimitFlow spendingLimit={spendingLimit} />)}
-                            color="error"
-                            size="small"
-                            disabled={!isOk}
-                          >
-                            <SvgIcon component={DeleteIcon} inheritViewBox color="error" fontSize="small" />
-                          </IconButton>
-                        </Track>
+                        <IconButton
+                          data-testid="delete-btn"
+                          onClick={() => setTxFlow(<RemoveSpendingLimitFlow spendingLimit={spendingLimit} />)}
+                          color="error"
+                          size="small"
+                          disabled={!isOk}
+                        >
+                          <SvgIcon component={DeleteIcon} inheritViewBox color="error" fontSize="small" />
+                        </IconButton>
                       )}
                     </CheckWallet>
                   ),

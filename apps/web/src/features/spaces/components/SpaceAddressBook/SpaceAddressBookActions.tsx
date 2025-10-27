@@ -1,6 +1,4 @@
 import { type MouseEvent, useState } from 'react'
-import Track from '@/components/common/Track'
-import { SPACE_EVENTS } from '@/services/analytics/events/spaces'
 import { SvgIcon, Tooltip } from '@mui/material'
 import EditIcon from '@/public/images/common/edit.svg'
 import DeleteIcon from '@/public/images/common/delete.svg'
@@ -34,21 +32,17 @@ const SpaceAddressBookActions = ({ entry }: { entry: SpaceAddressBookItemDto }) 
 
   return (
     <>
-      <Track {...SPACE_EVENTS.EDIT_ADDRESS}>
-        <Tooltip title="Edit entry" placement="top">
-          <IconButton onClick={(e) => handleOpenModal(e, ModalType.EDIT)} size="small">
-            <SvgIcon component={EditIcon} inheritViewBox color="border" fontSize="small" />
-          </IconButton>
-        </Tooltip>
-      </Track>
+      <Tooltip title="Edit entry" placement="top">
+        <IconButton onClick={(e) => handleOpenModal(e, ModalType.EDIT)} size="small">
+          <SvgIcon component={EditIcon} inheritViewBox color="border" fontSize="small" />
+        </IconButton>
+      </Tooltip>
 
-      <Track {...SPACE_EVENTS.REMOVE_ADDRESS}>
-        <Tooltip title="Delete entry" placement="top">
-          <IconButton onClick={(e) => handleOpenModal(e, ModalType.REMOVE)} size="small">
-            <SvgIcon component={DeleteIcon} inheritViewBox color="error" fontSize="small" />
-          </IconButton>
-        </Tooltip>
-      </Track>
+      <Tooltip title="Delete entry" placement="top">
+        <IconButton onClick={(e) => handleOpenModal(e, ModalType.REMOVE)} size="small">
+          <SvgIcon component={DeleteIcon} inheritViewBox color="error" fontSize="small" />
+        </IconButton>
+      </Tooltip>
 
       {open[ModalType.EDIT] && <EditContactDialog entry={entry} onClose={handleCloseModal} />}
 
