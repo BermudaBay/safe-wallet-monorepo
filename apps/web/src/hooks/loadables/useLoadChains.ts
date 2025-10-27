@@ -77,7 +77,7 @@ export const useLoadChains = () => {
         multiSendAddress: process.env.NEXT_PUBLIC_MULTI_SEND_LIB! as HexString,
         multiSendCallOnlyAddress: process.env.NEXT_PUBLIC_MULTI_SEND_CALL_ONLY_LIB! as HexString,
         createCallAddress: process.env.NEXT_PUBLIC_CREATE_CALL_LIB! as HexString,
-        fallbackHandlerAddress: process.env.NEXT_PUBLIC_COMPAT_FALLBACK_HANDLER! as HexString,
+        fallbackHandlerAddress: process.env.NEXT_PUBLIC_EXTENSIBLE_FALLBACK_HANDLER! as HexString,
         signMessageLibAddress: process.env.NEXT_PUBLIC_SIGN_MSG_LIB! as HexString,
         simulateTxAccessorAddress: process.env.NEXT_PUBLIC_SIMULATE_TX_ACCESSOR! as HexString,
       },
