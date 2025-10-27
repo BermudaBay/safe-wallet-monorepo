@@ -124,8 +124,6 @@ const AdvancedOptionsStep = ({ onSubmit, onBack, data, setStep }: StepRenderProp
               render={({ field }) => (
                 <TextField select {...field} label="Safe version">
                   <MenuItem value="1.5.0">1.5.0 (latest)</MenuItem>
-                  <MenuItem value="1.4.1">1.4.1</MenuItem>
-                  <MenuItem value="1.3.0">1.3.0</MenuItem>
                 </TextField>
               )}
             />
