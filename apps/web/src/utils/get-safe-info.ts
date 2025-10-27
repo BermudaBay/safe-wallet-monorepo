@@ -17,22 +17,24 @@ export async function getSafeInfo(chainId: string, address: string): Promise<Saf
       [
         'function getOwners() external view returns (address[])',
         'function getThreshold() external view returns (uint256)',
+        'function nonce() external view returns (uint256)',
       ],
       provider,
     )
 
-    const owners = await contract.getOwners()
-    const threshold = await contract.getThreshold()
+    const [owners, threshold, nonce] = await Promise.all([
+      contract.getOwners(),
+      contract.getThreshold(),
+      contract.nonce(),
+    ])
 
     const result: SafeInfo = {
       address: {
         value: address,
       },
       chainId,
-      // TODO: Read nonce from chain.
-      // Using a dummy value right now which should be high enough to transact.
-      nonce: 4711,
-      threshold: Number(threshold),
+      nonce,
+      threshold,
       owners: owners.map((address: string) => ({
         value: address,
       })),
