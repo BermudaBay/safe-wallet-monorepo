@@ -25,7 +25,6 @@ export const navItems: NavItem[] = [
     href: AppRoutes.transactions.history,
   },
   { label: 'Address book', icon: <SvgIcon component={ABIcon} inheritViewBox />, href: AppRoutes.addressBook },
-  { label: 'Apps', icon: <SvgIcon component={AppsIcon} inheritViewBox />, href: AppRoutes.apps.index },
   {
     label: 'Settings',
     icon: <SvgIcon data-testid="settings-nav-icon" component={SettingsIcon} inheritViewBox />,
