@@ -88,16 +88,6 @@ const SafeHeader = (): ReactElement => {
         </div>
 
         <div className={css.iconButtons}>
-          <Track {...OVERVIEW_EVENTS.SHOW_QR} label="sidebar">
-            <QrCodeButton>
-              <Tooltip title="Open QR code" placement="top">
-                <IconButton className={css.iconButton}>
-                  <SvgIcon component={QrIconBold} inheritViewBox color="primary" fontSize="small" />
-                </IconButton>
-              </Tooltip>
-            </QrCodeButton>
-          </Track>
-
           <Track {...OVERVIEW_EVENTS.COPY_ADDRESS}>
             <CopyTooltip text={addressCopyText}>
               <IconButton data-testid="copy-address-btn" className={css.iconButton}>
