@@ -1,58 +1,18 @@
-import { JsonRpcProvider, Contract } from 'ethers'
-import { getSafeInfo as getInfo, ImplementationVersionState, SafeInfo } from '@safe-global/safe-gateway-typescript-sdk'
+import getInfoViaChain from '@/on-chain-data/load-safe-info'
+import { getSafeInfo as getInfoViaApi, SafeInfo } from '@safe-global/safe-gateway-typescript-sdk'
 
 export async function getSafeInfo(chainId: string, address: string): Promise<SafeInfo> {
   // Try to load Safe info via the official API.
   try {
     // Await promise so we can use try catch when it's rejected.
-    const result = await getInfo(chainId, address)
+    const result = await getInfoViaApi(chainId, address)
     return result
   } catch {}
 
   // Try to load Safe info via on-chain data fetching.
   try {
-    const provider = new JsonRpcProvider(process.env.NEXT_PUBLIC_JSON_RPC_URL!)
-    const contract = new Contract(
-      address,
-      [
-        'function getOwners() external view returns (address[])',
-        'function getThreshold() external view returns (uint256)',
-        'function nonce() external view returns (uint256)',
-      ],
-      provider,
-    )
-
-    const [owners, threshold, nonce] = await Promise.all([
-      contract.getOwners(),
-      contract.getThreshold(),
-      contract.nonce(),
-    ])
-
-    const result: SafeInfo = {
-      address: {
-        value: address,
-      },
-      chainId,
-      nonce,
-      threshold,
-      owners: owners.map((address: string) => ({
-        value: address,
-      })),
-      implementation: {
-        value: process.env.NEXT_PUBLIC_MASTERCOPY!,
-      },
-      implementationVersionState: ImplementationVersionState.UP_TO_DATE,
-      collectiblesTag: null,
-      txQueuedTag: null,
-      txHistoryTag: null,
-      messagesTag: null,
-      modules: null,
-      // TODO: Read fallback handler address from chain.
-      fallbackHandler: null,
-      guard: null,
-      version: '1.5.0',
-    }
-
+    // Await promise so we can use try catch when it's rejected.
+    const result = await getInfoViaChain(Number(chainId), address)
     return result
   } catch {}
 
