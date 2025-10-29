@@ -8,6 +8,7 @@ import useSafeInfo from '../useSafeInfo'
 import { POLLING_INTERVAL } from '@/config/constants'
 import { useCounterfactualBalances } from '@/features/counterfactual/useCounterfactualBalances'
 import { FEATURES, hasFeature } from '@safe-global/utils/utils/chains'
+import useLoadOnchainBalances from '@/on-chain-data/hooks/useLoadSafeBalances'
 
 export const useTokenListSetting = (): boolean | undefined => {
   const chain = useCurrentChain()
@@ -56,6 +57,16 @@ const useLoadBalances = () => {
     balances = cfData as unknown as Balances
     loading = cfLoading
     error = cfError
+  }
+
+  // On-chain balances.
+  const chainId = Number(safe.chainId)
+  const { data: ocBalances, isLoading: ocIsLoading, error: ocError } = useLoadOnchainBalances(chainId, safeAddress)
+
+  if (!balances) {
+    balances = ocBalances
+    loading = ocIsLoading
+    error = ocError
   }
 
   return useMemo(() => [balances, error, loading], [balances, error, loading]) as AsyncResult<Balances>
