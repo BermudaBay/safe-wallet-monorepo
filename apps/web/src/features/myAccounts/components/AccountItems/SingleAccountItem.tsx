@@ -38,6 +38,7 @@ import FiatValue from '@/components/common/FiatValue'
 import { AccountInfoChips } from '../AccountInfoChips'
 import SendTransactionButton from '@/features/spaces/components/SafeAccounts/SendTransactionButton'
 import EthHashInfo from '@/components/common/EthHashInfo'
+import useLoadSafeOverview from '@/on-chain-data/hooks/useLoadSafeOverview'
 
 type AccountItemProps = {
   safeItem: SafeItem
@@ -97,7 +98,8 @@ const SingleAccountItem = ({
   const isReplayable =
     addNetworkFeatureEnabled && !isReadOnly && (!undeployedSafe || !isPredictedSafeProps(undeployedSafe.props))
 
-  const { data: safeOverview } = useGetSafeOverviewQuery(
+  // Load Safe overview via API.
+  let { data: safeOverview } = useGetSafeOverviewQuery(
     undeployedSafe || !isVisible
       ? skipToken
       : {
@@ -106,6 +108,13 @@ const SingleAccountItem = ({
           walletAddress,
         },
   )
+
+  // Load Safe overview via on-chain data.
+  const { data: ocSafeOverview } = useLoadSafeOverview(Number(chainId), address)
+
+  if (!safeOverview) {
+    safeOverview = ocSafeOverview
+  }
 
   const safeThreshold = safeOverview?.threshold ?? counterfactualSetup?.threshold ?? defaultSafeInfo.threshold
   const safeOwners =
