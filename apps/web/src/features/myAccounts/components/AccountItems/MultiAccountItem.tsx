@@ -52,6 +52,7 @@ import { useIsSpaceRoute } from '@/hooks/useIsSpaceRoute'
 import EthHashInfo from '@/components/common/EthHashInfo'
 import { useTheme } from '@mui/material/styles'
 import { ContactSource } from '@/hooks/useAllAddressBooks'
+import useLoadSafeOverviews from '@/on-chain-data/hooks/useLoadSafeOverviews'
 
 export const MultichainIndicator = ({ safes }: { safes: SafeItem[] }) => {
   return (
@@ -99,7 +100,17 @@ function useMultiAccountItemData(multiSafeAccountItem: MultiChainSafeItem) {
   const currency = useAppSelector(selectCurrency)
   const { address: walletAddress = '' } = useWallet() || {}
 
-  const { data: safeOverviews } = useGetMultipleSafeOverviewsQuery({ currency, walletAddress, safes: deployedSafes })
+  // Load Safe overview via API.
+  let { data: safeOverviews } = useGetMultipleSafeOverviewsQuery({ currency, walletAddress, safes: deployedSafes })
+
+  // Load Safe overview via on-chain data.
+  const addresses = deployedSafes.map((safe) => safe.address)
+  const chainId = deployedSafes.length ? Number(deployedSafes[0].chainId) : 1
+  const { data: ocSafeOverviews } = useLoadSafeOverviews(chainId, addresses)
+
+  if (!safeOverviews) {
+    safeOverviews = ocSafeOverviews
+  }
 
   const safeSetups = useMemo(
     () => getSafeSetups(sortedSafes, safeOverviews ?? [], undeployedSafes),
