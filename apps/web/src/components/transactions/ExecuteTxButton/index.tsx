@@ -11,7 +11,8 @@ import Track from '@/components/common/Track'
 import { TX_LIST_EVENTS } from '@/services/analytics/events/txList'
 import { ReplaceTxHoverContext } from '../GroupedTxListItems/ReplaceTxHoverProvider'
 import CheckWallet from '@/components/common/CheckWallet'
-import { useSafeSDK } from '@/hooks/coreSDK/safeCoreSDK'
+// import { useSafeSDK } from '@/hooks/coreSDK/safeCoreSDK'
+import { useBermudaSDK } from '@/hooks/bermudaSDK/useBermudaSDK'
 import { TxModalContext } from '@/components/tx-flow'
 import { ConfirmTxFlow } from '@/components/tx-flow/flows'
 
@@ -27,12 +28,14 @@ const ExecuteTxButton = ({
   const txNonce = isMultisigExecutionInfo(txSummary.executionInfo) ? txSummary.executionInfo.nonce : undefined
   const isPending = useIsPending(txSummary.id)
   const { setSelectedTxId } = useContext(ReplaceTxHoverContext)
-  const safeSDK = useSafeSDK()
+  // const safeSDK = useSafeSDK()
+  const bermudaSDK = useBermudaSDK()
 
   const expiredSwap = useIsExpiredSwap(txSummary.txInfo)
 
   const isNext = txNonce !== undefined && txNonce === safe.nonce
-  const isDisabled = !isNext || !safeSDK || expiredSwap || isPending
+  // const isDisabled = !isNext || !safeSDK || expiredSwap || isPending
+  const isDisabled = !isNext || !bermudaSDK || expiredSwap || isPending
 
   const onClick = (e: SyntheticEvent) => {
     e.stopPropagation()

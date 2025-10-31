@@ -5,7 +5,7 @@ import { type SafeTransactionData, type SafeVersion } from '@safe-global/types-k
 import { calculateSafeTransactionHash } from '@safe-global/protocol-kit/dist/src/utils'
 import useSafeInfo from '@/hooks/useSafeInfo'
 import { getDomainHash, getSafeTxMessageHash } from '@safe-global/utils/utils/safe-hashes'
-import { useSafeSDK } from '@/hooks/coreSDK/safeCoreSDK'
+// import { useSafeSDK } from '@/hooks/coreSDK/safeCoreSDK'
 
 export const SafeTxHashDataRow = ({
   safeTxData,
@@ -37,11 +37,12 @@ export const SafeTxHashDataRow = ({
 
 export function useDomainHash(): string | null {
   const { safe, safeAddress } = useSafeInfo()
-  const safeSDK = useSafeSDK()
+  // const safeSDK = useSafeSDK()
 
   return useMemo(() => {
     // Try to get version from SDK first, fall back to safe.version
-    const version = safeSDK?.getContractVersion() || safe.version
+    // const version = safeSDK?.getContractVersion() || safe.version
+    const version = safe.version || "1.5.0"
     if (!version) {
       return null
     }
@@ -50,16 +51,18 @@ export function useDomainHash(): string | null {
     } catch {
       return null
     }
-  }, [safe.chainId, safe.version, safeAddress, safeSDK])
+    // }, [safe.chainId, safe.version, safeAddress, safeSDK])
+  }, [safe.chainId, safe.version, safeAddress])
 }
 
 export function useMessageHash({ safeTxData }: { safeTxData: SafeTransactionData }): string | null {
   const { safe } = useSafeInfo()
-  const safeSDK = useSafeSDK()
+  // const safeSDK = useSafeSDK()
 
   return useMemo(() => {
     // Try to get version from SDK first, fall back to safe.version
-    const version = safeSDK?.getContractVersion() || safe.version
+    // const version = safeSDK?.getContractVersion() || safe.version
+    const version = safe.version || "1.5.0"
     if (!version) {
       return null
     }
@@ -68,7 +71,8 @@ export function useMessageHash({ safeTxData }: { safeTxData: SafeTransactionData
     } catch {
       return null
     }
-  }, [safe.version, safeTxData, safeSDK])
+    // }, [safe.version, safeTxData, safeSDK])
+  }, [safe.version, safeTxData])
 }
 
 export function useSafeTxHash({
@@ -79,14 +83,15 @@ export function useSafeTxHash({
   safeTxHash?: string
 }): string | null {
   const { safe, safeAddress } = useSafeInfo()
-  const safeSDK = useSafeSDK()
+  // const safeSDK = useSafeSDK()
 
   return useMemo(() => {
     if (safeTxHash) {
       return safeTxHash
     }
     // Try to get version from SDK first, fall back to safe.version
-    const version = safeSDK?.getContractVersion() || safe.version
+    // const version = safeSDK?.getContractVersion() || safe.version
+    const version = safe.version || "1.5.0"
     if (!version) {
       return null
     }
@@ -95,5 +100,6 @@ export function useSafeTxHash({
     } catch {
       return null
     }
-  }, [safeTxData, safe.chainId, safe.version, safeAddress, safeTxHash, safeSDK])
+    // }, [safeTxData, safe.chainId, safe.version, safeAddress, safeTxHash, safeSDK])
+  }, [safeTxData, safe.chainId, safe.version, safeAddress, safeTxHash])
 }

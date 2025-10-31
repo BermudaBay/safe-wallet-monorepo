@@ -13,7 +13,8 @@ import CheckIcon from '@/public/images/common/check.svg'
 import CloseIcon from '@/public/images/common/close.svg'
 import WarningIcon from '@/public/images/notifications/warning.svg'
 import { getSimulationStatus, isTxSimulationEnabled } from '@safe-global/utils/components/tx/security/tenderly/utils'
-import { useSafeSDK } from '@/hooks/coreSDK/safeCoreSDK'
+// import { useSafeSDK } from '@/hooks/coreSDK/safeCoreSDK'
+import { useBermudaSDK } from '@/hooks/bermudaSDK/useBermudaSDK'
 import { useIsNestedSafeOwner } from '@/hooks/useIsNestedSafeOwner'
 import { sameAddress } from '@safe-global/utils/utils/addresses'
 import { useMemo } from 'react'
@@ -80,13 +81,14 @@ const InlineTxSimulation = ({ transaction }: { transaction: TransactionDetails }
   const isNestedSafeOwner = useIsNestedSafeOwner()
   const chainId = useChainId()
   const signer = useSigner()
-  const sdk = useSafeSDK()
+  // const sdk = useSafeSDK()
+  const bermudaSDK = useBermudaSDK()
 
   const canSimulate = isSafeOwner || isNestedSafeOwner
 
   const [safeTransaction, safeTransactionError] = useAsync(
-    () => (sdk ? createExistingTx(chainId, transaction.txId, transaction) : undefined),
-    [chainId, transaction, sdk],
+    () => (bermudaSDK ? createExistingTx(chainId, transaction.txId, transaction) : undefined),
+    [chainId, transaction, bermudaSDK],
   )
 
   const executionOwner = useMemo(

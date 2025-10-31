@@ -8,7 +8,8 @@ import useChainId from '@/hooks/useChainId'
 import { useWeb3ReadOnly } from '@/hooks/wallets/web3'
 import chains from '@/config/chains'
 import { useSigner } from './wallets/useWallet'
-import { useSafeSDK } from './coreSDK/safeCoreSDK'
+// import { useSafeSDK } from './coreSDK/safeCoreSDK'
+import { useBermudaSDK } from '@/hooks/bermudaSDK/useBermudaSDK'
 import useIsSafeOwner from './useIsSafeOwner'
 import { Errors, logError } from '@/services/exceptions'
 import useSafeInfo from './useSafeInfo'
@@ -17,32 +18,28 @@ import {
   getCompatibilityFallbackHandlerContract,
   getSimulateTxAccessorContract,
 } from '@safe-global/protocol-kit/dist/src/contracts/safeDeploymentContracts'
-import { type JsonRpcProvider } from 'ethers'
+import { Interface, type JsonRpcProvider } from 'ethers'
 import type { ExtendedSafeInfo } from '@safe-global/store/slices/SafeInfo/types'
 
 const getEncodedSafeTx = (
-  safeSDK: Safe,
+  bermudaSDK: any,
   safeTx: SafeTransaction,
   from: string | undefined,
   needsSignature: boolean,
 ): string | undefined => {
-  const EXEC_TX_METHOD = 'execTransaction'
-
   // @ts-ignore union type is too complex
-  return safeSDK
-    .getContractManager()
-    .safeContract?.encode(EXEC_TX_METHOD, [
-      safeTx.data.to,
-      safeTx.data.value,
-      safeTx.data.data,
-      safeTx.data.operation,
-      safeTx.data.safeTxGas,
-      safeTx.data.baseGas,
-      safeTx.data.gasPrice,
-      safeTx.data.gasToken,
-      safeTx.data.refundReceiver,
-      encodeSignatures(safeTx, from, needsSignature),
-    ])
+  return Interface.from(bermudaSDK.abis.SAFE_ABI).encodeFunctionData('execTransaction', [
+    safeTx.data.to,
+    safeTx.data.value,
+    safeTx.data.data,
+    safeTx.data.operation,
+    safeTx.data.safeTxGas,
+    safeTx.data.baseGas,
+    safeTx.data.gasPrice,
+    safeTx.data.gasToken,
+    safeTx.data.refundReceiver,
+    encodeSignatures(safeTx, from, needsSignature),
+  ])
 }
 
 const GasMultipliers = {
@@ -139,7 +136,8 @@ const useGasLimit = (
   gasLimitError?: Error
   gasLimitLoading: boolean
 } => {
-  const safeSDK = useSafeSDK()
+  // const safeSDK = useSafeSDK()
+  const bermudaSDK = useBermudaSDK()
   const web3ReadOnly = useWeb3ReadOnly()
   const { safe } = useSafeInfo()
   const safeAddress = safe.address.value
@@ -151,23 +149,25 @@ const useGasLimit = (
   const hasSafeTxGas = !!safeTx?.data?.safeTxGas
 
   const [gasLimit, gasLimitError, gasLimitLoading] = useAsync<bigint | undefined>(async () => {
-    if (!safeAddress || !walletAddress || !safeSDK || !web3ReadOnly || !safeTx) return
+    // if (!safeAddress || !walletAddress || !safeSDK || !web3ReadOnly || !safeTx) return
+    if (!safeAddress || !walletAddress || !bermudaSDK || !web3ReadOnly || !safeTx) return
 
     const encodedSafeTx = getEncodedSafeTx(
-      safeSDK,
+      // safeSDK,
+      bermudaSDK,
       safeTx,
       isOwner ? walletAddress : undefined,
       safeTx.signatures.size < threshold,
     )
 
-    // if we are dealing with zksync and the walletAddress is a Safe, we have to do some magic
-    // FIXME a new check to indicate ZKsync chain will be added to the config service and available under ChainInfo
-    if (
-      (safe.chainId === chains.zksync || safe.chainId === chains.lens) &&
-      (await web3ReadOnly.getCode(walletAddress)) !== '0x'
-    ) {
-      return getGasLimitForZkSync(safe, web3ReadOnly, safeSDK, safeTx)
-    }
+    // // if we are dealing with zksync and the walletAddress is a Safe, we have to do some magic
+    // // FIXME a new check to indicate ZKsync chain will be added to the config service and available under ChainInfo
+    // if (
+    //   (safe.chainId === chains.zksync || safe.chainId === chains.lens) &&
+    //   (await web3ReadOnly.getCode(walletAddress)) !== '0x'
+    // ) {
+    //   return getGasLimitForZkSync(safe, web3ReadOnly, safeSDK, safeTx)
+    // }
 
     return web3ReadOnly
       .estimateGas({
@@ -187,7 +187,8 @@ const useGasLimit = (
   }, [
     safeAddress,
     walletAddress,
-    safeSDK,
+    // safeSDK,
+    bermudaSDK,
     web3ReadOnly,
     safeTx,
     isOwner,
