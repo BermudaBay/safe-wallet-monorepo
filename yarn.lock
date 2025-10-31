@@ -2832,26 +2832,22 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@bermuda/sdk@git+ssh://git@github.com/BermudaBay/sdk#using-yarn":
+"@bermuda/sdk@git+ssh://git@github.com:BermudaBay/sdk":
   version: 0.0.1
-  resolution: "@bermuda/sdk@git+ssh://git@github.com/BermudaBay/sdk#commit=67749631aaeb9bfd0426b56e1d4f47e05b973efd"
+  resolution: "@bermuda/sdk@git+ssh://git@github.com:BermudaBay/sdk#commit=07cc1b06ab4bacdf3ee94aea7bd5844417ef5657"
   dependencies:
     "@aztec/bb.js": "npm:0.87.0"
     "@noble/curves": "npm:1.9.0"
     "@noir-lang/noir_js": "npm:1.0.0-beta.9"
     "@stablelib/x25519": "npm:2.0.1"
     "@stablelib/xchacha20poly1305": "npm:2.0.1"
-    blake3-hash-wasm: "github:bermudabay/blake3-hash-wasm"
+    blake3-hash-wasm: "git+ssh://git@github.com:bermudabay/blake3-hash-wasm"
     ethers: "npm:6.14.4"
-    fsevents: "npm:*"
     ganache: "npm:7.9.2"
-    mpecdh: "github:BermudaBay/mpecdh"
-    poseidon2-compression-ts: "github:BermudaBay/poseidon2-compression-ts"
-    slimejs: "github:bermudabay/slimejs"
-  dependenciesMeta:
-    fsevents:
-      optional: true
-  checksum: 10/303a7bd6a9733f47e4902f9b393ca4b705379fea25696a153ea51e7d288cf0d1001f6f6b906db9aeff0ff8214912832c18744b430d5f50807c86a967f228d818
+    mpecdh: "git+ssh://git@github.com:BermudaBay/mpecdh"
+    poseidon2-compression-ts: "git+ssh://git@github.com:BermudaBay/poseidon2-compression-ts"
+    slimejs: "git+ssh://git@github.com:BermudaBay/slimejs"
+  checksum: 10/a9fa3bfc804476453ae58d78305430e720436f62d4a925d7832c83cd41154a0be9af0f54cf218be6c328015b3b755642f2afee08639e63d42685743e0c86db1a
   languageName: node
   linkType: hard
 
@@ -10621,7 +10617,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@safe-global/web@workspace:apps/web"
   dependencies:
-    "@bermuda/sdk": "git+ssh://git@github.com/BermudaBay/sdk#using-yarn"
+    "@bermuda/sdk": "git+ssh://git@github.com:BermudaBay/sdk"
     "@chromatic-com/storybook": "npm:^1.3.1"
     "@cowprotocol/app-data": "npm:^3.1.0"
     "@cowprotocol/widget-react": "npm:^0.13.0"
@@ -17188,9 +17184,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"blake3-hash-wasm@github:bermudabay/blake3-hash-wasm":
+"blake3-hash-wasm@git+ssh://git@github.com:bermudabay/blake3-hash-wasm":
   version: 0.3.4
-  resolution: "blake3-hash-wasm@https://github.com/bermudabay/blake3-hash-wasm.git#commit=357e35f3b05bd5aa8d86d8c23cc7e79c69631b66"
+  resolution: "blake3-hash-wasm@git+ssh://git@github.com:bermudabay/blake3-hash-wasm#commit=357e35f3b05bd5aa8d86d8c23cc7e79c69631b66"
   checksum: 10/dd6cf924682db16cb00a6ca45d1b179f99550bf28a603edbe4ddd8d325423d94bb20f18702e522ad58463bc31f9466e6b9d9f907cb2cedccbba58aeaf5567706
   languageName: node
   linkType: hard
@@ -22914,7 +22910,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fsevents@npm:*, fsevents@npm:^2.3.2, fsevents@npm:~2.3.2":
+"fsevents@npm:^2.3.2, fsevents@npm:~2.3.2":
   version: 2.3.3
   resolution: "fsevents@npm:2.3.3"
   dependencies:
@@ -22924,7 +22920,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fsevents@patch:fsevents@npm%3A*#optional!builtin<compat/fsevents>, fsevents@patch:fsevents@npm%3A^2.3.2#optional!builtin<compat/fsevents>, fsevents@patch:fsevents@npm%3A~2.3.2#optional!builtin<compat/fsevents>":
+"fsevents@patch:fsevents@npm%3A^2.3.2#optional!builtin<compat/fsevents>, fsevents@patch:fsevents@npm%3A~2.3.2#optional!builtin<compat/fsevents>":
   version: 2.3.3
   resolution: "fsevents@patch:fsevents@npm%3A2.3.3#optional!builtin<compat/fsevents>::version=2.3.3&hash=df0bf1"
   dependencies:
@@ -28571,9 +28567,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mpecdh@github:BermudaBay/mpecdh":
+"mpecdh@git+ssh://git@github.com:BermudaBay/mpecdh":
   version: 0.0.1
-  resolution: "mpecdh@https://github.com/BermudaBay/mpecdh.git#commit=2b1f90cc349672dcf697b05f1729d745c7a8cd19"
+  resolution: "mpecdh@git+ssh://git@github.com:BermudaBay/mpecdh#commit=2b1f90cc349672dcf697b05f1729d745c7a8cd19"
   dependencies:
     "@noble/curves": "npm:^1.4.0"
     "@safe-global/protocol-kit": "npm:6.1.1"
@@ -30479,14 +30475,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"poseidon2-compression-ts@github:BermudaBay/poseidon2-compression-ts":
+"poseidon2-compression-ts@git+ssh://git@github.com:BermudaBay/poseidon2-compression-ts":
   version: 0.1.0
-  resolution: "poseidon2-compression-ts@https://github.com/BermudaBay/poseidon2-compression-ts.git#commit=216034d62ea9424e263c296b0267e99c61bdc808"
+  resolution: "poseidon2-compression-ts@git+ssh://git@github.com:BermudaBay/poseidon2-compression-ts#commit=25936f6533b72218b33a5f368f84e1c90688b184"
   dependencies:
     "@zkpassport/poseidon2": "npm:0.6.2"
-  peerDependencies:
-    typescript: ">=5.9.2 <6"
-  checksum: 10/ea71484d7318b91523bd4f4eb8290d8d0b3a02521990206ce086ac0e1cd73bcda1f6450c7557b06c0260a875fcf46a8a974a3a92a73718001e925d3f75b664aa
+  checksum: 10/24c19cd368daed188901bcdac48c5a763a09ade32b7e47ca6bddd1b179025330a927d095a7c858f140cf7a5879c72fa15788713f7c4a5a990ac50a326d3608df
   languageName: node
   linkType: hard
 
@@ -33758,9 +33752,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"slimejs@github:bermudabay/slimejs":
+"slimejs@git+ssh://git@github.com:BermudaBay/slimejs":
   version: 0.0.0
-  resolution: "slimejs@https://github.com/bermudabay/slimejs.git#commit=450e2ce9dfccedd2ca9a527f1bc8a24e66204252"
+  resolution: "slimejs@git+ssh://git@github.com:BermudaBay/slimejs#commit=450e2ce9dfccedd2ca9a527f1bc8a24e66204252"
   checksum: 10/ef7ca3f3abd2d900b6604804a4d37b9a3418d24a6aae5909a655c86db7ce30374b47dd77c4f76ebd3113299699f740e365f13fd3f48365a6fe5ea7e3ff74bb91
   languageName: node
   linkType: hard
