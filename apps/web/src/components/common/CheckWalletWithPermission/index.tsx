@@ -1,4 +1,4 @@
-import { useSafeSDK } from '@/hooks/coreSDK/safeCoreSDK'
+import { useBermudaSDK } from '@/hooks/bermudaSDK/useBermudaSDK'
 import { useMemo, type ReactElement } from 'react'
 import useWallet from '@/hooks/wallets/useWallet'
 import useConnectWallet from '../ConnectWallet/useConnectWallet'
@@ -37,7 +37,7 @@ const CheckWalletWithPermission = <P extends Permission>({
   const wallet = useWallet()
   const connectWallet = useConnectWallet()
   const isWrongChain = useIsWrongChain()
-  const sdk = useSafeSDK()
+  const bermudaSDK = useBermudaSDK()
   const hasPermission = useHasPermission(
     permission,
     ...((permissionProps ? [permissionProps] : []) as PermissionProps<P> extends undefined
@@ -54,7 +54,7 @@ const CheckWalletWithPermission = <P extends Permission>({
       return Message.WalletNotConnected
     }
 
-    if (!sdk && safeLoaded) {
+    if (!bermudaSDK && safeLoaded) {
       return Message.SDKNotInitialized
     }
 
@@ -65,7 +65,7 @@ const CheckWalletWithPermission = <P extends Permission>({
     if (!hasPermission) {
       return Message.NotSafeOwner
     }
-  }, [allowUndeployedSafe, hasPermission, isUndeployedSafe, sdk, wallet, safeLoaded])
+  }, [allowUndeployedSafe, hasPermission, isUndeployedSafe, bermudaSDK, wallet, safeLoaded])
 
   if (checkNetwork && isWrongChain) return children(false)
   if (!message) return children(true)

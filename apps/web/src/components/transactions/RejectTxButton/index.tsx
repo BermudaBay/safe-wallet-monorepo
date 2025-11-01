@@ -8,7 +8,7 @@ import useIsPending from '@/hooks/useIsPending'
 import Track from '@/components/common/Track'
 import { TX_LIST_EVENTS } from '@/services/analytics/events/txList'
 import CheckWallet from '@/components/common/CheckWallet'
-import { useSafeSDK } from '@/hooks/coreSDK/safeCoreSDK'
+import { useBermudaSDK } from '@/hooks/bermudaSDK/useBermudaSDK'
 import { TxModalContext } from '@/components/tx-flow'
 import { ReplaceTxFlow } from '@/components/tx-flow/flows'
 
@@ -24,8 +24,8 @@ const RejectTxButton = ({
   const { setTxFlow } = useContext(TxModalContext)
   const txNonce = isMultisigExecutionInfo(txSummary.executionInfo) ? txSummary.executionInfo.nonce : undefined
   const isPending = useIsPending(txSummary.id)
-  const safeSDK = useSafeSDK()
-  const isDisabled = isPending || !safeSDK
+  const bermudaSDK = useBermudaSDK()
+  const isDisabled = isPending || !bermudaSDK
 
   const openReplacementModal = () => {
     if (txNonce === undefined) return

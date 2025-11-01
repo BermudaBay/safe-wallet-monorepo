@@ -8,7 +8,7 @@ import { Safe__factory } from '@safe-global/utils/types/contracts'
 import { type TransactionDetails } from '@safe-global/safe-gateway-typescript-sdk'
 import DecodedData from '../DecodedData'
 import ErrorMessage from '@/components/tx/ErrorMessage'
-import { useSafeSDK } from '@/hooks/coreSDK/safeCoreSDK'
+import { useBermudaSDK } from '@/hooks/bermudaSDK/useBermudaSDK'
 import { MigrateToL2Information } from '@/components/tx/confirmation-views/MigrateToL2Information'
 import { Box } from '@mui/material'
 import { isCustomTxInfo, isMultisigDetailedExecutionInfo } from '@/utils/transaction-guards'
@@ -23,11 +23,11 @@ export const MigrationToL2TxData = ({
   const readOnlyProvider = useWeb3ReadOnly()
   const chain = useCurrentChain()
   const { safe } = useSafeInfo()
-  const sdk = useSafeSDK()
+  const bermudaSDK = useBermudaSDK()
   // Reconstruct real tx
   const [realSafeTx, realSafeTxError, realSafeTxLoading] = useAsync(async () => {
     // Fetch tx receipt from backend
-    if (!txHash || !chain || !sdk) {
+    if (!txHash || !chain || !bermudaSDK) {
       return undefined
     }
     const txResult = await readOnlyProvider?.getTransaction(txHash)
@@ -66,7 +66,7 @@ export const MigrationToL2TxData = ({
         isMultisigDetailedExecutionInfo(detailedExecutionInfo) ? detailedExecutionInfo.nonce : undefined,
       )
     }
-  }, [txHash, detailedExecutionInfo, chain, sdk, readOnlyProvider, safe.version])
+  }, [txHash, detailedExecutionInfo, chain, bermudaSDK, readOnlyProvider, safe.version])
 
   const decodedDataUnavailable = !realSafeTx && !realSafeTxLoading
   const [txPreview, txPreviewError] = useTxPreview(realSafeTx?.data)

@@ -6,19 +6,19 @@ import { createMigrateToL2 } from '@/utils/safe-migrations'
 import { Box, Typography } from '@mui/material'
 import ErrorMessage from '@/components/tx/ErrorMessage'
 import ReviewTransaction, { type ReviewTransactionProps } from '@/components/tx/ReviewTransactionV2'
-import { useSafeSDK } from '@/hooks/coreSDK/safeCoreSDK'
+import { useBermudaSDK } from '@/hooks/bermudaSDK/useBermudaSDK'
 
 export const MigrateSafeL2Review = ({ children, ...props }: ReviewTransactionProps) => {
   const chain = useCurrentChain()
   const { setSafeTx, setSafeTxError } = useContext(SafeTxContext)
-  const safeSDK = useSafeSDK()
+  const bermudaSDK = useBermudaSDK()
 
   useEffect(() => {
-    if (!chain || !safeSDK) return
+    if (!chain || !bermudaSDK) return
 
     const txData = createMigrateToL2(chain)
     createTx(txData).then(setSafeTx).catch(setSafeTxError)
-  }, [chain, setSafeTx, setSafeTxError, safeSDK])
+  }, [chain, setSafeTx, setSafeTxError, bermudaSDK])
 
   return (
     <Box>

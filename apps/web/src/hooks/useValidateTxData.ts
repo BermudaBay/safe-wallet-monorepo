@@ -1,22 +1,42 @@
 import { SafeTxContext } from '@/components/tx-flow/SafeTxProvider'
-import { useSafeSDK } from '@/hooks/coreSDK/safeCoreSDK'
+import { useBermudaSDK } from '@/hooks/bermudaSDK/useBermudaSDK'
 import useAsync from '@safe-global/utils/hooks/useAsync'
 import { logError } from '@/services/exceptions'
 import ErrorCodes from '@safe-global/utils/services/exceptions/ErrorCodes'
-import { ethers } from 'ethers'
+import { Contract, ethers } from 'ethers'
 import { useContext } from 'react'
+import useSafeInfo from '@/hooks/useSafeInfo'
 
 export const useValidateTxData = (txId?: string) => {
   const { safeTx } = useContext(SafeTxContext)
 
-  const sdk = useSafeSDK()
+  const bermudaSDK = useBermudaSDK()
+  const { safeAddress } = useSafeInfo()
 
   return useAsync(async () => {
-    if (!sdk || !safeTx) {
+    if (!bermudaSDK || !safeTx) {
       return
     }
+
     // Validate hash
-    const computedSafeTxHash = await sdk.getTransactionHash(safeTx)
+    const safeContract = new Contract(
+      safeAddress,
+      bermudaSDK.abis.SAFE_ABI,
+      { provider: bermudaSDK.config.provider }
+    )
+
+    const computedSafeTxHash = await safeContract.getTransactionHash(
+      safeTx.data.to,
+      safeTx.data.value,
+      safeTx.data.data,
+      safeTx.data.operation,
+      safeTx.data.safeTxGas,
+      safeTx.data.baseGas,
+      safeTx.data.gasPrice,
+      safeTx.data.gasToken,
+      safeTx.data.refundReceiver,
+      safeTx.data.nonce
+    )
 
     if (txId && txId.slice(-66) !== computedSafeTxHash) {
       return 'The transaction data does not match its safeTxHash'
@@ -61,5 +81,5 @@ export const useValidateTxData = (txId?: string) => {
         }
       }
     }
-  }, [sdk, safeTx, txId])
+  }, [bermudaSDK, safeTx, txId])
 }

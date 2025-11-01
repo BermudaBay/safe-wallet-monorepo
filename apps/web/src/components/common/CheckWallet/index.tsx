@@ -1,4 +1,4 @@
-import { useSafeSDK } from '@/hooks/coreSDK/safeCoreSDK'
+import { useBermudaSDK } from '@/hooks/bermudaSDK/useBermudaSDK'
 import { useIsWalletProposer } from '@/hooks/useProposers'
 import { useMemo, type ReactElement } from 'react'
 import useIsOnlySpendingLimitBeneficiary from '@/hooks/useIsOnlySpendingLimitBeneficiary'
@@ -41,7 +41,7 @@ const CheckWallet = ({
   const isOnlySpendingLimit = useIsOnlySpendingLimitBeneficiary()
   const connectWallet = useConnectWallet()
   const isWrongChain = useIsWrongChain()
-  const sdk = useSafeSDK()
+  const bermudaSDK = useBermudaSDK()
   const isProposer = useIsWalletProposer()
 
   const { safe, safeLoaded } = useSafeInfo()
@@ -54,7 +54,7 @@ const CheckWallet = ({
     if (!wallet) {
       return Message.WalletNotConnected
     }
-    if (!sdk && safeLoaded) {
+    if (!bermudaSDK && safeLoaded) {
       return Message.SDKNotInitialized
     }
 
@@ -85,7 +85,7 @@ const CheckWallet = ({
     isOnlySpendingLimit,
     isSafeOwner,
     isUndeployedSafe,
-    sdk,
+    bermudaSDK,
     wallet,
     safeLoaded,
   ])
