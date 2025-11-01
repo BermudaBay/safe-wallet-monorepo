@@ -22,7 +22,7 @@ import { txDispatch, TxEvent } from '../txEvents'
 import { waitForRelayedTx } from '@/services/tx/txMonitor'
 import { getReadOnlyCurrentGnosisSafeContract } from '@/services/contracts/safeContracts'
 import {
-  // getAndValidateSafeSDK,
+  getAndValidateSafeSDK,
   getSafeSDKWithSigner,
   tryOffChainTxSigning,
   getUncheckedSigner,
@@ -67,11 +67,13 @@ export const dispatchTxProposal = async ({
     const bermudaSDK = getBermudaSDK()
     const signer = await getUncheckedSigner(bermudaSDK.config.provider)
     signerAddress = signer.address
+
     const safeContract = new Contract(
       safeAddress,
       bermudaSDK.abis.SAFE_ABI,
       { provider: bermudaSDK.config.provider }
     )
+
     const safeTxHash = await safeContract.getTransactionHash(
       safeTx.data.to,
       safeTx.data.value,
@@ -84,11 +86,13 @@ export const dispatchTxProposal = async ({
       safeTx.data.refundReceiver,
       safeTx.data.nonce
     )
-    await bermudaSDK.safe.proposePayload(safeAddress, safeTx, signer)
+
+    const _receipt = await bermudaSDK.safe.proposePayload(safeAddress, safeTx, signer)
       .then((proposePayload: { to: string, data: string }) =>
         signer.sendTransaction(proposePayload)
           .then(res => bermudaSDK.config.provider.waitForTransaction(res.hash))
       )
+
     proposedTx = {
       //FIXME
       safeAddress,
@@ -130,55 +134,7 @@ export const dispatchTxProposal = async ({
   return proposedTx
 }
 
-/**
- * Sign a transaction
- */
-export const dispatchTxSigning = async (
-  safeTx: SafeTransaction,
-  provider: Eip1193Provider,
-  txId?: string,
-): Promise<SafeTransaction> => {
-  const sdk = await getSafeSDKWithSigner(provider)
-
-  let signedTx: SafeTransaction | undefined
-  try {
-    signedTx = await tryOffChainTxSigning(safeTx, sdk)
-  } catch (error) {
-    txDispatch(TxEvent.SIGN_FAILED, {
-      txId,
-      error: asError(error),
-    })
-    throw error
-  }
-
-  txDispatch(TxEvent.SIGNED, { txId })
-
-  return signedTx
-}
-
-// We have to manually sign because sdk.signTransaction doesn't support proposers
-export const dispatchProposerTxSigning = async (safeTx: SafeTransaction, wallet: ConnectedWallet) => {
-  const sdk = await getSafeSDKWithSigner(wallet.provider)
-
-  let signature: SafeSignature
-  if (isEthSignWallet(wallet)) {
-    const txHash = await sdk.getTransactionHash(safeTx)
-    signature = await sdk.signHash(txHash)
-  } else {
-    signature = await sdk.signTypedData(safeTx)
-  }
-
-  safeTx.addSignature(signature)
-
-  return safeTx
-}
-
-const ZK_SYNC_ON_CHAIN_SIGNATURE_GAS_LIMIT = 4_500_000
-
-/**
- * On-Chain sign a transaction
- */
-export const dispatchOnChainSigning = async (
+export const dispatchTxConfirmation = async (
   safeTx: SafeTransaction,
   txId: string,
   provider: Eip1193Provider,
@@ -187,26 +143,56 @@ export const dispatchOnChainSigning = async (
   safeAddress: string,
   isNestedSafe: boolean,
 ) => {
-  const sdk = await getSafeSDKWithSigner(provider)
-  const safeTxHash = await sdk.getTransactionHash(safeTx)
+  // const sdk = await getSafeSDKWithSigner(provider)
+  // const safeTxHash = await sdk.getTransactionHash(safeTx)
   const eventParams = { txId, nonce: safeTx.data.nonce }
 
-  const options =
-    chainId === chains.zksync || chainId === chains.lens
-      ? { gasLimit: ZK_SYNC_ON_CHAIN_SIGNATURE_GAS_LIMIT }
-      : undefined
+  // const options =
+  //   chainId === chains.zksync || chainId === chains.lens
+  //     ? { gasLimit: ZK_SYNC_ON_CHAIN_SIGNATURE_GAS_LIMIT }
+  //     : undefined
   let txHashOrParentSafeTxHash: string
   try {
-    // TODO: This is a workaround until there is a fix for unchecked transactions in the protocol-kit
-    const encodedApproveHashTx = await prepareApproveTxHash(safeTxHash, provider)
+    // // TODO: This is a workaround until there is a fix for unchecked transactions in the protocol-kit
+    // const encodedApproveHashTx = await prepareApproveTxHash(safeTxHash, provider)
 
-    // Note: SafeWalletProvider returns transaction hash if it exists, otherwise the safeTxHash
-    // If the parent immediately executes, this will be the transaction hash of the approveHash
-    // otherwise the safeTxHash of it
-    txHashOrParentSafeTxHash = await provider.request({
-      method: 'eth_sendTransaction',
-      params: [{ from: signerAddress, to: safeAddress, data: encodedApproveHashTx, gas: options?.gasLimit }],
-    })
+    // // Note: SafeWalletProvider returns transaction hash if it exists, otherwise the safeTxHash
+    // // If the parent immediately executes, this will be the transaction hash of the approveHash
+    // // otherwise the safeTxHash of it
+    // txHashOrParentSafeTxHash = await provider.request({
+    //   method: 'eth_sendTransaction',
+    //   params: [{ from: signerAddress, to: safeAddress, data: encodedApproveHashTx, gas: options?.gasLimit }],
+    // })
+
+    const bermudaSDK = getBermudaSDK()
+    const signer = await getUncheckedSigner(bermudaSDK.config.provider)
+    signerAddress = signer.address
+
+    const safeContract = new Contract(
+      safeAddress,
+      bermudaSDK.abis.SAFE_ABI,
+      { provider: bermudaSDK.config.provider }
+    )
+
+    const safeTxHash = await safeContract.getTransactionHash(
+      safeTx.data.to,
+      safeTx.data.value,
+      safeTx.data.data,
+      safeTx.data.operation,
+      safeTx.data.safeTxGas,
+      safeTx.data.baseGas,
+      safeTx.data.gasPrice,
+      safeTx.data.gasToken,
+      safeTx.data.refundReceiver,
+      safeTx.data.nonce
+    )
+
+    const receipt = await bermudaSDK.safe.confirmPayload(safeAddress, safeTxHash, signer)
+      .then((confirmPayload: { to: string, data: string }) =>
+        signer.sendTransaction(confirmPayload)
+          .then(res => bermudaSDK.config.provider.waitForTransaction(res.hash))
+      )
+    txHashOrParentSafeTxHash = receipt.hash
 
     txDispatch(TxEvent.ONCHAIN_SIGNATURE_REQUESTED, eventParams)
   } catch (err) {
@@ -228,6 +214,107 @@ export const dispatchOnChainSigning = async (
   // signed so we don't return it
 }
 
+/**
+ * Sign a transaction
+ */
+export const dispatchTxSigning = async (
+  safeTx: SafeTransaction,
+  provider: Eip1193Provider,
+  txId?: string,
+): Promise<SafeTransaction> => {
+  throw Error("Not implemented")
+  // const sdk = await getSafeSDKWithSigner(provider)
+
+  // let signedTx: SafeTransaction | undefined
+  // try {
+  //   signedTx = await tryOffChainTxSigning(safeTx, sdk)
+  // } catch (error) {
+  //   txDispatch(TxEvent.SIGN_FAILED, {
+  //     txId,
+  //     error: asError(error),
+  //   })
+  //   throw error
+  // }
+
+  // txDispatch(TxEvent.SIGNED, { txId })
+
+  // return signedTx
+}
+
+// We have to manually sign because sdk.signTransaction doesn't support proposers
+export const dispatchProposerTxSigning = async (safeTx: SafeTransaction, wallet: ConnectedWallet) => {
+  throw Error("Not implemented")
+  // const sdk = await getSafeSDKWithSigner(wallet.provider)
+
+  // let signature: SafeSignature
+  // if (isEthSignWallet(wallet)) {
+  //   const txHash = await sdk.getTransactionHash(safeTx)
+  //   signature = await sdk.signHash(txHash)
+  // } else {
+  //   signature = await sdk.signTypedData(safeTx)
+  // }
+
+  // safeTx.addSignature(signature)
+
+  // return safeTx
+}
+
+// const ZK_SYNC_ON_CHAIN_SIGNATURE_GAS_LIMIT = 4_500_000
+
+/**
+ * On-Chain sign a transaction
+ */
+export const dispatchOnChainSigning = async (
+  safeTx: SafeTransaction,
+  txId: string,
+  provider: Eip1193Provider,
+  chainId: SafeState['chainId'],
+  signerAddress: string,
+  safeAddress: string,
+  isNestedSafe: boolean,
+) => {
+  throw Error("Not implemented")
+  // const sdk = await getSafeSDKWithSigner(provider)
+  // const safeTxHash = await sdk.getTransactionHash(safeTx)
+  // const eventParams = { txId, nonce: safeTx.data.nonce }
+
+  // const options =
+  //   chainId === chains.zksync || chainId === chains.lens
+  //     ? { gasLimit: ZK_SYNC_ON_CHAIN_SIGNATURE_GAS_LIMIT }
+  //     : undefined
+  // let txHashOrParentSafeTxHash: string
+  // try {
+  //   // TODO: This is a workaround until there is a fix for unchecked transactions in the protocol-kit
+  //   const encodedApproveHashTx = await prepareApproveTxHash(safeTxHash, provider)
+
+  //   // Note: SafeWalletProvider returns transaction hash if it exists, otherwise the safeTxHash
+  //   // If the parent immediately executes, this will be the transaction hash of the approveHash
+  //   // otherwise the safeTxHash of it
+  //   txHashOrParentSafeTxHash = await provider.request({
+  //     method: 'eth_sendTransaction',
+  //     params: [{ from: signerAddress, to: safeAddress, data: encodedApproveHashTx, gas: options?.gasLimit }],
+  //   })
+
+  //   txDispatch(TxEvent.ONCHAIN_SIGNATURE_REQUESTED, eventParams)
+  // } catch (err) {
+  //   txDispatch(TxEvent.FAILED, { ...eventParams, error: asError(err) })
+  //   throw err
+  // }
+
+  // txDispatch(TxEvent.ONCHAIN_SIGNATURE_SUCCESS, eventParams)
+
+  // if (isNestedSafe) {
+  //   txDispatch(TxEvent.NESTED_SAFE_TX_CREATED, {
+  //     ...eventParams,
+  //     txHashOrParentSafeTxHash,
+  //     parentSafeAddress: signerAddress,
+  //   })
+  // }
+
+  // Until the on-chain signature is/has been executed, the safeTx is not
+  // signed so we don't return it
+}
+
 export const dispatchSafeTxSpeedUp = async (
   txOptions: Omit<TransactionOptions, 'nonce'> & { nonce: number },
   txId: string,
@@ -237,47 +324,48 @@ export const dispatchSafeTxSpeedUp = async (
   safeAddress: string,
   nonce: number,
 ) => {
-  const sdk = await getSafeSDKWithSigner(provider)
-  const eventParams = { txId, nonce }
-  const signerNonce = txOptions.nonce
-  const isSmartAccount = await isSmartContractWallet(chainId, signerAddress)
+  throw Error("Not implemented")
+  // const sdk = await getSafeSDKWithSigner(provider)
+  // const eventParams = { txId, nonce }
+  // const signerNonce = txOptions.nonce
+  // const isSmartAccount = await isSmartContractWallet(chainId, signerAddress)
 
-  // Execute the tx
-  let result: TransactionResult | undefined
-  try {
-    const safeTx = await createExistingTx(chainId, txId)
+  // // Execute the tx
+  // let result: TransactionResult | undefined
+  // try {
+  //   const safeTx = await createExistingTx(chainId, txId)
 
-    // TODO: This is a workaround until there is a fix for unchecked transactions in the protocol-kit
-    if (isSmartAccount) {
-      const encodedTx = await prepareTxExecution(safeTx, provider)
-      const txHash = await provider.request({
-        method: 'eth_sendTransaction',
-        params: [{ from: signerAddress, to: safeAddress, data: encodedTx }],
-      })
+  //   // TODO: This is a workaround until there is a fix for unchecked transactions in the protocol-kit
+  //   if (isSmartAccount) {
+  //     const encodedTx = await prepareTxExecution(safeTx, provider)
+  //     const txHash = await provider.request({
+  //       method: 'eth_sendTransaction',
+  //       params: [{ from: signerAddress, to: safeAddress, data: encodedTx }],
+  //     })
 
-      result = {
-        hash: txHash,
-        transactionResponse: null,
-      }
-    } else {
-      result = await sdk.executeTransaction(safeTx, txOptions)
-    }
-    txDispatch(TxEvent.EXECUTING, eventParams)
-  } catch (error) {
-    txDispatch(TxEvent.SPEEDUP_FAILED, { ...eventParams, error: asError(error) })
-    throw error
-  }
+  //     result = {
+  //       hash: txHash,
+  //       transactionResponse: null,
+  //     }
+  //   } else {
+  //     result = await sdk.executeTransaction(safeTx, txOptions)
+  //   }
+  //   txDispatch(TxEvent.EXECUTING, eventParams)
+  // } catch (error) {
+  //   txDispatch(TxEvent.SPEEDUP_FAILED, { ...eventParams, error: asError(error) })
+  //   throw error
+  // }
 
-  txDispatch(TxEvent.PROCESSING, {
-    ...eventParams,
-    txHash: result.hash,
-    signerAddress,
-    signerNonce,
-    gasLimit: txOptions.gasLimit?.toString(),
-    txType: 'SafeTx',
-  })
+  // txDispatch(TxEvent.PROCESSING, {
+  //   ...eventParams,
+  //   txHash: result.hash,
+  //   signerAddress,
+  //   signerNonce,
+  //   gasLimit: txOptions.gasLimit?.toString(),
+  //   txType: 'SafeTx',
+  // })
 
-  return result.hash
+  // return result.hash
 }
 
 export const dispatchCustomTxSpeedUp = async (
@@ -289,32 +377,33 @@ export const dispatchCustomTxSpeedUp = async (
   signerAddress: string,
   nonce: number,
 ) => {
-  const eventParams = { txId, nonce }
-  const signerNonce = txOptions.nonce
+  throw Error("Not implemented")
+  // const eventParams = { txId, nonce }
+  // const signerNonce = txOptions.nonce
 
-  // Execute the tx
-  let result: TransactionResponse | undefined
-  try {
-    const signer = await getUncheckedSigner(provider)
-    result = await signer.sendTransaction({ to, data, ...txOptions })
-    txDispatch(TxEvent.EXECUTING, eventParams)
-  } catch (error) {
-    txDispatch(TxEvent.SPEEDUP_FAILED, { ...eventParams, error: asError(error) })
-    throw error
-  }
+  // // Execute the tx
+  // let result: TransactionResponse | undefined
+  // try {
+  //   const signer = await getUncheckedSigner(provider)
+  //   result = await signer.sendTransaction({ to, data, ...txOptions })
+  //   txDispatch(TxEvent.EXECUTING, eventParams)
+  // } catch (error) {
+  //   txDispatch(TxEvent.SPEEDUP_FAILED, { ...eventParams, error: asError(error) })
+  //   throw error
+  // }
 
-  txDispatch(TxEvent.PROCESSING, {
-    txHash: result.hash,
-    signerAddress,
-    signerNonce,
-    data,
-    to,
-    groupKey: result?.hash,
-    txType: 'Custom',
-    nonce,
-  })
+  // txDispatch(TxEvent.PROCESSING, {
+  //   txHash: result.hash,
+  //   signerAddress,
+  //   signerNonce,
+  //   data,
+  //   to,
+  //   groupKey: result?.hash,
+  //   txType: 'Custom',
+  //   nonce,
+  // })
 
-  return result.hash
+  // return result.hash
 }
 
 /**
@@ -329,7 +418,7 @@ export const dispatchTxExecution = async (
   safeAddress: string,
   isSmartAccount: boolean,
 ): Promise<string> => {
-  const sdk = await getSafeSDKWithSigner(provider)
+  // const sdk = await getSafeSDKWithSigner(provider)
   const eventParams = { txId, nonce: safeTx.data.nonce }
 
   const signerNonce = txOptions.nonce ?? (await getUserNonce(signerAddress))
@@ -337,21 +426,62 @@ export const dispatchTxExecution = async (
   // Execute the tx
   let result: TransactionResult | undefined
   try {
-    // TODO: This is a workaround until there is a fix for unchecked transactions in the protocol-kit
-    if (isSmartAccount) {
-      const encodedTx = await prepareTxExecution(safeTx, provider)
-      const txHash = await provider.request({
-        method: 'eth_sendTransaction',
-        params: [{ from: signerAddress, to: safeAddress, data: encodedTx }],
-      })
+    // // TODO: This is a workaround until there is a fix for unchecked transactions in the protocol-kit
+    // if (isSmartAccount) {
+    //   const encodedTx = await prepareTxExecution(safeTx, provider)
+    //   const txHash = await provider.request({
+    //     method: 'eth_sendTransaction',
+    //     params: [{ from: signerAddress, to: safeAddress, data: encodedTx }],
+    //   })
 
-      result = {
-        hash: txHash,
-        transactionResponse: null,
-      }
-    } else {
-      result = await sdk.executeTransaction(safeTx, txOptions)
-    }
+    //   result = {
+    //     hash: txHash,
+    //     transactionResponse: null,
+    //   }
+    // } else {
+    //   result = await sdk.executeTransaction(safeTx, txOptions)
+    // }
+
+    // const encodedTx = await prepareTxExecution(safeTx, provider)
+    // const txHash = await provider.request({
+    //   method: 'eth_sendTransaction',
+    //   params: [{ from: signerAddress, to: safeAddress, data: encodedTx }],
+    // })
+    // result = {
+    //   hash: txHash,
+    //   transactionResponse: null,
+    // }
+    const bermudaSDK = getBermudaSDK()
+    const signer = await getUncheckedSigner(bermudaSDK.config.provider)
+    signerAddress = signer.address
+
+    const safeContract = new Contract(
+      safeAddress,
+      bermudaSDK.abis.SAFE_ABI,
+      { provider: bermudaSDK.config.provider }
+    )
+
+    const safeTxHash = await safeContract.getTransactionHash(
+      safeTx.data.to,
+      safeTx.data.value,
+      safeTx.data.data,
+      safeTx.data.operation,
+      safeTx.data.safeTxGas,
+      safeTx.data.baseGas,
+      safeTx.data.gasPrice,
+      safeTx.data.gasToken,
+      safeTx.data.refundReceiver,
+      safeTx.data.nonce
+    )
+
+    const receipt = await bermudaSDK.safe.executePayload(safeAddress, safeTxHash)
+      .then((executePayload: { to: string, data: string }) =>
+        signer.sendTransaction(executePayload)
+          .then(res => bermudaSDK.config.provider.waitForTransaction(res.hash))
+      )
+
+    result = { hash: receipt.hash, transactionResponse: null }
+
     txDispatch(TxEvent.EXECUTING, { ...eventParams })
   } catch (error) {
     txDispatch(TxEvent.FAILED, { ...eventParams, error: asError(error) })
@@ -380,52 +510,53 @@ export const dispatchBatchExecution = async (
   overrides: Omit<Overrides, 'nonce'> & { nonce: number },
   nonce: number,
 ) => {
-  const groupKey = multiSendTxData
+  throw Error("Not implemented")
+  // const groupKey = multiSendTxData
 
-  let result: TransactionResponse
-  const txIds = txs.map((tx) => tx.txId)
-  let signerNonce = overrides.nonce
-  let txData = multiSendContract.encode('multiSend', [multiSendTxData])
+  // let result: TransactionResponse
+  // const txIds = txs.map((tx) => tx.txId)
+  // let signerNonce = overrides.nonce
+  // let txData = multiSendContract.encode('multiSend', [multiSendTxData])
 
-  try {
-    if (signerNonce === undefined || signerNonce === null) {
-      signerNonce = await getUserNonce(signerAddress)
-    }
-    const signer = await getUncheckedSigner(provider)
+  // try {
+  //   if (signerNonce === undefined || signerNonce === null) {
+  //     signerNonce = await getUserNonce(signerAddress)
+  //   }
+  //   const signer = await getUncheckedSigner(provider)
 
-    result = await signer.sendTransaction({
-      to: multiSendContract.getAddress(),
-      value: '0',
-      data: txData,
-      ...overrides,
-    })
+  //   result = await signer.sendTransaction({
+  //     to: multiSendContract.getAddress(),
+  //     value: '0',
+  //     data: txData,
+  //     ...overrides,
+  //   })
 
-    txIds.forEach((txId) => {
-      txDispatch(TxEvent.EXECUTING, { txId, groupKey, nonce })
-    })
-  } catch (err) {
-    txIds.forEach((txId) => {
-      txDispatch(TxEvent.FAILED, { txId, error: asError(err), groupKey, nonce })
-    })
-    throw err
-  }
-  const txTo = multiSendContract.getAddress()
+  //   txIds.forEach((txId) => {
+  //     txDispatch(TxEvent.EXECUTING, { txId, groupKey, nonce })
+  //   })
+  // } catch (err) {
+  //   txIds.forEach((txId) => {
+  //     txDispatch(TxEvent.FAILED, { txId, error: asError(err), groupKey, nonce })
+  //   })
+  //   throw err
+  // }
+  // const txTo = multiSendContract.getAddress()
 
-  txIds.forEach((txId) => {
-    txDispatch(TxEvent.PROCESSING, {
-      txId,
-      txHash: result.hash,
-      groupKey,
-      signerNonce,
-      signerAddress,
-      txType: 'Custom',
-      data: txData,
-      to: txTo,
-      nonce,
-    })
-  })
+  // txIds.forEach((txId) => {
+  //   txDispatch(TxEvent.PROCESSING, {
+  //     txId,
+  //     txHash: result.hash,
+  //     groupKey,
+  //     signerNonce,
+  //     signerAddress,
+  //     txType: 'Custom',
+  //     data: txData,
+  //     to: txTo,
+  //     nonce,
+  //   })
+  // })
 
-  return result!.hash
+  // return result!.hash
 }
 
 /**
@@ -436,44 +567,45 @@ export const dispatchModuleTxExecution = async (
   provider: Eip1193Provider,
   safeAddress: string,
 ): Promise<string> => {
-  const id = JSON.stringify(tx)
+  throw Error("Not implemented")
+  // const id = JSON.stringify(tx)
 
-  let result: TransactionResponse | undefined
-  try {
-    const browserProvider = createWeb3(provider)
-    const signer = await browserProvider.getSigner()
+  // let result: TransactionResponse | undefined
+  // try {
+  //   const browserProvider = createWeb3(provider)
+  //   const signer = await browserProvider.getSigner()
 
-    txDispatch(TxEvent.EXECUTING, { groupKey: id })
-    result = await signer.sendTransaction(tx)
-  } catch (error) {
-    txDispatch(TxEvent.FAILED, { groupKey: id, error: asError(error) })
-    throw error
-  }
+  //   txDispatch(TxEvent.EXECUTING, { groupKey: id })
+  //   result = await signer.sendTransaction(tx)
+  // } catch (error) {
+  //   txDispatch(TxEvent.FAILED, { groupKey: id, error: asError(error) })
+  //   throw error
+  // }
 
-  txDispatch(TxEvent.PROCESSING_MODULE, {
-    groupKey: id,
-    txHash: result.hash,
-  })
+  // txDispatch(TxEvent.PROCESSING_MODULE, {
+  //   groupKey: id,
+  //   txHash: result.hash,
+  // })
 
-  result
-    ?.wait()
-    .then((receipt) => {
-      if (receipt === null) {
-        txDispatch(TxEvent.FAILED, { groupKey: id, error: new Error('No transaction receipt found') })
-      } else if (didRevert(receipt)) {
-        txDispatch(TxEvent.REVERTED, {
-          groupKey: id,
-          error: new Error('Transaction reverted by EVM'),
-        })
-      } else {
-        txDispatch(TxEvent.PROCESSED, { groupKey: id, safeAddress, txHash: result?.hash })
-      }
-    })
-    .catch((error) => {
-      txDispatch(TxEvent.FAILED, { groupKey: id, error: asError(error) })
-    })
+  // result
+  //   ?.wait()
+  //   .then((receipt) => {
+  //     if (receipt === null) {
+  //       txDispatch(TxEvent.FAILED, { groupKey: id, error: new Error('No transaction receipt found') })
+  //     } else if (didRevert(receipt)) {
+  //       txDispatch(TxEvent.REVERTED, {
+  //         groupKey: id,
+  //         error: new Error('Transaction reverted by EVM'),
+  //       })
+  //     } else {
+  //       txDispatch(TxEvent.PROCESSED, { groupKey: id, safeAddress, txHash: result?.hash })
+  //     }
+  //   })
+  //   .catch((error) => {
+  //     txDispatch(TxEvent.FAILED, { groupKey: id, error: asError(error) })
+  //   })
 
-  return result?.hash
+  // return result?.hash
 }
 
 export const dispatchSpendingLimitTxExecution = async (
@@ -484,54 +616,55 @@ export const dispatchSpendingLimitTxExecution = async (
   safeAddress: string,
   safeModules: SafeState['modules'],
 ) => {
-  const id = JSON.stringify(txParams)
+  throw Error("Not implemented")
+  // const id = JSON.stringify(txParams)
 
-  let result: ContractTransactionResponse | undefined
-  try {
-    const signer = await getUncheckedSigner(provider)
-    const contract = getSpendingLimitContract(chainId, safeModules, signer)
+  // let result: ContractTransactionResponse | undefined
+  // try {
+  //   const signer = await getUncheckedSigner(provider)
+  //   const contract = getSpendingLimitContract(chainId, safeModules, signer)
 
-    result = await contract.executeAllowanceTransfer(
-      txParams.safeAddress,
-      txParams.token,
-      txParams.to,
-      txParams.amount,
-      txParams.paymentToken,
-      txParams.payment,
-      txParams.delegate,
-      txParams.signature,
-      txOptions,
-    )
-    txDispatch(TxEvent.EXECUTING, { groupKey: id })
-  } catch (error) {
-    txDispatch(TxEvent.FAILED, { groupKey: id, error: asError(error) })
-    throw error
-  }
+  //   result = await contract.executeAllowanceTransfer(
+  //     txParams.safeAddress,
+  //     txParams.token,
+  //     txParams.to,
+  //     txParams.amount,
+  //     txParams.paymentToken,
+  //     txParams.payment,
+  //     txParams.delegate,
+  //     txParams.signature,
+  //     txOptions,
+  //   )
+  //   txDispatch(TxEvent.EXECUTING, { groupKey: id })
+  // } catch (error) {
+  //   txDispatch(TxEvent.FAILED, { groupKey: id, error: asError(error) })
+  //   throw error
+  // }
 
-  txDispatch(TxEvent.PROCESSING_MODULE, {
-    groupKey: id,
-    txHash: result.hash,
-  })
+  // txDispatch(TxEvent.PROCESSING_MODULE, {
+  //   groupKey: id,
+  //   txHash: result.hash,
+  // })
 
-  result
-    ?.wait()
-    .then((receipt) => {
-      if (receipt === null) {
-        txDispatch(TxEvent.FAILED, { groupKey: id, error: new Error('No transaction receipt found') })
-      } else if (didRevert(receipt)) {
-        txDispatch(TxEvent.REVERTED, {
-          groupKey: id,
-          error: new Error('Transaction reverted by EVM'),
-        })
-      } else {
-        txDispatch(TxEvent.PROCESSED, { groupKey: id, safeAddress, txHash: result?.hash })
-      }
-    })
-    .catch((error) => {
-      txDispatch(TxEvent.FAILED, { groupKey: id, error: asError(error) })
-    })
+  // result
+  //   ?.wait()
+  //   .then((receipt) => {
+  //     if (receipt === null) {
+  //       txDispatch(TxEvent.FAILED, { groupKey: id, error: new Error('No transaction receipt found') })
+  //     } else if (didRevert(receipt)) {
+  //       txDispatch(TxEvent.REVERTED, {
+  //         groupKey: id,
+  //         error: new Error('Transaction reverted by EVM'),
+  //       })
+  //     } else {
+  //       txDispatch(TxEvent.PROCESSED, { groupKey: id, safeAddress, txHash: result?.hash })
+  //     }
+  //   })
+  //   .catch((error) => {
+  //     txDispatch(TxEvent.FAILED, { groupKey: id, error: asError(error) })
+  //   })
 
-  return result?.hash
+  // return result?.hash
 }
 
 export async function dispatchSafeAppsTx(
@@ -540,18 +673,19 @@ export async function dispatchSafeAppsTx(
     | { safeTxHash: string }
   ),
 ): Promise<string> {
-  let safeTxHash: string
-  if ('safeTx' in args && 'provider' in args) {
-    const { safeTx, provider } = args
-    const sdk = await getSafeSDKWithSigner(provider)
-    safeTxHash = await sdk.getTransactionHash(safeTx)
-  } else {
-    safeTxHash = args.safeTxHash
-  }
+  throw Error("Not implemented")
+  // let safeTxHash: string
+  // if ('safeTx' in args && 'provider' in args) {
+  //   const { safeTx, provider } = args
+  //   const sdk = await getSafeSDKWithSigner(provider)
+  //   safeTxHash = await sdk.getTransactionHash(safeTx)
+  // } else {
+  //   safeTxHash = args.safeTxHash
+  // }
 
-  const { txId, safeAppRequestId } = args
-  txDispatch(TxEvent.SAFE_APPS_REQUEST, { safeAppRequestId, safeTxHash, txId })
-  return safeTxHash
+  // const { txId, safeAppRequestId } = args
+  // txDispatch(TxEvent.SAFE_APPS_REQUEST, { safeAppRequestId, safeTxHash, txId })
+  // return safeTxHash
 }
 
 export const dispatchTxRelay = async (
