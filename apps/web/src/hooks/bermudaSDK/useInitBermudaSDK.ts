@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { useRouter } from 'next/router'
 import useSafeInfo from '@/hooks/useSafeInfo'
-import { initBermudaSDK, setBermudaSDK } from './initBermudaSDK'
+import { initBermudaSDK, setBermudaSDK } from './useBermudaSDK'
 import { trackError } from '@/services/exceptions'
 import ErrorCodes from '@safe-global/utils/services/exceptions/ErrorCodes'
 import { useAppDispatch } from '@/store'
