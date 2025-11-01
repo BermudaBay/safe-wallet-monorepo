@@ -80,7 +80,7 @@ export const useTxActions = (): TxActions => {
       if (await isSmartContractWallet(signer.chainId, signer.address)) {
         throw new Error('Cannot relay an unsigned transaction from a smart contract wallet')
       }
-      return await dispatchTxSigning(safeTx, signer.provider, txId)
+      return await dispatchTxSigning(safeAddress, safeTx, signer.provider, txId)
     }
 
     const signTx: TxActions['signTx'] = async (safeTx, txId, origin) => {
@@ -107,7 +107,7 @@ export const useTxActions = (): TxActions => {
       }
 
       // Otherwise, sign off-chain
-      const signedTx = await dispatchTxSigning(safeTx, signer.provider, txId)
+      const signedTx = await dispatchTxSigning(safeAddress, safeTx, signer.provider, txId)
       const tx = await _propose(signer.address, signedTx, txId, origin)
       return tx.txId
     }
@@ -117,7 +117,7 @@ export const useTxActions = (): TxActions => {
       assertProvider(wallet?.provider)
       assertOnboard(onboard)
 
-      const signedTx = await dispatchProposerTxSigning(safeTx, wallet)
+      const signedTx = await dispatchProposerTxSigning(safeAddress, safeTx, wallet)
 
       const tx = await _propose(wallet.address, signedTx, undefined, origin)
       return tx.txId
@@ -204,11 +204,11 @@ export const useSafeTxGas = (safeTx: SafeTransaction | undefined): string | unde
     return !safeTx?.data?.to
       ? undefined
       : {
-          to: safeTx?.data.to,
-          value: safeTx?.data?.value,
-          data: safeTx?.data?.data,
-          operation: safeTx?.data?.operation,
-        }
+        to: safeTx?.data.to,
+        value: safeTx?.data?.value,
+        data: safeTx?.data?.data,
+        operation: safeTx?.data?.operation,
+      }
   }, [safeTx?.data.to, safeTx?.data.value, safeTx?.data.data, safeTx?.data.operation])
 
   const [safeTxGas] = useAsync(() => {

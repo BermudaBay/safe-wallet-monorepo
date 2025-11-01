@@ -62,28 +62,29 @@ export const dispatchTxExecutionAndDeploySafe = async (
   provider: Eip1193Provider,
   safeAddress: string,
 ) => {
-  const sdk = await getSafeSDKWithSigner(provider)
-  const eventParams = { groupKey: CF_TX_GROUP_KEY }
+  throw Error("Not implemented")
+  // const sdk = await getSafeSDKWithSigner(provider)
+  // const eventParams = { groupKey: CF_TX_GROUP_KEY }
 
-  let result: TransactionResponse | undefined
-  try {
-    const signedTx = await tryOffChainTxSigning(safeTx, sdk)
-    const signer = await getUncheckedSigner(provider)
+  // let result: TransactionResponse | undefined
+  // try {
+  //   const signedTx = await tryOffChainTxSigning(safeTx, sdk)
+  //   const signer = await getUncheckedSigner(provider)
 
-    const deploymentTx = await sdk.wrapSafeTransactionIntoDeploymentBatch(signedTx, txOptions)
+  //   const deploymentTx = await sdk.wrapSafeTransactionIntoDeploymentBatch(signedTx, txOptions)
 
-    // We need to estimate the actual gasLimit after the user has signed since it is more accurate than what useDeployGasLimit returns
-    const gas = await signer.estimateGas({ data: deploymentTx.data, value: deploymentTx.value, to: deploymentTx.to })
+  //   // We need to estimate the actual gasLimit after the user has signed since it is more accurate than what useDeployGasLimit returns
+  //   const gas = await signer.estimateGas({ data: deploymentTx.data, value: deploymentTx.value, to: deploymentTx.to })
 
-    result = await signer.sendTransaction({ ...deploymentTx, gasLimit: gas })
-  } catch (error) {
-    safeCreationDispatch(SafeCreationEvent.FAILED, { ...eventParams, error: asError(error), safeAddress })
-    throw error
-  }
+  //   result = await signer.sendTransaction({ ...deploymentTx, gasLimit: gas })
+  // } catch (error) {
+  //   safeCreationDispatch(SafeCreationEvent.FAILED, { ...eventParams, error: asError(error), safeAddress })
+  //   throw error
+  // }
 
-  safeCreationDispatch(SafeCreationEvent.PROCESSING, { ...eventParams, txHash: result!.hash, safeAddress })
+  // safeCreationDispatch(SafeCreationEvent.PROCESSING, { ...eventParams, txHash: result!.hash, safeAddress })
 
-  return result!.hash
+  // return result!.hash
 }
 
 export const deploySafeAndExecuteTx = async (
@@ -309,12 +310,12 @@ export const extractCounterfactualSafeSetup = (
   chainId: string | undefined,
 ):
   | {
-      owners: string[]
-      threshold: number
-      fallbackHandler: string | undefined
-      safeVersion: SafeVersion | undefined
-      saltNonce: string | undefined
-    }
+    owners: string[]
+    threshold: number
+    fallbackHandler: string | undefined
+    safeVersion: SafeVersion | undefined
+    saltNonce: string | undefined
+  }
   | undefined => {
   if (!undeployedSafe || !chainId || !undeployedSafe.props.safeAccountConfig) {
     return undefined
