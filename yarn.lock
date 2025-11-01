@@ -138,20 +138,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@aztec/bb.js@npm:0.87.0":
-  version: 0.87.0
-  resolution: "@aztec/bb.js@npm:0.87.0"
+"@aztec/bb.js@npm:0.87.6":
+  version: 0.87.6
+  resolution: "@aztec/bb.js@npm:0.87.6"
   dependencies:
     comlink: "npm:^4.4.1"
     commander: "npm:^12.1.0"
-    debug: "npm:^4.3.4"
-    fflate: "npm:^0.8.0"
+    idb-keyval: "npm:^6.2.1"
     msgpackr: "npm:^1.11.2"
     pako: "npm:^2.1.0"
+    pino: "npm:^9.5.0"
     tslib: "npm:^2.4.0"
   bin:
     bb.js: dest/node/main.js
-  checksum: 10/ab1f70dcb269d0a179d38b7522082b7307d4aff7e4787390cd13e3a02ae370998ec2e0e85cf8704e09a53bf74167a638db0ec0d54787d36ecdff5c05038040e4
+  checksum: 10/1166b305b06423aa46ccff5a72c3d9f75c1fe409c76d66e37b22982d741814034cd34bad88f2b13f6be85100bd3f2c9bac163ca5e60d5ad596f033abbd3e4833
   languageName: node
   linkType: hard
 
@@ -2834,9 +2834,9 @@ __metadata:
 
 "@bermuda/sdk@git+ssh://git@github.com:BermudaBay/sdk":
   version: 0.0.1
-  resolution: "@bermuda/sdk@git+ssh://git@github.com:BermudaBay/sdk#commit=07cc1b06ab4bacdf3ee94aea7bd5844417ef5657"
+  resolution: "@bermuda/sdk@git+ssh://git@github.com:BermudaBay/sdk#commit=9c61bd6c3beacf3378f5c06402d91bbfe8cd62ce"
   dependencies:
-    "@aztec/bb.js": "npm:0.87.0"
+    "@aztec/bb.js": "npm:0.87.6"
     "@noble/curves": "npm:1.9.0"
     "@noir-lang/noir_js": "npm:1.0.0-beta.9"
     "@stablelib/x25519": "npm:2.0.1"
@@ -2847,7 +2847,7 @@ __metadata:
     mpecdh: "git+ssh://git@github.com:BermudaBay/mpecdh"
     poseidon2-compression-ts: "git+ssh://git@github.com:BermudaBay/poseidon2-compression-ts"
     slimejs: "git+ssh://git@github.com:BermudaBay/slimejs"
-  checksum: 10/a9fa3bfc804476453ae58d78305430e720436f62d4a925d7832c83cd41154a0be9af0f54cf218be6c328015b3b755642f2afee08639e63d42685743e0c86db1a
+  checksum: 10/518fd922a2411472e894c47e6d87b78cb5028d3d9cfa773c12c4257ff2b7365363b81832d7d27d9fa9bf3a71adf13b73b38566613988f14544695e7a376b825a
   languageName: node
   linkType: hard
 
@@ -8916,6 +8916,13 @@ __metadata:
     pvtsutils: "npm:^1.3.5"
     tslib: "npm:^2.6.2"
   checksum: 10/3d2bf7d40023f3cb7a1b3aa6060bcec39fc92a2e5a91c3b6611ea7d760103049e51fe4aef1e762010612314aa79f2071626ed31b3050155ec7f501d89745e3bd
+  languageName: node
+  linkType: hard
+
+"@pinojs/redact@npm:^0.4.0":
+  version: 0.4.0
+  resolution: "@pinojs/redact@npm:0.4.0"
+  checksum: 10/2210ffb6b38357853d47239fd0532cc9edb406325270a81c440a35cece22090127c30c2ead3eefa3e608f2244087485308e515c431f4f69b6bd2e16cbd32812b
   languageName: node
   linkType: hard
 
@@ -22403,13 +22410,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fflate@npm:^0.8.0":
-  version: 0.8.2
-  resolution: "fflate@npm:0.8.2"
-  checksum: 10/2bd26ba6d235d428de793c6a0cd1aaa96a06269ebd4e21b46c8fd1bd136abc631acf27e188d47c3936db090bf3e1ede11d15ce9eae9bffdc4bfe1b9dc66ca9cb
-  languageName: node
-  linkType: hard
-
 "figures@npm:^3.2.0":
   version: 3.2.0
   resolution: "figures@npm:3.2.0"
@@ -29628,6 +29628,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"on-exit-leak-free@npm:^2.1.0":
+  version: 2.1.2
+  resolution: "on-exit-leak-free@npm:2.1.2"
+  checksum: 10/f7b4b7200026a08f6e4a17ba6d72e6c5cbb41789ed9cf7deaf9d9e322872c7dc5a7898549a894651ee0ee9ae635d34a678115bf8acdfba8ebd2ba2af688b563c
+  languageName: node
+  linkType: hard
+
 "on-finished@npm:2.4.1":
   version: 2.4.1
   resolution: "on-finished@npm:2.4.1"
@@ -30328,6 +30335,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"pino-abstract-transport@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "pino-abstract-transport@npm:2.0.0"
+  dependencies:
+    split2: "npm:^4.0.0"
+  checksum: 10/e5699ecb06c7121055978e988e5cecea5b6892fc2589c64f1f86df5e7386bbbfd2ada268839e911b021c6b3123428aed7c6be3ac7940eee139556c75324c7e83
+  languageName: node
+  linkType: hard
+
 "pino-abstract-transport@npm:v0.5.0":
   version: 0.5.0
   resolution: "pino-abstract-transport@npm:0.5.0"
@@ -30342,6 +30358,13 @@ __metadata:
   version: 4.0.0
   resolution: "pino-std-serializers@npm:4.0.0"
   checksum: 10/cec586f9634ef0e6582f62bc8fc5ca5b6e5e11ab88fe3950c66fb0fd5d6690f66bc39cd3f27216b925d2963ad5c3bba415718819ac20ebe0390c7d056cbfea1b
+  languageName: node
+  linkType: hard
+
+"pino-std-serializers@npm:^7.0.0":
+  version: 7.0.0
+  resolution: "pino-std-serializers@npm:7.0.0"
+  checksum: 10/884e08f65aa5463d820521ead3779d4472c78fc434d8582afb66f9dcb8d8c7119c69524b68106cb8caf92c0487be7794cf50e5b9c0383ae65b24bf2a03480951
   languageName: node
   linkType: hard
 
@@ -30363,6 +30386,27 @@ __metadata:
   bin:
     pino: bin.js
   checksum: 10/1c7b4b52fea76e0bc5d8b1190a0fee24279cb16d76fdb5833b32b64256fd8a94d641574b850faba5be72514f04045206b6d902a9a3f5ceae2a4296687088e073
+  languageName: node
+  linkType: hard
+
+"pino@npm:^9.5.0":
+  version: 9.14.0
+  resolution: "pino@npm:9.14.0"
+  dependencies:
+    "@pinojs/redact": "npm:^0.4.0"
+    atomic-sleep: "npm:^1.0.0"
+    on-exit-leak-free: "npm:^2.1.0"
+    pino-abstract-transport: "npm:^2.0.0"
+    pino-std-serializers: "npm:^7.0.0"
+    process-warning: "npm:^5.0.0"
+    quick-format-unescaped: "npm:^4.0.3"
+    real-require: "npm:^0.2.0"
+    safe-stable-stringify: "npm:^2.3.1"
+    sonic-boom: "npm:^4.0.1"
+    thread-stream: "npm:^3.0.0"
+  bin:
+    pino: bin.js
+  checksum: 10/918e1fc764885150cb2b4fae8249a0ece53275020a7ca389f994fa2fbbb17b6353cd736c2db3a3794fbac0351f8e3d58411fabe127e875e24151a8fa4cd0b2b5
   languageName: node
   linkType: hard
 
@@ -30730,6 +30774,13 @@ __metadata:
   version: 1.0.0
   resolution: "process-warning@npm:1.0.0"
   checksum: 10/8736d11d8d71c349d176e210305e84d74b13af06efb3c779377b056bfd608257d1e4e32b8fbbf90637c900f0313e40f7c9f583140884f667a21fc10a869b840c
+  languageName: node
+  linkType: hard
+
+"process-warning@npm:^5.0.0":
+  version: 5.0.0
+  resolution: "process-warning@npm:5.0.0"
+  checksum: 10/10f3e00ac9fc1943ec4566ff41fff2b964e660f853c283e622257719839d340b4616e707d62a02d6aa0038761bb1fa7c56bc7308d602d51bd96f05f9cd305dcd
   languageName: node
   linkType: hard
 
@@ -32065,6 +32116,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"real-require@npm:^0.2.0":
+  version: 0.2.0
+  resolution: "real-require@npm:0.2.0"
+  checksum: 10/ddf44ee76301c774e9c9f2826da8a3c5c9f8fc87310f4a364e803ef003aa1a43c378b4323051ced212097fff1af459070f4499338b36a7469df1d4f7e8c0ba4c
+  languageName: node
+  linkType: hard
+
 "realistic-structured-clone@npm:^3.0.0":
   version: 3.0.0
   resolution: "realistic-structured-clone@npm:3.0.0"
@@ -32963,7 +33021,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"safe-stable-stringify@npm:^2.1.0":
+"safe-stable-stringify@npm:^2.1.0, safe-stable-stringify@npm:^2.3.1":
   version: 2.5.0
   resolution: "safe-stable-stringify@npm:2.5.0"
   checksum: 10/2697fa186c17c38c3ca5309637b4ac6de2f1c3d282da27cd5e1e3c88eca0fb1f9aea568a6aabdf284111592c8782b94ee07176f17126031be72ab1313ed46c5c
@@ -33817,6 +33875,15 @@ __metadata:
   dependencies:
     atomic-sleep: "npm:^1.0.0"
   checksum: 10/05351d9f44bac59b2a4ab42ee22bf81b8c3bbd22db20183d78d5f2067557eb623e0eaf93b2bc0f8417bee92ca372bc26e0d83e3bdb0ffebcc33738ac1c191876
+  languageName: node
+  linkType: hard
+
+"sonic-boom@npm:^4.0.1":
+  version: 4.2.0
+  resolution: "sonic-boom@npm:4.2.0"
+  dependencies:
+    atomic-sleep: "npm:^1.0.0"
+  checksum: 10/385ef7fb5ea5976c1d2a1fef0b6df8df6b7caba8696d2d67f689d60c05e3ea2d536752ce7e1c69b9fad844635f1036d07c446f8e8149f5c6a80e0040a455b310
   languageName: node
   linkType: hard
 
@@ -35017,6 +35084,15 @@ __metadata:
   dependencies:
     real-require: "npm:^0.1.0"
   checksum: 10/ca0a4f5bf45db88b48b41af0299455eaa8f01dd3ef8279e7ba6909c295b3ab79ddf576b595cbbceb4dbdf4012b17c6449805092926163fcbf30ac1604cb595b1
+  languageName: node
+  linkType: hard
+
+"thread-stream@npm:^3.0.0":
+  version: 3.1.0
+  resolution: "thread-stream@npm:3.1.0"
+  dependencies:
+    real-require: "npm:^0.2.0"
+  checksum: 10/ea2d816c4f6077a7062fac5414a88e82977f807c82ee330938fb9691fe11883bb03f078551c0518bb649c239e47ba113d44014fcbb5db42c5abd5996f35e4213
   languageName: node
   linkType: hard
 
