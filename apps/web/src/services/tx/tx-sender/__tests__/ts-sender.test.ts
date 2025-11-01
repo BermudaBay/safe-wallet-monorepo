@@ -278,99 +278,99 @@ describe.skip('txSender', () => {
     })
   })
 
-  describe('dispatchTxSigning', () => {
-    it('should sign a tx', async () => {
-      const tx = await createTx({
-        to: '0x123',
-        value: '1',
-        data: '0x0',
-        nonce: 1,
-      })
+  describe.skip('dispatchTxSigning', () => {
+    // it('should sign a tx', async () => {
+    //   const tx = await createTx({
+    //     to: '0x123',
+    //     value: '1',
+    //     data: '0x0',
+    //     nonce: 1,
+    //   })
 
-      const signedTx = await dispatchTxSigning(tx, MockEip1193Provider, '0x345')
+    //   const signedTx = await dispatchTxSigning(tx, MockEip1193Provider, '0x345')
 
-      expect(mockSafeSDK.createTransaction).toHaveBeenCalled()
+    //   expect(mockSafeSDK.createTransaction).toHaveBeenCalled()
 
-      expect(mockSafeSDK.signTransaction).toHaveBeenCalledWith(expect.anything(), 'eth_signTypedData')
+    //   expect(mockSafeSDK.signTransaction).toHaveBeenCalledWith(expect.anything(), 'eth_signTypedData')
 
-      expect(signedTx).not.toBe(tx)
+    //   expect(signedTx).not.toBe(tx)
 
-      expect(txEvents.txDispatch).not.toHaveBeenCalledWith('SIGN_FAILED', { txId: '0x345', error: new Error('error') })
-      expect(txEvents.txDispatch).toHaveBeenCalledWith('SIGNED', { txId: '0x345' })
-    })
+    //   expect(txEvents.txDispatch).not.toHaveBeenCalledWith('SIGN_FAILED', { txId: '0x345', error: new Error('error') })
+    //   expect(txEvents.txDispatch).toHaveBeenCalledWith('SIGNED', { txId: '0x345' })
+    // })
 
-    it('should only sign with `eth_signTypedData` on older Safes', async () => {
-      const tx = await createTx({
-        to: '0x123',
-        value: '1',
-        data: '0x0',
-        nonce: 1,
-      })
+    // it('should only sign with `eth_signTypedData` on older Safes', async () => {
+    //   const tx = await createTx({
+    //     to: '0x123',
+    //     value: '1',
+    //     data: '0x0',
+    //     nonce: 1,
+    //   })
 
-      const signedTx = await dispatchTxSigning(tx, MockEip1193Provider, '0x345')
+    //   const signedTx = await dispatchTxSigning(tx, MockEip1193Provider, '0x345')
 
-      expect(mockSafeSDK.createTransaction).toHaveBeenCalledTimes(1)
+    //   expect(mockSafeSDK.createTransaction).toHaveBeenCalledTimes(1)
 
-      expect(mockSafeSDK.signTransaction).toHaveBeenCalledWith(expect.anything(), 'eth_signTypedData')
+    //   expect(mockSafeSDK.signTransaction).toHaveBeenCalledWith(expect.anything(), 'eth_signTypedData')
 
-      expect(signedTx).not.toBe(tx)
+    //   expect(signedTx).not.toBe(tx)
 
-      expect(txEvents.txDispatch).not.toHaveBeenCalledWith('SIGN_FAILED', { txId: '0x345', error: new Error('error') })
-      expect(txEvents.txDispatch).toHaveBeenCalledWith('SIGNED', { txId: '0x345' })
-    })
+    //   expect(txEvents.txDispatch).not.toHaveBeenCalledWith('SIGN_FAILED', { txId: '0x345', error: new Error('error') })
+    //   expect(txEvents.txDispatch).toHaveBeenCalledWith('SIGNED', { txId: '0x345' })
+    // })
 
-    it("should only sign with `eth_signTypedData` for unsupported contracts (backend returns `SafeInfo['version']` as `null`)", async () => {
-      const tx = await createTx({
-        to: '0x123',
-        value: '1',
-        data: '0x0',
-        nonce: 1,
-      })
+    // it("should only sign with `eth_signTypedData` for unsupported contracts (backend returns `SafeInfo['version']` as `null`)", async () => {
+    //   const tx = await createTx({
+    //     to: '0x123',
+    //     value: '1',
+    //     data: '0x0',
+    //     nonce: 1,
+    //   })
 
-      const signedTx = await dispatchTxSigning(tx, MockEip1193Provider, '0x345')
+    //   const signedTx = await dispatchTxSigning(tx, MockEip1193Provider, '0x345')
 
-      expect(mockSafeSDK.createTransaction).toHaveBeenCalledTimes(1)
+    //   expect(mockSafeSDK.createTransaction).toHaveBeenCalledTimes(1)
 
-      expect(mockSafeSDK.signTransaction).toHaveBeenCalledWith(expect.anything(), 'eth_signTypedData')
+    //   expect(mockSafeSDK.signTransaction).toHaveBeenCalledWith(expect.anything(), 'eth_signTypedData')
 
-      expect(signedTx).not.toBe(tx)
+    //   expect(signedTx).not.toBe(tx)
 
-      expect(txEvents.txDispatch).not.toHaveBeenCalledWith('SIGN_FAILED', { txId: '0x345', error: new Error('error') })
-      expect(txEvents.txDispatch).toHaveBeenCalledWith('SIGNED', { txId: '0x345' })
-    })
+    //   expect(txEvents.txDispatch).not.toHaveBeenCalledWith('SIGN_FAILED', { txId: '0x345', error: new Error('error') })
+    //   expect(txEvents.txDispatch).toHaveBeenCalledWith('SIGNED', { txId: '0x345' })
+    // })
 
-    it('should throw the non-rejection error if it is the final signing method', async () => {
-      ; (mockSafeSDK.signTransaction as jest.Mock).mockImplementationOnce(() =>
-        Promise.reject(new Error('failure-specific error')),
-      ) // `eth_signTypedData` fails
+    // it('should throw the non-rejection error if it is the final signing method', async () => {
+    //   ; (mockSafeSDK.signTransaction as jest.Mock).mockImplementationOnce(() =>
+    //     Promise.reject(new Error('failure-specific error')),
+    //   ) // `eth_signTypedData` fails
 
-      const tx = await createTx({
-        to: '0x123',
-        value: '1',
-        data: '0x0',
-        nonce: 1,
-      })
+    //   const tx = await createTx({
+    //     to: '0x123',
+    //     value: '1',
+    //     data: '0x0',
+    //     nonce: 1,
+    //   })
 
-      let signedTx
+    //   let signedTx
 
-      try {
-        signedTx = await dispatchTxSigning(tx, MockEip1193Provider, '0x345')
-      } catch (error) {
-        expect(mockSafeSDK.createTransaction).toHaveBeenCalledTimes(1)
+    //   try {
+    //     signedTx = await dispatchTxSigning(tx, MockEip1193Provider, '0x345')
+    //   } catch (error) {
+    //     expect(mockSafeSDK.createTransaction).toHaveBeenCalledTimes(1)
 
-        expect(mockSafeSDK.signTransaction).toHaveBeenCalledWith(expect.anything(), 'eth_signTypedData')
+    //     expect(mockSafeSDK.signTransaction).toHaveBeenCalledWith(expect.anything(), 'eth_signTypedData')
 
-        expect(signedTx).not.toBe(tx)
+    //     expect(signedTx).not.toBe(tx)
 
-        expect((error as Error).message).toBe('failure-specific error')
+    //     expect((error as Error).message).toBe('failure-specific error')
 
-        expect(txEvents.txDispatch).toHaveBeenCalledWith('SIGN_FAILED', {
-          txId: '0x345',
-          error,
-        })
-        expect(txEvents.txDispatch).not.toHaveBeenCalledWith('SIGNED', { txId: '0x345' })
-      }
-    })
+    //     expect(txEvents.txDispatch).toHaveBeenCalledWith('SIGN_FAILED', {
+    //       txId: '0x345',
+    //       error,
+    //     })
+    //     expect(txEvents.txDispatch).not.toHaveBeenCalledWith('SIGNED', { txId: '0x345' })
+    //   }
+    // })
   })
 
   describe('dispatchTxExecution', () => {

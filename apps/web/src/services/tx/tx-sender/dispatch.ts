@@ -1,7 +1,7 @@
 import type { ConnectedWallet } from '@/hooks/wallets/useOnboard'
 import { isMultisigExecutionInfo } from '@/utils/transaction-guards'
 import { isEthSignWallet, isSmartContractWallet } from '@/utils/wallets'
-import type { MultiSendCallOnlyContractImplementationType } from '@safe-global/protocol-kit'
+import { EthSafeSignature, type MultiSendCallOnlyContractImplementationType } from '@safe-global/protocol-kit'
 import { type ChainInfo, relayTransaction, type TransactionDetails, TransactionInfoType, TransactionStatus } from '@safe-global/safe-gateway-typescript-sdk'
 import { type SafeState } from '@safe-global/store/gateway/AUTO_GENERATED/safes'
 
@@ -36,6 +36,7 @@ import chains from '@/config/chains'
 import { createExistingTx } from './create'
 
 import { getLatestSafeVersion } from '@safe-global/utils/utils/chains'
+import { getAdjustedSignature, getSafeTxHash } from './utils'
 
 /**
  * Propose a transaction
@@ -67,25 +68,7 @@ export const dispatchTxProposal = async ({
     const bermudaSDK = getBermudaSDK()
     const signer = await getUncheckedSigner(bermudaSDK.config.provider)
     signerAddress = signer.address
-
-    const safeContract = new Contract(
-      safeAddress,
-      bermudaSDK.abis.SAFE_ABI,
-      { provider: bermudaSDK.config.provider }
-    )
-
-    const safeTxHash = await safeContract.getTransactionHash(
-      safeTx.data.to,
-      safeTx.data.value,
-      safeTx.data.data,
-      safeTx.data.operation,
-      safeTx.data.safeTxGas,
-      safeTx.data.baseGas,
-      safeTx.data.gasPrice,
-      safeTx.data.gasToken,
-      safeTx.data.refundReceiver,
-      safeTx.data.nonce
-    )
+    const safeTxHash = await getSafeTxHash(safeAddress, safeTx.data)
 
     const _receipt = await bermudaSDK.safe.proposePayload(safeAddress, safeTx, signer)
       .then((proposePayload: { to: string, data: string }) =>
@@ -134,7 +117,62 @@ export const dispatchTxProposal = async ({
   return proposedTx
 }
 
-export const dispatchTxConfirmation = async (
+/**
+ * Sign a transaction
+ */
+export const dispatchTxSigning = async (
+  safeAddress: string,
+  safeTx: SafeTransaction,
+  provider: Eip1193Provider,
+  txId?: string,
+): Promise<SafeTransaction> => {
+  // const sdk = await getSafeSDKWithSigner(provider)
+
+  let signedTx: SafeTransaction | undefined
+  try {
+    signedTx = await tryOffChainTxSigning(safeAddress, safeTx/*,sdk*/)
+  } catch (error) {
+    txDispatch(TxEvent.SIGN_FAILED, {
+      txId,
+      error: asError(error),
+    })
+    throw error
+  }
+
+  txDispatch(TxEvent.SIGNED, { txId })
+
+  return signedTx
+}
+
+// We have to manually sign because sdk.signTransaction doesn't support proposers
+export const dispatchProposerTxSigning = async (safeAddress: string, safeTx: SafeTransaction, wallet: ConnectedWallet) => {
+  // const sdk = await getSafeSDKWithSigner(wallet.provider)
+  const bermudaSDK = getBermudaSDK()
+
+  const signer = await getUncheckedSigner(bermudaSDK.config.provider)
+
+  const safeTxHash = await getSafeTxHash(safeAddress, safeTx.data)
+
+  // let signature: SafeSignature
+  // if (isEthSignWallet(wallet)) {
+  //   const txHash = await sdk.getTransactionHash(safeTx)
+  //   signature = await sdk.signHash(txHash)
+  // } else {
+  //   signature = await sdk.signTypedData(safeTx)
+  // }
+  const signature = await getAdjustedSignature(signer, safeTxHash).then(sig => new EthSafeSignature(signer.address, sig))
+
+  safeTx.addSignature(signature)
+
+  return safeTx
+}
+
+// const ZK_SYNC_ON_CHAIN_SIGNATURE_GAS_LIMIT = 4_500_000
+
+/**
+ * On-Chain sign a transaction
+ */
+export const dispatchOnChainSigning = async (
   safeTx: SafeTransaction,
   txId: string,
   provider: Eip1193Provider,
@@ -165,27 +203,8 @@ export const dispatchTxConfirmation = async (
     // })
 
     const bermudaSDK = getBermudaSDK()
-    const signer = await getUncheckedSigner(bermudaSDK.config.provider)
-    signerAddress = signer.address
-
-    const safeContract = new Contract(
-      safeAddress,
-      bermudaSDK.abis.SAFE_ABI,
-      { provider: bermudaSDK.config.provider }
-    )
-
-    const safeTxHash = await safeContract.getTransactionHash(
-      safeTx.data.to,
-      safeTx.data.value,
-      safeTx.data.data,
-      safeTx.data.operation,
-      safeTx.data.safeTxGas,
-      safeTx.data.baseGas,
-      safeTx.data.gasPrice,
-      safeTx.data.gasToken,
-      safeTx.data.refundReceiver,
-      safeTx.data.nonce
-    )
+    const signer = await getUncheckedSigner(provider)
+    const safeTxHash = await getSafeTxHash(safeAddress, safeTx.data)
 
     const receipt = await bermudaSDK.safe.confirmPayload(safeAddress, safeTxHash, signer)
       .then((confirmPayload: { to: string, data: string }) =>
@@ -209,107 +228,6 @@ export const dispatchTxConfirmation = async (
       parentSafeAddress: signerAddress,
     })
   }
-
-  // Until the on-chain signature is/has been executed, the safeTx is not
-  // signed so we don't return it
-}
-
-/**
- * Sign a transaction
- */
-export const dispatchTxSigning = async (
-  safeTx: SafeTransaction,
-  provider: Eip1193Provider,
-  txId?: string,
-): Promise<SafeTransaction> => {
-  throw Error("Not implemented")
-  // const sdk = await getSafeSDKWithSigner(provider)
-
-  // let signedTx: SafeTransaction | undefined
-  // try {
-  //   signedTx = await tryOffChainTxSigning(safeTx, sdk)
-  // } catch (error) {
-  //   txDispatch(TxEvent.SIGN_FAILED, {
-  //     txId,
-  //     error: asError(error),
-  //   })
-  //   throw error
-  // }
-
-  // txDispatch(TxEvent.SIGNED, { txId })
-
-  // return signedTx
-}
-
-// We have to manually sign because sdk.signTransaction doesn't support proposers
-export const dispatchProposerTxSigning = async (safeTx: SafeTransaction, wallet: ConnectedWallet) => {
-  throw Error("Not implemented")
-  // const sdk = await getSafeSDKWithSigner(wallet.provider)
-
-  // let signature: SafeSignature
-  // if (isEthSignWallet(wallet)) {
-  //   const txHash = await sdk.getTransactionHash(safeTx)
-  //   signature = await sdk.signHash(txHash)
-  // } else {
-  //   signature = await sdk.signTypedData(safeTx)
-  // }
-
-  // safeTx.addSignature(signature)
-
-  // return safeTx
-}
-
-// const ZK_SYNC_ON_CHAIN_SIGNATURE_GAS_LIMIT = 4_500_000
-
-/**
- * On-Chain sign a transaction
- */
-export const dispatchOnChainSigning = async (
-  safeTx: SafeTransaction,
-  txId: string,
-  provider: Eip1193Provider,
-  chainId: SafeState['chainId'],
-  signerAddress: string,
-  safeAddress: string,
-  isNestedSafe: boolean,
-) => {
-  throw Error("Not implemented")
-  // const sdk = await getSafeSDKWithSigner(provider)
-  // const safeTxHash = await sdk.getTransactionHash(safeTx)
-  // const eventParams = { txId, nonce: safeTx.data.nonce }
-
-  // const options =
-  //   chainId === chains.zksync || chainId === chains.lens
-  //     ? { gasLimit: ZK_SYNC_ON_CHAIN_SIGNATURE_GAS_LIMIT }
-  //     : undefined
-  // let txHashOrParentSafeTxHash: string
-  // try {
-  //   // TODO: This is a workaround until there is a fix for unchecked transactions in the protocol-kit
-  //   const encodedApproveHashTx = await prepareApproveTxHash(safeTxHash, provider)
-
-  //   // Note: SafeWalletProvider returns transaction hash if it exists, otherwise the safeTxHash
-  //   // If the parent immediately executes, this will be the transaction hash of the approveHash
-  //   // otherwise the safeTxHash of it
-  //   txHashOrParentSafeTxHash = await provider.request({
-  //     method: 'eth_sendTransaction',
-  //     params: [{ from: signerAddress, to: safeAddress, data: encodedApproveHashTx, gas: options?.gasLimit }],
-  //   })
-
-  //   txDispatch(TxEvent.ONCHAIN_SIGNATURE_REQUESTED, eventParams)
-  // } catch (err) {
-  //   txDispatch(TxEvent.FAILED, { ...eventParams, error: asError(err) })
-  //   throw err
-  // }
-
-  // txDispatch(TxEvent.ONCHAIN_SIGNATURE_SUCCESS, eventParams)
-
-  // if (isNestedSafe) {
-  //   txDispatch(TxEvent.NESTED_SAFE_TX_CREATED, {
-  //     ...eventParams,
-  //     txHashOrParentSafeTxHash,
-  //     parentSafeAddress: signerAddress,
-  //   })
-  // }
 
   // Until the on-chain signature is/has been executed, the safeTx is not
   // signed so we don't return it
@@ -453,26 +371,7 @@ export const dispatchTxExecution = async (
     // }
     const bermudaSDK = getBermudaSDK()
     const signer = await getUncheckedSigner(bermudaSDK.config.provider)
-    signerAddress = signer.address
-
-    const safeContract = new Contract(
-      safeAddress,
-      bermudaSDK.abis.SAFE_ABI,
-      { provider: bermudaSDK.config.provider }
-    )
-
-    const safeTxHash = await safeContract.getTransactionHash(
-      safeTx.data.to,
-      safeTx.data.value,
-      safeTx.data.data,
-      safeTx.data.operation,
-      safeTx.data.safeTxGas,
-      safeTx.data.baseGas,
-      safeTx.data.gasPrice,
-      safeTx.data.gasToken,
-      safeTx.data.refundReceiver,
-      safeTx.data.nonce
-    )
+    const safeTxHash = await getSafeTxHash(safeAddress, safeTx.data)
 
     const receipt = await bermudaSDK.safe.executePayload(safeAddress, safeTxHash)
       .then((executePayload: { to: string, data: string }) =>

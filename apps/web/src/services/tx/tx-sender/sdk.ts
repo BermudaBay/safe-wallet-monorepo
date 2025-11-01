@@ -2,6 +2,7 @@ import { getSafeSDK } from '@/hooks/coreSDK/safeCoreSDK'
 import type Safe from '@safe-global/protocol-kit'
 import { SafeProvider, SigningMethod } from '@safe-global/protocol-kit'
 import {
+  EthSafeSignature,
   generatePreValidatedSignature,
   isSafeMultisigTransactionResponse,
   sameString,
@@ -18,6 +19,8 @@ import type { ConnectedWallet } from '@/hooks/wallets/useOnboard'
 import { UncheckedJsonRpcSigner } from '@/utils/providers/UncheckedJsonRpcSigner'
 import get from 'lodash/get'
 import { maybePlural } from '@safe-global/utils/utils/formatters'
+import { getBermudaSDK } from '@/hooks/bermudaSDK/useBermudaSDK'
+import { getAdjustedSignature, getSafeTxHash } from './utils'
 
 export const getAndValidateSafeSDK = (): Safe => {
   throw Error("Not implemented")
@@ -146,8 +149,26 @@ export const getSafeSDKWithSigner = async (provider: Eip1193Provider): Promise<S
   // return sdk.connect({ provider })
 }
 
-export const tryOffChainTxSigning = async (safeTx: SafeTransaction, sdk: Safe): Promise<SafeTransaction> => {
-  return sdk.signTransaction(safeTx, SigningMethod.ETH_SIGN_TYPED_DATA)
+export const tryOffChainTxSigning = async (safeAddress: string, safeTx: SafeTransaction/*, sdk: Safe*/): Promise<SafeTransaction> => {
+  // return sdk.signTransaction(safeTx, SigningMethod.ETH_SIGN_TYPED_DATA)
+  const bermudaSDK = getBermudaSDK()
+
+  const signer = await getUncheckedSigner(bermudaSDK.config.provider)
+
+  const safeTxHash = await getSafeTxHash(safeAddress, safeTx.data)
+
+  // let signature: SafeSignature
+  // if (isEthSignWallet(wallet)) {
+  //   const txHash = await sdk.getTransactionHash(safeTx)
+  //   signature = await sdk.signHash(txHash)
+  // } else {
+  //   signature = await sdk.signTypedData(safeTx)
+  // }
+  const signature = await getAdjustedSignature(signer, safeTxHash).then(sig => new EthSafeSignature(signer.address, sig))
+
+  safeTx.addSignature(signature)
+
+  return safeTx
 }
 
 export const isDelegateCall = (safeTx: SafeTransaction): boolean => {
