@@ -54,7 +54,7 @@ const InitApp = (): null => {
   useLoadableStores()
   useInitOnboard()
   useInitWeb3()
-  useInitSafeCoreSDK()
+  // useInitSafeCoreSDK()
   useInitBermudaSDK()
   useTxNotifications()
   useSafeMessageNotifications()
