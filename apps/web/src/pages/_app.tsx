@@ -18,6 +18,7 @@ import useLoadableStores from '@/hooks/useLoadableStores'
 import { useInitOnboard } from '@/hooks/wallets/useOnboard'
 import { useInitWeb3 } from '@/hooks/wallets/useInitWeb3'
 import { useInitSafeCoreSDK } from '@/hooks/coreSDK/useInitSafeCoreSDK'
+import { useInitBermudaSDK } from '@/hooks/bermudaSDK/useInitBermudaSDK'
 import useTxNotifications from '@/hooks/useTxNotifications'
 import useSafeNotifications from '@/hooks/useSafeNotifications'
 import useTxPendingStatuses from '@/hooks/useTxPendingStatuses'
@@ -54,6 +55,7 @@ const InitApp = (): null => {
   useInitOnboard()
   useInitWeb3()
   useInitSafeCoreSDK()
+  useInitBermudaSDK()
   useTxNotifications()
   useSafeMessageNotifications()
   useSafeNotifications()
