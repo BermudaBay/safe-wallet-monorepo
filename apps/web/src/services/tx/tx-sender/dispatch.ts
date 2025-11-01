@@ -2,7 +2,7 @@ import type { ConnectedWallet } from '@/hooks/wallets/useOnboard'
 import { isMultisigExecutionInfo } from '@/utils/transaction-guards'
 import { isEthSignWallet, isSmartContractWallet } from '@/utils/wallets'
 import type { MultiSendCallOnlyContractImplementationType } from '@safe-global/protocol-kit'
-import { type ChainInfo, relayTransaction, type TransactionDetails } from '@safe-global/safe-gateway-typescript-sdk'
+import { type ChainInfo, relayTransaction, type TransactionDetails, TransactionInfoType, TransactionStatus } from '@safe-global/safe-gateway-typescript-sdk'
 import { type SafeState } from '@safe-global/store/gateway/AUTO_GENERATED/safes'
 
 import type {
@@ -15,20 +15,21 @@ import type {
 import { didRevert } from '@/utils/ethers-utils'
 import { type SpendingLimitTxParams } from '@/components/tx-flow/flows/TokenTransfer/ReviewSpendingLimitTx'
 import { getSpendingLimitContract } from '@/services/contracts/spendingLimitContracts'
-import type { ContractTransactionResponse, Eip1193Provider, Overrides, TransactionResponse } from 'ethers'
+import { Contract, type ContractTransactionResponse, type Eip1193Provider, type Overrides, type TransactionResponse } from 'ethers'
 import type { RequestId } from '@safe-global/safe-apps-sdk'
 import proposeTx from '../proposeTransaction'
 import { txDispatch, TxEvent } from '../txEvents'
 import { waitForRelayedTx } from '@/services/tx/txMonitor'
 import { getReadOnlyCurrentGnosisSafeContract } from '@/services/contracts/safeContracts'
 import {
-  getAndValidateSafeSDK,
+  // getAndValidateSafeSDK,
   getSafeSDKWithSigner,
   tryOffChainTxSigning,
   getUncheckedSigner,
   prepareTxExecution,
   prepareApproveTxHash,
 } from './sdk'
+import { getBermudaSDK } from '@/hooks/bermudaSDK/useBermudaSDK'
 import { createWeb3, getUserNonce } from '@/hooks/wallets/web3'
 import { asError } from '@safe-global/utils/services/exceptions/utils'
 import chains from '@/config/chains'
@@ -55,12 +56,52 @@ export const dispatchTxProposal = async ({
   txId?: string
   origin?: string
 }): Promise<TransactionDetails> => {
-  const safeSDK = getAndValidateSafeSDK()
-  const safeTxHash = await safeSDK.getTransactionHash(safeTx)
+  // const safeSDK = getAndValidateSafeSDK()
+  // const safeTxHash = await safeSDK.getTransactionHash(safeTx)
 
+  let signerAddress
   let proposedTx: TransactionDetails | undefined
   try {
-    proposedTx = await proposeTx(chainId, safeAddress, sender, safeTx, safeTxHash, origin)
+    // proposedTx = await proposeTx(chainId, safeAddress, sender, safeTx, safeTxHash, origin)
+
+    const bermudaSDK = getBermudaSDK()
+    const signer = await getUncheckedSigner(bermudaSDK.config.provider)
+    signerAddress = signer.address
+    const safeContract = new Contract(
+      safeAddress,
+      bermudaSDK.abis.SAFE_ABI,
+      { provider: bermudaSDK.config.provider }
+    )
+    const safeTxHash = await safeContract.getTransactionHash(
+      safeTx.data.to,
+      safeTx.data.value,
+      safeTx.data.data,
+      safeTx.data.operation,
+      safeTx.data.safeTxGas,
+      safeTx.data.baseGas,
+      safeTx.data.gasPrice,
+      safeTx.data.gasToken,
+      safeTx.data.refundReceiver,
+      safeTx.data.nonce
+    )
+    await bermudaSDK.safe.proposePayload(safeAddress, safeTx, signer)
+      .then((proposePayload: { to: string, data: string }) =>
+        signer.sendTransaction(proposePayload)
+          .then(res => bermudaSDK.config.provider.waitForTransaction(res.hash))
+      )
+    proposedTx = {
+      //FIXME
+      safeAddress,
+      txId: safeTxHash,
+      txStatus: TransactionStatus.AWAITING_CONFIRMATIONS,
+      txInfo: {
+        type: TransactionInfoType.CUSTOM,
+        to: { value: safeTx.data.to },
+        dataSize: "419",
+        value: "0",
+        isCancellation: false
+      }
+    }
   } catch (error) {
     if (txId) {
       txDispatch(TxEvent.SIGNATURE_PROPOSE_FAILED, { txId, error: asError(error) })
@@ -70,15 +111,21 @@ export const dispatchTxProposal = async ({
     throw error
   }
 
-  // Dispatch a success event only if the tx is signed
-  // Unsigned txs are proposed only temporarily and won't appear in the queue
-  if (safeTx.signatures.size > 0) {
-    txDispatch(txId ? TxEvent.SIGNATURE_PROPOSED : TxEvent.PROPOSED, {
-      txId: proposedTx.txId,
-      signerAddress: txId ? sender : undefined,
-      nonce: safeTx.data.nonce,
-    })
-  }
+  // // Dispatch a success event only if the tx is signed
+  // // Unsigned txs are proposed only temporarily and won't appear in the queue
+  // if (safeTx.signatures.size > 0) {
+  //   txDispatch(txId ? TxEvent.SIGNATURE_PROPOSED : TxEvent.PROPOSED, {
+  //     txId: proposedTx.txId,
+  //     signerAddress: txId ? sender : undefined,
+  //     nonce: safeTx.data.nonce,
+  //   })
+  // }
+
+  txDispatch(txId ? TxEvent.SIGNATURE_PROPOSED : TxEvent.PROPOSED, {
+    txId: proposedTx.txId,
+    signerAddress,
+    nonce: safeTx.data.nonce,
+  })
 
   return proposedTx
 }
