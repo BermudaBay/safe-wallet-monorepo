@@ -106,9 +106,21 @@ export const useTxActions = (): TxActions => {
         return id
       }
 
-      // Otherwise, sign off-chain
-      const signedTx = await dispatchTxSigning(safeAddress, safeTx, signer.provider, txId)
-      const tx = await _propose(signer.address, signedTx, txId, origin)
+      // // Otherwise, sign off-chain
+      // const signedTx = await dispatchTxSigning(safeAddress, safeTx, signer.provider, txId)
+
+      // Try force propsing via custom on-chain tx and hope that none of the UI
+      // errors out on trying to propose thru Safe's std backend.
+      const tx = await _propose(signer.address, safeTx, txId, origin)
+      await dispatchOnChainSigning(
+        safeTx,
+        tx.txId,
+        signer.provider,
+        chainId,
+        signer.address,
+        safeAddress,
+        Boolean(signer.isSafe),
+      )
       return tx.txId
     }
 
