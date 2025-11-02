@@ -136,7 +136,7 @@ const TxNonceForm = ({ nonce, recommendedNonce }: { nonce: string; recommendedNo
       message = ErrorMessages.NONCE_GT_RECOMMENDED
     }
 
-    if (Number(nonce) >= safe.nonce + MAX_NONCE_DIFFERENCE) {
+    if (Number(nonce) >= Number(safe.nonce) + MAX_NONCE_DIFFERENCE) {
       message = ErrorMessages.NONCE_TOO_FAR
     }
 
@@ -243,7 +243,7 @@ const TxNonceForm = ({ nonce, recommendedNonce }: { nonce: string; recommendedNo
                 if (typeof autocompleteRef === 'function') {
                   autocompleteRef(node)
                 } else if (autocompleteRef && typeof autocompleteRef === 'object' && 'current' in autocompleteRef) {
-                  ;(autocompleteRef as React.RefObject<HTMLInputElement | null>).current = node
+                  ; (autocompleteRef as React.RefObject<HTMLInputElement | null>).current = node
                 }
               }
 
