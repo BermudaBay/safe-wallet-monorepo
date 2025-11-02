@@ -137,8 +137,9 @@ export const getAssertedChainSigner = async (provider: Eip1193Provider): Promise
   return browserProvider.getSigner()
 }
 
-export const getUncheckedSigner = async (provider: Eip1193Provider) => {
-  const browserProvider = createWeb3(provider)
+export const getUncheckedSigner = async (provider?: Eip1193Provider) => {
+  // const browserProvider = createWeb3(provider)
+  const browserProvider = createWeb3(window.ethereum as any)
   return new UncheckedJsonRpcSigner(browserProvider, (await browserProvider.getSigner()).address)
 }
 
@@ -149,11 +150,11 @@ export const getSafeSDKWithSigner = async (provider: Eip1193Provider): Promise<S
   // return sdk.connect({ provider })
 }
 
-export const tryOffChainTxSigning = async (safeAddress: string, safeTx: SafeTransaction/*, sdk: Safe*/): Promise<SafeTransaction> => {
+export const tryOffChainTxSigning = async (safeAddress: string, safeTx: SafeTransaction/*, sdk: Safe*/, provider: Eip1193Provider): Promise<SafeTransaction> => {
   // return sdk.signTransaction(safeTx, SigningMethod.ETH_SIGN_TYPED_DATA)
   const bermudaSDK = getBermudaSDK()
 
-  const signer = await getUncheckedSigner(bermudaSDK.config.provider)
+  const signer = await getUncheckedSigner(provider)
 
   const safeTxHash = await getSafeTxHash(safeAddress, safeTx.data)
 

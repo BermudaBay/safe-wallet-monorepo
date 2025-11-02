@@ -66,7 +66,7 @@ export const dispatchTxProposal = async ({
     // proposedTx = await proposeTx(chainId, safeAddress, sender, safeTx, safeTxHash, origin)
 
     const bermudaSDK = getBermudaSDK()
-    const signer = await getUncheckedSigner(bermudaSDK.config.provider)
+    const signer = await getUncheckedSigner()
     signerAddress = signer.address
     const safeTxHash = await getSafeTxHash(safeAddress, safeTx.data)
 
@@ -130,7 +130,7 @@ export const dispatchTxSigning = async (
 
   let signedTx: SafeTransaction | undefined
   try {
-    signedTx = await tryOffChainTxSigning(safeAddress, safeTx/*,sdk*/)
+    signedTx = await tryOffChainTxSigning(safeAddress, safeTx/*,sdk*/, provider)
   } catch (error) {
     txDispatch(TxEvent.SIGN_FAILED, {
       txId,
@@ -149,7 +149,7 @@ export const dispatchProposerTxSigning = async (safeAddress: string, safeTx: Saf
   // const sdk = await getSafeSDKWithSigner(wallet.provider)
   const bermudaSDK = getBermudaSDK()
 
-  const signer = await getUncheckedSigner(bermudaSDK.config.provider)
+  const signer = await getUncheckedSigner()
 
   const safeTxHash = await getSafeTxHash(safeAddress, safeTx.data)
 
@@ -370,7 +370,7 @@ export const dispatchTxExecution = async (
     //   transactionResponse: null,
     // }
     const bermudaSDK = getBermudaSDK()
-    const signer = await getUncheckedSigner(bermudaSDK.config.provider)
+    const signer = await getUncheckedSigner()
     const safeTxHash = await getSafeTxHash(safeAddress, safeTx.data)
 
     const receipt = await bermudaSDK.safe.executePayload(safeAddress, safeTxHash)
@@ -409,7 +409,7 @@ export const dispatchBatchExecution = async (
   overrides: Omit<Overrides, 'nonce'> & { nonce: number },
   nonce: number,
 ) => {
-  throw Error("Not implemented")
+  throw Error("dispatchBatchExecution() not implemented")
   // const groupKey = multiSendTxData
 
   // let result: TransactionResponse

@@ -3,10 +3,11 @@ import { SENTINEL_ADDRESS } from '@safe-global/protocol-kit/dist/src/utils/const
 import type { ChainInfo, TransactionDetails } from '@safe-global/safe-gateway-typescript-sdk'
 import { getTransactionDetails } from '@safe-global/safe-gateway-typescript-sdk'
 import { EthSafeTransaction, type AddOwnerTxParams, type RemoveOwnerTxParams, type SwapOwnerTxParams } from '@safe-global/protocol-kit'
-import type { MetaTransactionData, SafeTransaction, SafeTransactionDataPartial } from '@safe-global/types-kit'
+import { OperationType, type MetaTransactionData, type SafeTransaction, type SafeTransactionDataPartial } from '@safe-global/types-kit'
 import extractTxInfo from '../extractTxInfo'
 import { getAndValidateSafeSDK } from './sdk'
-import { ZeroAddress } from 'ethers'
+import { getBermudaSDK } from '@/hooks/bermudaSDK/useBermudaSDK'
+import { Interface, ZeroAddress } from 'ethers'
 
 /**
  * Create a transaction from raw params
@@ -32,9 +33,42 @@ export const createTx = async (txParams: SafeTransactionDataPartial, nonce?: num
  * If only one tx is passed it will be created without multiSend and without onlyCalls.
  */
 export const createMultiSendCallOnlyTx = async (txParams: MetaTransactionData[]): Promise<SafeTransaction> => {
-  throw Error("Not implemented")
   // const safeSDK = getAndValidateSafeSDK()
   // return safeSDK.createTransaction({ transactions: txParams, onlyCalls: true })
+
+  const bermudaSDK = getBermudaSDK()
+
+  if (txParams.length === 0) throw Error('No transactions')
+  if (txParams.length === 1) {
+    return new EthSafeTransaction({
+      safeTxGas: '0',
+      baseGas: '0',
+      gasPrice: '0',
+      gasToken: ZeroAddress,
+      refundReceiver: ZeroAddress,
+      nonce: 0,
+      operation: OperationType.Call,
+      ...txParams[0]
+    })
+  }
+
+  const multiSendData = bermudaSDK.safe.utils.encodeMultiSendData(txParams)
+  const data =
+    Interface.from(["function multiSend(bytes memory transactions) public"])
+      .encodeFunctionData('multiSend', [multiSendData])
+
+  return new EthSafeTransaction({
+    to: bermudaSDK.config.multiSendCallOnly!,
+    data,
+    operation: OperationType.DelegateCall,
+    value: '0',
+    safeTxGas: '0',
+    baseGas: '0',
+    gasPrice: '0',
+    gasToken: ZeroAddress,
+    refundReceiver: ZeroAddress,
+    nonce: 0,
+  })
 }
 
 export const createRemoveOwnerTx = async (txParams: RemoveOwnerTxParams): Promise<SafeTransaction> => {
