@@ -7,6 +7,7 @@ import {
 import type { MetaTransactionData, SafeTransactionDataPartial } from '@safe-global/types-kit'
 import { Errors, logError } from '@/services/exceptions'
 import { isLegacyVersion } from '@safe-global/utils/services/contracts/utils'
+import { Contract, JsonRpcProvider } from 'ethers'
 
 const fetchRecommendedParams = async (
   chainId: string,
@@ -42,7 +43,14 @@ export const getSafeTxGas = async (
 
 export const getNonces = async (chainId: string, safeAddress: string) => {
   try {
-    return await fetchNonces(chainId, safeAddress)
+    // return await fetchNonces(chainId, safeAddress)
+    const safeContract = new Contract(
+      safeAddress,
+      ["function nonce() external view returns (uint256)"],
+      { provider: new JsonRpcProvider(process.env.NEXT_PUBLIC_JSON_RPC_URL) }
+    )
+    const nonce = await safeContract.nonce().then(Number)
+    return { currentNonce: nonce, recommendedNonce: nonce }
   } catch (e) {
     logError(Errors._616, e)
   }
