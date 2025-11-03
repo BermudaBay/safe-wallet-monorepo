@@ -16,6 +16,7 @@ import useIsStakingBannerVisible from '@/components/dashboard/StakingBanner/useI
 import { Box } from '@mui/material'
 import { BRAND_NAME } from '@/config/constants'
 import TotalAssetValue from '@/components/balances/TotalAssetValue'
+import ShieldAssetsButton from '@/components/balances/ShieldAssetsButton'
 
 const Balances: NextPage = () => {
   const { balances, error } = useVisibleBalances()
@@ -32,6 +33,7 @@ const Balances: NextPage = () => {
       </Head>
 
       <AssetsHeader>
+        <ShieldAssetsButton />
         <HiddenTokenButton showHiddenAssets={showHiddenAssets} toggleShowHiddenAssets={toggleShowHiddenAssets} />
         <TokenListSelect />
         <CurrencySelect />
