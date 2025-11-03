@@ -1,14 +1,20 @@
 import { useEffect, useState } from 'react'
-import { getTransactionQueue, type TransactionListPage } from '@safe-global/safe-gateway-typescript-sdk'
+import type { AddressEx, TransactionListPage } from '@safe-global/safe-gateway-typescript-sdk'
 import useAsync, { type AsyncResult } from '@safe-global/utils/hooks/useAsync'
 import useSafeInfo from '../useSafeInfo'
 import { Errors, logError } from '@/services/exceptions'
 import { TxEvent, txSubscribe } from '@/services/tx/txEvents'
+import { useBermudaSDK } from '@/hooks/bermudaSDK/useBermudaSDK'
+import { mapSdkQueueToTransactionPage } from '@/services/bermuda/txMapper'
+import useWallet from '@/hooks/wallets/useWallet'
+import type { SdkListTxsResult } from '@/services/bermuda/types'
 
 export const useLoadTxQueue = (): AsyncResult<TransactionListPage> => {
   const { safe, safeAddress, safeLoaded } = useSafeInfo()
   const { chainId, txQueuedTag, txHistoryTag } = safe
   const [updatedTxId, setUpdatedTxId] = useState<string>('')
+  const bermudaSDK = useBermudaSDK()
+  const wallet = useWallet()
   // N.B. we reload when txQueuedTag/txHistoryTag/updatedTxId changes as txQueuedTag alone is not enough
   const reloadTag = (txQueuedTag ?? '') + (txHistoryTag ?? '') + updatedTxId
 
@@ -17,11 +23,27 @@ export const useLoadTxQueue = (): AsyncResult<TransactionListPage> => {
     () => {
       if (!safeLoaded) return
       if (!safe.deployed) return Promise.resolve({ results: [] })
+      if (!bermudaSDK) return
 
-      return getTransactionQueue(chainId, safeAddress)
+      const owner = wallet?.address?.toLowerCase()
+      const owners: AddressEx[] = (safe.owners || []).map((address) => ({
+        value: address.value,
+        name: address.name ?? undefined,
+        logoUri: address.logoUri ?? undefined,
+      }))
+
+      return bermudaSDK.safe.listTxs(safeAddress, owner).then((result: unknown) => {
+        const { pending } = result as SdkListTxsResult
+        return mapSdkQueueToTransactionPage({
+          safeAddress,
+          pendingTxs: pending,
+          owners,
+          threshold: safe.threshold,
+        })
+      })
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [safeLoaded, chainId, safeAddress, reloadTag, safe.deployed],
+    [safeLoaded, chainId, safeAddress, reloadTag, safe.deployed, bermudaSDK, wallet?.address],
     false,
   )
 
@@ -33,9 +55,19 @@ export const useLoadTxQueue = (): AsyncResult<TransactionListPage> => {
     const unsubscribeDeleted = txSubscribe(TxEvent.DELETED, ({ safeTxHash }) => {
       setUpdatedTxId(safeTxHash)
     })
+    const unsubscribeSignatureIndexed = txSubscribe(TxEvent.SIGNATURE_INDEXED, ({ txId }) => {
+      setUpdatedTxId(txId)
+    })
+    const unsubscribeOnChainSignature = txSubscribe(TxEvent.ONCHAIN_SIGNATURE_SUCCESS, ({ txId }) => {
+      if (txId) {
+        setUpdatedTxId(txId)
+      }
+    })
     return () => {
       unsubscribeProposed()
       unsubscribeDeleted()
+      unsubscribeSignatureIndexed()
+      unsubscribeOnChainSignature()
     }
   }, [])
 

@@ -88,40 +88,24 @@ export const useTxActions = (): TxActions => {
       assertProvider(signer?.provider)
       assertOnboard(onboard)
 
-      // Smart contract wallets must sign via an on-chain tx
-      if (signer.isSafe || (await isSmartContractWallet(signer.chainId, signer.address))) {
-        // If the first signature is a smart contract wallet, we have to propose w/o signatures
-        // Otherwise the backend won't pick up the tx
-        // The signature will be added once the on-chain signature is indexed
-        const id = txId || (await _propose(signer.address, safeTx, txId, origin)).txId
-        await dispatchOnChainSigning(
-          safeTx,
-          id,
-          signer.provider,
-          chainId,
-          signer.address,
-          safeAddress,
-          Boolean(signer.isSafe),
-        )
-        return id
+      const isSmartAccount = signer.isSafe || (await isSmartContractWallet(signer.chainId, signer.address))
+      let targetTxId = txId
+
+      if (!targetTxId) {
+        const tx = await _propose(signer.address, safeTx, txId, origin)
+        targetTxId = tx.txId
       }
 
-      // // Otherwise, sign off-chain
-      // const signedTx = await dispatchTxSigning(safeAddress, safeTx, signer.provider, txId)
-
-      // Try force propsing via custom on-chain tx and hope that none of the UI
-      // errors out on trying to propose thru Safe's std backend.
-      const tx = await _propose(signer.address, safeTx, txId, origin)
       await dispatchOnChainSigning(
         safeTx,
-        tx.txId,
+        targetTxId,
         signer.provider,
         chainId,
         signer.address,
         safeAddress,
-        Boolean(signer.isSafe),
+        Boolean(isSmartAccount),
       )
-      return tx.txId
+      return targetTxId
     }
 
     const signProposerTx: TxActions['signProposerTx'] = async (safeTx, origin) => {

@@ -22,7 +22,7 @@ export const navItems: NavItem[] = [
   {
     label: 'Transactions',
     icon: <SvgIcon component={TransactionIcon} inheritViewBox />,
-    href: AppRoutes.transactions.history,
+    href: AppRoutes.transactions.queue,
   },
   { label: 'Address book', icon: <SvgIcon component={ABIcon} inheritViewBox />, href: AppRoutes.addressBook },
   {
@@ -42,7 +42,7 @@ export const navItems: NavItem[] = [
 
 export const transactionNavItems = [
   { label: 'Queue', href: AppRoutes.transactions.queue },
-  { label: 'History', href: AppRoutes.transactions.history },
+  { label: 'History (WIP)', href: AppRoutes.transactions.history, disabled: true },
   { label: 'Messages', href: AppRoutes.transactions.messages },
 ]
 

@@ -8,6 +8,7 @@ import extractTxInfo from '../extractTxInfo'
 import { getAndValidateSafeSDK } from './sdk'
 import { getBermudaSDK } from '@/hooks/bermudaSDK/useBermudaSDK'
 import { Interface, ZeroAddress } from 'ethers'
+import { getSdkQueuedTx } from '@/services/bermuda/txCache'
 
 /**
  * Create a transaction from raw params
@@ -164,6 +165,39 @@ export const createExistingTx = async (
   txId: string,
   txDetails?: TransactionDetails,
 ): Promise<SafeTransaction> => {
+  const cached = getSdkQueuedTx(txId)
+  if (cached) {
+    const { info } = cached
+    const nonce = Number(info.details.nonce)
+
+    const txParams: SafeTransactionDataPartial = {
+      to: info.details.to,
+      data: info.details.data,
+      value: info.details.value.toString(),
+      operation: info.details.operation as OperationType,
+      safeTxGas: info.details.safeTxGas.toString(),
+      baseGas: info.details.baseGas.toString(),
+      gasPrice: info.details.gasPrice.toString(),
+      gasToken: info.details.gasToken,
+      refundReceiver: info.details.refundReceiver,
+      nonce,
+    }
+
+    const safeTx = await createTx(txParams, nonce)
+
+    Object.entries(info.signatures).forEach(([signer, data]) => {
+      safeTx.addSignature({
+        signer,
+        data,
+        staticPart: () => data,
+        dynamicPart: () => '',
+        isContractSignature: false,
+      })
+    })
+
+    return safeTx
+  }
+
   // Get the tx details from the backend if not provided
   txDetails = txDetails || (await getTransactionDetails(chainId, txId))
 

@@ -1,6 +1,6 @@
 import useIsExpiredSwap from '@/features/swap/hooks/useIsExpiredSwap'
-import React, { type ReactElement, useEffect, useRef, useState } from 'react'
-import type { TransactionDetails, TransactionSummary } from '@safe-global/safe-gateway-typescript-sdk'
+import React, { type ReactElement, useEffect, useMemo, useRef, useState } from 'react'
+import type { AddressEx, TransactionDetails, TransactionSummary } from '@safe-global/safe-gateway-typescript-sdk'
 import { Box, CircularProgress, Typography } from '@mui/material'
 
 import TxSigners from '@/components/transactions/TxSigners'
@@ -42,6 +42,7 @@ import { TxShareBlock } from '../TxShareLink'
 import { FEATURES } from '@safe-global/utils/utils/chains'
 import DecodedData from './TxData/DecodedData'
 import { QueuedTxSimulation } from '../QueuedTxSimulation'
+import { getCachedTransactionDetails } from '@/services/bermuda/txMapper'
 
 export const NOT_AVAILABLE = 'n/a'
 
@@ -218,14 +219,26 @@ const TxDetails = ({
     },
   )
 
+  const fallbackDetails = useMemo<TransactionDetails | undefined>(() => {
+    const owners: AddressEx[] = (safe.owners ?? []).map((owner) => ({
+      value: owner.value,
+      name: owner.name ?? undefined,
+      logoUri: owner.logoUri ?? undefined,
+    }))
+
+    return getCachedTransactionDetails(txSummary.id, owners, safe.threshold)
+  }, [safe.owners, safe.threshold, txSummary.id])
+
+  const resolvedDetails = txDetailsData ?? txDetails ?? fallbackDetails
+
   useEffect(() => {
     !isUninitialized && refetch()
   }, [safe.txQueuedTag, refetch, txDetails, isUninitialized])
 
   return (
     <div className={css.container}>
-      {txDetailsData ? (
-        <TxDetailsBlock txSummary={txSummary} txDetails={txDetailsData} />
+      {resolvedDetails ? (
+        <TxDetailsBlock txSummary={txSummary} txDetails={resolvedDetails} />
       ) : loading ? (
         <div className={css.loading}>
           <CircularProgress />
