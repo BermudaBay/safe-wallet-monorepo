@@ -70,7 +70,7 @@ export const dispatchTxProposal = async ({
     signerAddress = signer.address
     const safeTxHash = await getSafeTxHash(safeAddress, safeTx.data)
 
-    const _receipt = await bermudaSDK.safe.proposePayload(safeAddress, safeTx, signer)
+    const _receipt = await bermudaSDK.safe.proposePayload(safeAddress, safeTx.data, signer)
       .then((proposePayload: { to: string, data: string }) =>
         signer.sendTransaction(proposePayload)
           .then(res => bermudaSDK.config.provider.waitForTransaction(res.hash))
