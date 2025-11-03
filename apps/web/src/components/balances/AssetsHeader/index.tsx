@@ -8,13 +8,13 @@ import css from '@/components/common/PageHeader/styles.module.css'
 import { useCurrentChain } from '@/hooks/useChains'
 import { isRouteEnabled } from '@/utils/chains'
 
-const AssetsHeader = ({ children }: { children?: ReactNode }): ReactElement => {
+const AssetsHeader = ({ children, title = 'Assets' }: { children?: ReactNode; title?: string }): ReactElement => {
   const chain = useCurrentChain()
   const navItems = useMemo(() => balancesNavItems.filter((item) => isRouteEnabled(item.href, chain)), [chain])
 
   return (
     <PageHeader
-      title="Assets"
+      title={title}
       action={
         <div className={css.pageHeader}>
           <div className={css.navWrapper}>
