@@ -1,13 +1,15 @@
-import { type ReactElement, useMemo } from 'react'
+import { type ReactElement, useContext, useMemo } from 'react'
 import { Button, Tooltip } from '@mui/material'
 import ShieldIcon from '@mui/icons-material/Shield'
 import CheckWallet from '@/components/common/CheckWallet'
 import Track from '@/components/common/Track'
 import { ASSETS_EVENTS } from '@/services/analytics/events/assets'
 import { useVisibleBalances } from '@/hooks/useVisibleBalances'
-import { handleShieldAssets } from '@/services/bermuda/deposit'
+import { TxModalContext } from '@/components/tx-flow'
+import { ShieldAssetsFlow } from '@/components/tx-flow/flows'
 
 const ShieldAssetsButton = (): ReactElement => {
+  const { setTxFlow } = useContext(TxModalContext)
   const { balances } = useVisibleBalances()
 
   const hasAssets = useMemo(() => {
@@ -15,7 +17,7 @@ const ShieldAssetsButton = (): ReactElement => {
   }, [balances.items])
 
   const onClick = () => {
-    handleShieldAssets()
+    setTxFlow(<ShieldAssetsFlow />)
   }
 
   const tooltipTitle = !hasAssets ? 'Cannot shield assets when balance is zero' : ''

@@ -1,12 +1,14 @@
-import { type ReactElement, useMemo } from 'react'
+import { type ReactElement, useContext, useMemo } from 'react'
 import { Button, Tooltip } from '@mui/material'
 import ShieldIcon from '@mui/icons-material/Shield'
 import CheckWallet from '@/components/common/CheckWallet'
 import { ASSETS_EVENTS, trackEvent } from '@/services/analytics'
 import { useVisibleBalances } from '@/hooks/useVisibleBalances'
-import { handleShieldAssets } from '@/services/bermuda/deposit'
+import { TxModalContext } from '@/components/tx-flow'
+import { ShieldAssetsFlow } from '@/components/tx-flow/flows'
 
 const ShieldAssetsButton = (): ReactElement => {
+  const { setTxFlow } = useContext(TxModalContext)
   const { balances } = useVisibleBalances()
 
   const hasAssets = useMemo(() => {
@@ -14,7 +16,7 @@ const ShieldAssetsButton = (): ReactElement => {
   }, [balances.items])
 
   const onClick = () => {
-    handleShieldAssets()
+    setTxFlow(<ShieldAssetsFlow />)
     trackEvent({ ...ASSETS_EVENTS.SHIELD_ASSETS, label: 'sidebar' })
   }
 
