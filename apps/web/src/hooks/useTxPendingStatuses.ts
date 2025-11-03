@@ -8,7 +8,7 @@ import {
   type PendingProcessingTx,
 } from '@/store/pendingTxsSlice'
 import { useEffect, useMemo, useRef } from 'react'
-import { TxEvent, txSubscribe } from '@/services/tx/txEvents'
+import { TxEvent, txDispatch, txSubscribe } from '@/services/tx/txEvents'
 import useChainId from './useChainId'
 import { waitForRelayedTx, waitForTx } from '@/services/tx/txMonitor'
 import { useWeb3ReadOnly } from '@/hooks/wallets/web3'
@@ -181,30 +181,20 @@ const useTxPendingStatuses = (): void => {
     })
 
     const unsubProcessed = txSubscribe(TxEvent.PROCESSED, (detail) => {
-      // All pending txns should have a txId
       const txId = 'txId' in detail && detail.txId
       const nonce = 'nonce' in detail ? detail.nonce : undefined
 
       if (!txId || nonce === undefined) return
 
-      // If we have future issues with statuses, we should refactor `useTxPendingStatuses`
-      // @see https://github.com/safe-global/safe-wallet-web/issues/1754
-      const isIndexed = historicalTxs.some((tx) => tx.transaction.id === txId)
-      if (isIndexed) {
-        return
-      }
+      dispatch(clearPendingTx({ txId }))
 
-      // Update pendingTx
-      dispatch(
-        setPendingTx({
-          nonce,
-          chainId,
-          safeAddress,
-          txId,
-          txHash: detail.txHash,
-          status: PendingStatus.INDEXING,
-        }),
-      )
+      const txHash = 'txHash' in detail ? detail.txHash : undefined
+
+      txDispatch(TxEvent.SUCCESS, {
+        txId,
+        nonce,
+        txHash,
+      })
     })
     const unsubRelaying = txSubscribe(TxEvent.RELAYING, (detail) => {
       // All pending txns should have a txId
