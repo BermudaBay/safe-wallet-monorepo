@@ -5,10 +5,12 @@ import Typography from '@mui/material/Typography'
 import IconButton from '@mui/material/IconButton'
 import Skeleton from '@mui/material/Skeleton'
 import Tooltip from '@mui/material/Tooltip'
+import { Stack } from '@mui/material'
 
 import useSafeInfo from '@/hooks/useSafeInfo'
 import SafeIcon from '@/components/common/SafeIcon'
 import NewTxButton from '@/components/sidebar/NewTxButton'
+import ShieldAssetsButton from '@/components/sidebar/ShieldAssetsButton'
 import { useAppSelector } from '@/store'
 
 import css from './styles.module.css'
@@ -33,9 +35,11 @@ import FiatValue from '@/components/common/FiatValue'
 import { useAddressResolver } from '@/hooks/useAddressResolver'
 import { NestedSafesButton } from '@/components/sidebar/NestedSafesButton'
 import { NESTED_SAFE_EVENTS, NESTED_SAFE_LABELS } from '@/services/analytics/events/nested-safes'
+import { useShieldedBalances } from '@/hooks/useShieldedBalances'
 
 const SafeHeader = (): ReactElement => {
   const { balances } = useVisibleBalances()
+  const { balances: shieldedBalances } = useShieldedBalances()
   const safeAddress = useSafeAddress()
   const { safe } = useSafeInfo()
   const { threshold, owners } = safe
@@ -84,6 +88,14 @@ const SafeHeader = (): ReactElement => {
                 />
               )}
             </Typography>
+
+            <Typography variant="caption" fontWeight={700} sx={{ color: 'var(--color-text-secondary)' }}>
+              {safe.deployed && shieldedBalances.fiatTotal && (
+                <>
+                  Shielded: <FiatValue value={shieldedBalances.fiatTotal} />
+                </>
+              )}
+            </Typography>
           </div>
         </div>
 
@@ -120,7 +132,10 @@ const SafeHeader = (): ReactElement => {
         </div>
       </div>
 
-      <NewTxButton />
+      <Stack spacing={1}>
+        <NewTxButton />
+        <ShieldAssetsButton />
+      </Stack>
     </div>
   )
 }
