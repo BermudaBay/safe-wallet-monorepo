@@ -5,7 +5,6 @@ import HomeIcon from '@/public/images/sidebar/home.svg'
 import AssetsIcon from '@/public/images/sidebar/assets.svg'
 import TransactionIcon from '@/public/images/sidebar/transactions.svg'
 import ABIcon from '@/public/images/sidebar/address-book.svg'
-import AppsIcon from '@/public/images/apps/apps-icon.svg'
 import SettingsIcon from '@/public/images/sidebar/settings.svg'
 import BridgeIcon from '@/public/images/common/bridge.svg'
 import SwapIcon from '@/public/images/common/swap.svg'
@@ -19,6 +18,11 @@ export type NavItem = { label: string; icon?: ReactElement; href: string; tag?: 
 export const navItems: NavItem[] = [
   { label: 'Home', icon: <SvgIcon component={HomeIcon} inheritViewBox />, href: AppRoutes.home },
   { label: 'Assets', icon: <SvgIcon component={AssetsIcon} inheritViewBox />, href: AppRoutes.balances.index },
+  {
+    label: 'Shielded Assets',
+    icon: <SvgIcon component={AssetsIcon} inheritViewBox />,
+    href: AppRoutes.shieldedBalances.index,
+  },
   {
     label: 'Transactions',
     icon: <SvgIcon component={TransactionIcon} inheritViewBox />,
