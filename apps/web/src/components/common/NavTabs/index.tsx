@@ -19,6 +19,7 @@ const NavTabs = ({ tabs }: { tabs: NavItem[] }) => {
           component={NextLink}
           tabIndex={0}
           className={css.tab}
+          disabled={tab.disabled}
           label={
             <Stack direction="row" alignItems="center" gap={1}>
               <Typography

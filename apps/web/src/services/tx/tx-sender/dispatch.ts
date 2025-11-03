@@ -36,7 +36,7 @@ import chains from '@/config/chains'
 import { createExistingTx } from './create'
 
 import { getLatestSafeVersion } from '@safe-global/utils/utils/chains'
-import { getAdjustedSignature, getSafeTxHash } from './utils'
+import { getAdjustedSignature, getConfirmPayload, getSafeTxHash } from './utils'
 
 /**
  * Propose a transaction
@@ -202,18 +202,17 @@ export const dispatchOnChainSigning = async (
     //   params: [{ from: signerAddress, to: safeAddress, data: encodedApproveHashTx, gas: options?.gasLimit }],
     // })
 
-    const bermudaSDK = getBermudaSDK()
     const signer = await getUncheckedSigner(provider)
     const safeTxHash = await getSafeTxHash(safeAddress, safeTx.data)
 
-    const receipt = await bermudaSDK.safe.confirmPayload(safeAddress, safeTxHash, signer)
-      .then((confirmPayload: { to: string, data: string }) =>
-        signer.sendTransaction(confirmPayload)
-          .then(res => bermudaSDK.config.provider.waitForTransaction(res.hash))
-      )
+    const confirmPayload = await getConfirmPayload(safeAddress, safeTxHash, signer)
+    const receipt = await signer.sendTransaction(confirmPayload)
     txHashOrParentSafeTxHash = receipt.hash
 
     txDispatch(TxEvent.ONCHAIN_SIGNATURE_REQUESTED, eventParams)
+
+    const providerToWait = signer.provider ?? getBermudaSDK().config.provider
+    await providerToWait.waitForTransaction(receipt.hash)
   } catch (err) {
     txDispatch(TxEvent.FAILED, { ...eventParams, error: asError(err) })
     throw err

@@ -1,6 +1,6 @@
-import { getBermudaSDK } from "@/hooks/bermudaSDK/useBermudaSDK"
-import { SafeTransactionData } from "@safe-global/types-kit"
-import { Contract, getBytes, Signer } from "ethers"
+import { getBermudaSDK } from '@/hooks/bermudaSDK/useBermudaSDK'
+import { SafeTransactionData } from '@safe-global/types-kit'
+import { Contract, Interface, getBytes, Signer } from 'ethers'
 
 export async function getSafeTxHash(safeAddress: string, safeTxData: SafeTransactionData) {
     const bermudaSDK = getBermudaSDK()
@@ -30,4 +30,25 @@ export async function getAdjustedSignature(signer: Signer, safeTxHash: string): 
         sig = sig.slice(0, -2) + (v + 4).toString(16)
     }
     return sig
+}
+
+export async function getConfirmPayload(
+  safeAddress: string,
+  safeTxHash: string,
+  signer: Signer,
+): Promise<{ to: string; data: string }> {
+  const bermudaSDK = getBermudaSDK()
+  const signature = await getAdjustedSignature(signer, safeTxHash)
+
+  const proposeTxLib = bermudaSDK.config.proposeTxLib
+  if (!proposeTxLib) {
+    throw new Error('ProposeTxLib address not configured')
+  }
+
+  const iface = Interface.from(bermudaSDK.abis.PROPOSE_TX_LIB_ABI)
+
+  return {
+    to: proposeTxLib,
+    data: iface.encodeFunctionData('confirm', [safeAddress, safeTxHash, signature]),
+  }
 }
