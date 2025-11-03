@@ -11,6 +11,7 @@ import { ASSETS_EVENTS } from '@/services/analytics/events/assets'
 import { VisibilityOutlined } from '@mui/icons-material'
 import TokenMenu from '../TokenMenu'
 import useBalances from '@/hooks/useBalances'
+import useHiddenTokens from '@/hooks/useHiddenTokens'
 import { useHideAssets, useVisibleAssets } from './useHideAssets'
 import AddFundsCTA from '@/components/common/AddFunds'
 import SwapButton from '@/features/swap/components/SwapButton'
@@ -22,7 +23,7 @@ import useIsStakingPromoEnabled from '@/features/stake/hooks/useIsStakingBannerE
 import { STAKE_LABELS } from '@/services/analytics/events/stake'
 import StakeButton from '@/features/stake/components/StakeButton'
 import { TokenType } from '@safe-global/safe-gateway-typescript-sdk'
-import { type Balance } from '@safe-global/store/gateway/AUTO_GENERATED/balances'
+import { type Balance, type Balances } from '@safe-global/store/gateway/AUTO_GENERATED/balances'
 import { FiatChange } from './FiatChange'
 import { FiatBalance } from './FiatBalance'
 import EarnButton from '@/features/earn/components/EarnButton'
@@ -137,12 +138,20 @@ const headCells = [
 const AssetsTable = ({
   showHiddenAssets,
   setShowHiddenAssets,
+  balances: balancesProp,
+  loading: loadingProp,
 }: {
   showHiddenAssets: boolean
   setShowHiddenAssets: (hidden: boolean) => void
+  balances?: Balances
+  loading?: boolean
 }): ReactElement => {
-  const { balances, loading } = useBalances()
-  const { balances: visibleBalances } = useVisibleBalances()
+  const defaultBalances = useBalances()
+  const defaultVisibleBalances = useVisibleBalances()
+
+  const { balances, loading } =
+    balancesProp !== undefined ? { balances: balancesProp, loading: loadingProp ?? false } : defaultBalances
+  const { balances: visibleBalances } = balancesProp !== undefined ? { balances: balancesProp } : defaultVisibleBalances
 
   const chainId = useChainId()
   const isSwapFeatureEnabled = useIsSwapFeatureEnabled()
@@ -153,10 +162,18 @@ const AssetsTable = ({
     setShowHiddenAssets(false),
   )
 
-  const visible = useVisibleAssets()
+  const defaultVisible = useVisibleAssets()
+  const hiddenAssets = useHiddenTokens()
+
+  const visible =
+    balancesProp !== undefined
+      ? balances.items?.filter((item: Balance) => !hiddenAssets.includes(item.tokenInfo.address))
+      : defaultVisible
+
   const visibleAssets = showHiddenAssets ? balances.items : visible
   const hasNoAssets = !loading && balances.items.length === 1 && balances.items[0].balance === '0'
-  const selectedAssetCount = visibleAssets?.filter((item) => isAssetSelected(item.tokenInfo.address)).length || 0
+  const selectedAssetCount =
+    visibleAssets?.filter((item: Balance) => isAssetSelected(item.tokenInfo.address)).length || 0
 
   const rows = loading
     ? skeletonRows
