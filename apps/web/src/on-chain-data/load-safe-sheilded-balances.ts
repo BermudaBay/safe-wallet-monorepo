@@ -14,7 +14,11 @@ export async function loadShieldedBalances(chainId: number, keypairSeed: bigint,
   const bermudaSDK = getBermudaSDK()
 
   if (!bermudaSDK) {
-    throw new Error('Bermuda SDK not initialized')
+    console.warn('[loadShieldedBalances] Bermuda SDK not initialized, returning empty balances')
+    return {
+      fiatTotal: '0',
+      items: [],
+    }
   }
 
   console.log('[loadShieldedBalances] Bermuda SDK initialized successfully')
