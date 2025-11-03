@@ -24,8 +24,8 @@ export default async function loadSafeInfo(chainId: number, address: string): Pr
       value: address,
     },
     chainId: String(chainId),
-    nonce,
-    threshold,
+    nonce: Number(nonce),
+    threshold: Number(threshold),
     owners: owners.map((address: string) => ({
       value: address,
     })),
