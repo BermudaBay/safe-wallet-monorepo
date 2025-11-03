@@ -11,6 +11,7 @@ import { ZERO_ADDRESS } from '@safe-global/protocol-kit/dist/src/utils/constants
 import { Divider, Stack } from '@mui/material'
 import ReviewRecipientRow from '../TokenTransfer/ReviewRecipientRow'
 import { useCurrentChain } from '@/hooks/useChains'
+import { TxFlowContext, type TxFlowContextType } from '../../TxFlowProvider'
 
 type ReviewShieldAssetsProps = {
   params?: MultiTokenTransferParams
@@ -28,8 +29,10 @@ const ReviewShieldAssets = ({
   const { balances } = useBalances()
   const { setSafeTx, setSafeTxError, setNonce } = useContext(SafeTxContext)
   const currentChain = useCurrentChain()
+  const { data } = useContext(TxFlowContext) as TxFlowContextType<MultiTokenTransferParams>
+  const formData = params ?? data
 
-  const recipient = useMemo(() => params?.recipients?.[0], [params?.recipients])
+  const recipient = useMemo(() => formData?.recipients?.[0], [formData?.recipients])
 
   const tokenInfo = useMemo(() => {
     if (!recipient) return undefined
