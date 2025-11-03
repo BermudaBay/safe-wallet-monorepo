@@ -28,7 +28,6 @@ const TxNotifications = {
   [TxEvent.PROCESSING_MODULE]: 'Validating module interaction...',
   [TxEvent.ONCHAIN_SIGNATURE_REQUESTED]: 'Confirm on-chain signature in your wallet.',
   [TxEvent.ONCHAIN_SIGNATURE_SUCCESS]: 'On-chain signature request confirmed.',
-  [TxEvent.PROCESSED]: 'Successfully validated. Indexing...',
   [TxEvent.REVERTED]: 'Reverted. Please check your gas settings.',
   [TxEvent.SUCCESS]: 'Successfully executed.',
   [TxEvent.FAILED]: 'Failed.',

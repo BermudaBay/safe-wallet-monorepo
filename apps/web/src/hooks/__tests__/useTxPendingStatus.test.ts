@@ -229,7 +229,7 @@ describe('useTxPendingStatuses', () => {
     })
   })
 
-  it('should update pending tx when PROCESSED', () => {
+  it('should clear pending tx when PROCESSED', () => {
     renderHook(() => useTxPendingStatuses())
 
     const mockTxId = '123'
@@ -240,13 +240,8 @@ describe('useTxPendingStatuses', () => {
       safeAddress: faker.finance.ethereumAddress(),
     })
 
-    expect(setPendingTx).toHaveBeenCalledWith({
-      nonce: 1,
-      chainId: expect.anything(),
-      safeAddress: expect.anything(),
-      status: PendingStatus.INDEXING,
-      txId: mockTxId,
-    })
+    expect(setPendingTx).not.toHaveBeenCalled()
+    expect(clearPendingTx).toHaveBeenCalledWith({ txId: mockTxId })
   })
 
   it('should update pending tx when RELAYING', () => {

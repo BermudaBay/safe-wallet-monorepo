@@ -4,11 +4,11 @@ import type { TransactionListPage } from '@safe-global/safe-gateway-typescript-s
 import type { RootState } from '@/store'
 import { makeLoadableSlice } from './common'
 import { isMultisigExecutionInfo, isTransactionListItem } from '@/utils/transaction-guards'
-import { PendingStatus, selectPendingTxs } from './pendingTxsSlice'
+import { clearPendingTx, PendingStatus, selectPendingTxs } from './pendingTxsSlice'
 import { sameAddress } from '@safe-global/utils/utils/addresses'
 import { txDispatch, TxEvent } from '@/services/tx/txEvents'
 
-const SIGNING_STATES = [PendingStatus.SIGNING, PendingStatus.NESTED_SIGNING]
+const SIGNING_STATES = [PendingStatus.SIGNING, PendingStatus.NESTED_SIGNING, PendingStatus.INDEXING]
 
 const { slice, selector } = makeLoadableSlice('txQueue', undefined as TransactionListPage | undefined)
 
@@ -47,7 +47,21 @@ export const txQueueListener = (listenerMiddleware: typeof listenerMiddlewareIns
         const txId = result.transaction.id
 
         const pendingTx = pendingTxs[txId]
-        if (!pendingTx || !SIGNING_STATES.includes(pendingTx.status) || !('signerAddress' in pendingTx)) {
+        if (!pendingTx) {
+          continue
+        }
+
+        const signerAddress =
+          'signerAddress' in pendingTx && typeof pendingTx.signerAddress === 'string'
+            ? pendingTx.signerAddress
+            : undefined
+
+        if (pendingTx.status === PendingStatus.INDEXING && !signerAddress) {
+          listenerApi.dispatch(clearPendingTx({ txId }))
+          continue
+        }
+
+        if (!SIGNING_STATES.includes(pendingTx.status) || !signerAddress) {
           continue
         }
 
@@ -55,7 +69,7 @@ export const txQueueListener = (listenerMiddleware: typeof listenerMiddlewareIns
         if (
           isMultisigExecutionInfo(result.transaction.executionInfo) &&
           !result.transaction.executionInfo.missingSigners?.some((address) =>
-            sameAddress(address.value, pendingTx.signerAddress),
+            sameAddress(address.value, signerAddress),
           )
         ) {
           txDispatch(TxEvent.SIGNATURE_INDEXED, { txId })

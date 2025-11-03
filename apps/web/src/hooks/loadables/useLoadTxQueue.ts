@@ -63,11 +63,17 @@ export const useLoadTxQueue = (): AsyncResult<TransactionListPage> => {
         setUpdatedTxId(txId)
       }
     })
+    const unsubscribeProcessed = txSubscribe(TxEvent.PROCESSED, ({ txId }) => {
+      if (txId) {
+        setUpdatedTxId(txId)
+      }
+    })
     return () => {
       unsubscribeProposed()
       unsubscribeDeleted()
       unsubscribeSignatureIndexed()
       unsubscribeOnChainSignature()
+      unsubscribeProcessed()
     }
   }, [])
 
