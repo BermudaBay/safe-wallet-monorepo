@@ -3,15 +3,15 @@ import AssetsIcon from '@/public/images/sidebar/assets.svg'
 import { TxFlow } from '@/components/tx-flow/TxFlow'
 import { TxFlowStep } from '@/components/tx-flow/TxFlowStep'
 import CreateTokenTransfer, { type CreateTokenTransferProps } from '../TokenTransfer/CreateTokenTransfer'
-import ReviewTokenTx from '../TokenTransfer/ReviewTokenTransfer'
 import { TokenTransferFields } from '../TokenTransfer'
 import { ZERO_ADDRESS } from '@safe-global/protocol-kit/dist/src/utils/constants'
 import { TokenTransferType } from '../TokenTransfer'
 import { getBermudaSDK } from '@/hooks/bermudaSDK/useBermudaSDK'
+import ReviewShieldAssets from './ReviewShieldAssets'
 
 export type ShieldAssetsFlowProps = CreateTokenTransferProps
 
-const KEYPAIR_SEED = BigInt(123445) 
+const KEYPAIR_SEED = BigInt(123445)
 
 const ShieldAssetsFlow = ({ txNonce }: ShieldAssetsFlowProps = {}) => {
   const shieldedAddress = useMemo(() => {
@@ -49,7 +49,7 @@ const ShieldAssetsFlow = ({ txNonce }: ShieldAssetsFlowProps = {}) => {
       initialData={initialData}
       icon={AssetsIcon}
       subtitle="Shield tokens"
-      ReviewTransactionComponent={ReviewTokenTx}
+      ReviewTransactionComponent={ReviewShieldAssets}
     >
       <TxFlowStep title="New transaction">
         <CreateTokenTransfer txNonce={txNonce} />
