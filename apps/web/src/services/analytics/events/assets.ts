@@ -58,4 +58,8 @@ export const ASSETS_EVENTS = {
     action: 'Show all tokens',
     category: ASSETS_CATEGORY,
   },
+  SHIELD_ASSETS: {
+    action: 'Shield assets',
+    category: ASSETS_CATEGORY,
+  },
 }
