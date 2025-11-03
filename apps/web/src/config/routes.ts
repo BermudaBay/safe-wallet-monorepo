@@ -29,6 +29,9 @@ export const AppRoutes = {
     nfts: '/balances/nfts',
     index: '/balances',
   },
+  shieldedBalances: {
+    index: '/shielded-balances',
+  },
   newSafe: {
     load: '/new-safe/load',
     create: '/new-safe/create',
