@@ -18,10 +18,12 @@ import useIsSwapFeatureEnabled from '@/features/swap/hooks/useIsSwapFeatureEnabl
 import TotalAssetValue from '@/components/balances/TotalAssetValue'
 import CheckWallet from '@/components/common/CheckWallet'
 import OverviewSkeleton from './OverviewSkeleton'
+import { useShieldedBalances } from '@/hooks/useShieldedBalances'
 
 const Overview = (): ReactElement => {
   const { safe, safeLoading, safeLoaded } = useSafeInfo()
   const { balances, loaded: balancesLoaded, loading: balancesLoading } = useVisibleBalances()
+  const { balances: shieldedBalances } = useShieldedBalances()
   const { setTxFlow } = useContext(TxModalContext)
   const router = useRouter()
   const isSwapFeatureEnabled = useIsSwapFeatureEnabled()
@@ -50,7 +52,12 @@ const Overview = (): ReactElement => {
           alignItems={{ xs: 'flex-start', md: 'center' }}
           justifyContent="space-between"
         >
-          <TotalAssetValue fiatTotal={balances.fiatTotal} />
+          <Box>
+            <TotalAssetValue fiatTotal={balances.fiatTotal} />
+            <Box mt={1}>
+              <TotalAssetValue fiatTotal={shieldedBalances.fiatTotal} title="Shielded balance" smaller />
+            </Box>
+          </Box>
 
           {safe.deployed && (
             <Stack
