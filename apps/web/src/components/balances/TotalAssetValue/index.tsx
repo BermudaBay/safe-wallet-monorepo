@@ -7,19 +7,32 @@ import { useVisibleBalances } from '@/hooks/useVisibleBalances'
 const TotalAssetValue = ({
   fiatTotal,
   title = 'Total asset value',
+  smaller = false,
 }: {
   fiatTotal: string | number | undefined
   title?: string
+  smaller?: boolean
 }) => {
   const { safe } = useSafeInfo()
   const { balances } = useVisibleBalances()
 
   return (
     <Box>
-      <Typography fontWeight={700} mb={0.5} fontSize="14px" sx={{ color: 'var(--color-text-secondary)' }}>
+      <Typography
+        fontWeight={700}
+        mb={0.5}
+        fontSize={smaller ? '12px' : '14px'}
+        sx={{ color: 'var(--color-text-secondary)' }}
+      >
         {title}
       </Typography>
-      <Typography component="div" variant="h1" fontSize="24px" lineHeight="1.2" letterSpacing="-0.5px">
+      <Typography
+        component="div"
+        variant="h1"
+        fontSize={smaller ? '18px' : '24px'}
+        lineHeight="1.2"
+        letterSpacing="-0.5px"
+      >
         {safe.deployed ? (
           fiatTotal !== undefined ? (
             <FiatValue value={fiatTotal} precise />
