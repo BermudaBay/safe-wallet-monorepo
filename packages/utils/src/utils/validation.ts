@@ -1,14 +1,19 @@
 import { parsePrefixedAddress, sameAddress, isChecksummedAddress } from '@safe-global/utils/utils/addresses'
 import { safeFormatUnits, safeParseUnits } from '@safe-global/utils/utils/formatters'
 
-export const validateAddress = (address: string) => {
-  const ADDRESS_RE = /^0x[0-9a-f]{40}$/i
+const ETH_ADDRESS_RE = /^0x[0-9a-f]{40}$/i
+const SHIELDED_ADDRESS_RE = /^0x[0-9a-f]{128}$/i
 
-  if (!ADDRESS_RE.test(address)) {
+const isShieldedAddress = (address: string): boolean => SHIELDED_ADDRESS_RE.test(address)
+
+export const validateAddress = (address: string) => {
+  const isEthAddress = ETH_ADDRESS_RE.test(address)
+
+  if (!isEthAddress && !isShieldedAddress(address)) {
     return 'Invalid address format'
   }
 
-  if (!isChecksummedAddress(address)) {
+  if (isEthAddress && !isChecksummedAddress(address)) {
     return 'Invalid address checksum'
   }
 }
