@@ -23,7 +23,7 @@ export const useShieldedBalances = (): {
       if (!safeAddress || !chainId) {
         return EMPTY_BALANCES
       }
-      const keypairSeed = BigInt(12345)
+      const keypairSeed = BigInt(123445)
       try {
         return await loadShieldedBalances(chainId, keypairSeed, safeAddress)
       } catch (err) {
