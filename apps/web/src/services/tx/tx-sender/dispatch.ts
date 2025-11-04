@@ -15,7 +15,7 @@ import type {
 import { didRevert } from '@/utils/ethers-utils'
 import { type SpendingLimitTxParams } from '@/components/tx-flow/flows/TokenTransfer/ReviewSpendingLimitTx'
 import { getSpendingLimitContract } from '@/services/contracts/spendingLimitContracts'
-import { Contract, type ContractTransactionResponse, type Eip1193Provider, type Overrides, type TransactionResponse } from 'ethers'
+import { Contract, Interface, type ContractTransactionResponse, type Eip1193Provider, type Overrides, type TransactionResponse } from 'ethers'
 import type { RequestId } from '@safe-global/safe-apps-sdk'
 import proposeTx from '../proposeTransaction'
 import { txDispatch, TxEvent } from '../txEvents'
@@ -38,6 +38,18 @@ import { createExistingTx } from './create'
 import { getLatestSafeVersion } from '@safe-global/utils/utils/chains'
 import { getAdjustedSignature, getConfirmPayload, getSafeTxHash } from './utils'
 
+export type BatchSafeTx = {
+  to: string
+  data: string
+  value?: bigint
+  operation?: number
+  safeTxGas?: bigint
+  baseGas?: bigint
+  gasPrice?: bigint
+  gasToken?: string
+  refundReceiver?: string
+}
+
 /**
  * Propose a transaction
  * If txId is passed, it's an existing tx being signed
@@ -49,6 +61,7 @@ export const dispatchTxProposal = async ({
   safeTx,
   txId,
   origin,
+  batchSafeTxs,
 }: {
   chainId: string
   safeAddress: string
@@ -56,25 +69,31 @@ export const dispatchTxProposal = async ({
   safeTx: SafeTransaction
   txId?: string
   origin?: string
+  batchSafeTxs?: BatchSafeTx[]
 }): Promise<TransactionDetails> => {
   // const safeSDK = getAndValidateSafeSDK()
   // const safeTxHash = await safeSDK.getTransactionHash(safeTx)
 
   let signerAddress
   let proposedTx: TransactionDetails | undefined
+  const bermudaSDK = getBermudaSDK()
+  if (!bermudaSDK) {
+    throw new Error('Bermuda SDK not initialized')
+  }
+  const signer = await getUncheckedSigner()
+  signerAddress = signer.address
+  const safeTxHash = await getSafeTxHash(safeAddress, safeTx.data)
   try {
     // proposedTx = await proposeTx(chainId, safeAddress, sender, safeTx, safeTxHash, origin)
 
-    const bermudaSDK = getBermudaSDK()
-    const signer = await getUncheckedSigner()
-    signerAddress = signer.address
-    const safeTxHash = await getSafeTxHash(safeAddress, safeTx.data)
+    const proposePayload =
+      batchSafeTxs && batchSafeTxs.length > 0
+        ? await bermudaSDK.safe.proposeBatchPayload(safeAddress, batchSafeTxs, signer)
+        : await bermudaSDK.safe.proposePayload(safeAddress, safeTx.data, signer)
 
-    const _receipt = await bermudaSDK.safe.proposePayload(safeAddress, safeTx.data)
-      .then((proposePayload: { to: string, data: string }) =>
-        signer.sendTransaction(proposePayload)
-          .then(res => bermudaSDK.config.provider.waitForTransaction(res.hash))
-      )
+    await signer
+      .sendTransaction(proposePayload)
+      .then((res) => bermudaSDK.config.provider.waitForTransaction(res.hash))
 
     proposedTx = {
       //FIXME
@@ -214,6 +233,24 @@ export const dispatchOnChainSigning = async (
     const providerToWait = signer.provider ?? getBermudaSDK().config.provider
     await providerToWait.waitForTransaction(receipt.hash)
   } catch (err) {
+    const bermudaSDK = getBermudaSDK()
+    let decodedError: string | undefined
+    const rawErrorData = (err as any)?.data ?? (err as any)?.error?.data ?? (err as any)?.error?.error?.data
+    if (bermudaSDK && rawErrorData) {
+      try {
+        const iface = Interface.from(bermudaSDK.abis.PROPOSE_TX_LIB_ABI)
+        const parsed = iface.parseError(rawErrorData)
+        decodedError = parsed?.name
+      } catch {
+        decodedError = undefined
+      }
+    }
+
+    if (decodedError === 'AlreadyConfirmed') {
+      txDispatch(TxEvent.ONCHAIN_SIGNATURE_SUCCESS, eventParams)
+      return
+    }
+
     txDispatch(TxEvent.FAILED, { ...eventParams, error: asError(err) })
     throw err
   }

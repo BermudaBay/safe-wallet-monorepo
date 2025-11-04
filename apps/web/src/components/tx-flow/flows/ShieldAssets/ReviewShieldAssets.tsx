@@ -27,7 +27,7 @@ const ReviewShieldAssets = ({
 }: PropsWithChildren<ReviewShieldAssetsProps>) => {
   const { safeAddress } = useSafeInfo()
   const { balances } = useBalances()
-  const { setSafeTx, setSafeTxError, setNonce } = useContext(SafeTxContext)
+  const { setSafeTx, setSafeTxError, setNonce, setBatchSafeTxs } = useContext(SafeTxContext)
   const currentChain = useCurrentChain()
   const { data } = useContext(TxFlowContext) as TxFlowContextType<MultiTokenTransferParams>
   const formData = params ?? data
@@ -67,6 +67,7 @@ const ReviewShieldAssets = ({
         })
         setSafeTx(undefined)
         setSafeTxError(undefined)
+        setBatchSafeTxs(undefined)
         return
       }
 
@@ -80,7 +81,7 @@ const ReviewShieldAssets = ({
         })
         setSafeTxError(undefined)
 
-        const { metaTxs } = await buildShieldedDepositMetaTxs({
+        const { metaTxs, batchSafeTxs } = await buildShieldedDepositMetaTxs({
           safeAddress,
           shieldedAddress: recipient.recipient,
           tokenAddress: recipient.tokenAddress,
@@ -96,11 +97,13 @@ const ReviewShieldAssets = ({
           })
           setSafeTx(safeTx)
           setSafeTxError(undefined)
+          setBatchSafeTxs(batchSafeTxs.length > 0 ? batchSafeTxs : undefined)
         }
       } catch (error) {
         if (!isCancelled) {
           console.error('[ShieldAssets][Review] Failed to build shielded deposit SafeTx', error)
           setSafeTxError(error as Error)
+          setBatchSafeTxs(undefined)
         }
       }
     }
@@ -109,6 +112,7 @@ const ReviewShieldAssets = ({
 
     return () => {
       isCancelled = true
+      setBatchSafeTxs(undefined)
     }
   }, [
     recipient,
@@ -116,6 +120,7 @@ const ReviewShieldAssets = ({
     tokenDecimals,
     setSafeTx,
     setSafeTxError,
+    setBatchSafeTxs,
   ])
 
   return (
