@@ -13,18 +13,18 @@ import ReviewRecipientRow from '../TokenTransfer/ReviewRecipientRow'
 import { useCurrentChain } from '@/hooks/useChains'
 import { TxFlowContext, type TxFlowContextType } from '../../TxFlowProvider'
 
-type ReviewShieldAssetsProps = {
+type ReviewShieldedAssetsTransferProps = {
   params?: MultiTokenTransferParams
   onSubmit: () => void
   txNonce?: number
 }
 
-const ReviewShieldAssets = ({
+const ReviewShieldedAssetsTransfer = ({
   params,
   onSubmit,
   txNonce,
   children,
-}: PropsWithChildren<ReviewShieldAssetsProps>) => {
+}: PropsWithChildren<ReviewShieldedAssetsTransferProps>) => {
   const { safeAddress } = useSafeInfo()
   const { balances } = useBalances()
   const { setSafeTx, setSafeTxError, setNonce, setBatchSafeTxs } = useContext(SafeTxContext)
@@ -136,4 +136,4 @@ const ReviewShieldAssets = ({
   )
 }
 
-export default ReviewShieldAssets
+export default ReviewShieldedAssetsTransfer

@@ -7,12 +7,12 @@ import { TokenTransferFields } from '../TokenTransfer'
 import { ZERO_ADDRESS } from '@safe-global/protocol-kit/dist/src/utils/constants'
 import { TokenTransferType } from '../TokenTransfer'
 import { getBermudaSDK } from '@/hooks/bermudaSDK/useBermudaSDK'
-import ReviewShieldAssets from './ReviewShieldAssets'
+import ReviewShieldedAssetsTranfer from './ReviewShieldedAssetsTransfer'
 import { useBermuda } from '@/contexts/bermuda-context'
 
-export type ShieldAssetsFlowProps = CreateTokenTransferProps
+export type ShieldedAssetsTransferFlowProps = CreateTokenTransferProps
 
-const ShieldAssetsFlow = ({ txNonce }: ShieldAssetsFlowProps = {}) => {
+const ShieldedAssetsTransferFlow = ({ txNonce }: ShieldedAssetsTransferFlowProps = {}) => {
   const bermuda = useBermuda()
 
   const initialData = useMemo(
@@ -33,8 +33,8 @@ const ShieldAssetsFlow = ({ txNonce }: ShieldAssetsFlowProps = {}) => {
     <TxFlow
       initialData={initialData}
       icon={AssetsIcon}
-      subtitle="Shield tokens"
-      ReviewTransactionComponent={ReviewShieldAssets}
+      subtitle="Transfer shielded tokens"
+      ReviewTransactionComponent={ReviewShieldedAssetsTranfer}
     >
       <TxFlowStep title="New transaction">
         <CreateTokenTransfer txNonce={txNonce} />
@@ -43,4 +43,4 @@ const ShieldAssetsFlow = ({ txNonce }: ShieldAssetsFlowProps = {}) => {
   )
 }
 
-export default ShieldAssetsFlow
+export default ShieldedAssetsTransferFlow

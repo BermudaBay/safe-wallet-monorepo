@@ -9,10 +9,16 @@ import ChainIndicator from '@/components/common/ChainIndicator'
 import NewTxIcon from '@/public/images/transactions/new-tx.svg'
 
 import css from './styles.module.css'
+import ShieldAssetsButton from '@/components/balances/ShieldAssetsButton'
+import ShieldedAssetsTransferButton from '@/components/balances/ShieldedAssetsTransferButton'
+import UnshieldAssetsButton from '@/components/balances/UnshieldAssetsButton'
+import { useBermuda } from '@/contexts/bermuda-context'
 
 const NewTxFlow = () => {
   const txBuilder = useTxBuilderApp()
   const { setTxFlow } = useContext(TxModalContext)
+
+  const bermuda = useBermuda()
 
   const onTokensClick = useCallback(() => {
     setTxFlow(<TokenTransferFlow />)
@@ -75,8 +81,36 @@ const NewTxFlow = () => {
                 Manage assets
               </Typography>
 
+              <ShieldAssetsButton
+                disabled={!bermuda.keyPair}
+                title={!bermuda.keyPair ? "Setup this Safe's shielded account in the settings" : ""}
+                sx={{
+                  fontSize: "100%",
+                  width: "100%",
+                  height: '58px',
+                  '& svg path': {
+                    fill: 'currentColor'
+                  }
+                }}
+              />
+              <ShieldedAssetsTransferButton
+                disabled={!bermuda.keyPair}
+                title={!bermuda.keyPair ? "Setup this Safe's shielded account in the settings" : ""}
+              />
+              <UnshieldAssetsButton
+                disabled={!bermuda.keyPair}
+                title={!bermuda.keyPair ? "Setup this Safe's shielded account in the settings" : ""}
+                sx={{
+                  fontSize: "100%",
+                  width: "100%",
+                  height: '58px',
+                  '& svg path': {
+                    fill: 'currentColor'
+                  }
+                }}
+              />
               <SendTokensButton onClick={onTokensClick} />
-              <MakeASwapButton />
+              {/* <MakeASwapButton /> */}
 
               {txBuilder?.app && (
                 <>

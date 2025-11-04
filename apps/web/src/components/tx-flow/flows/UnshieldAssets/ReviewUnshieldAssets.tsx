@@ -13,18 +13,18 @@ import ReviewRecipientRow from '../TokenTransfer/ReviewRecipientRow'
 import { useCurrentChain } from '@/hooks/useChains'
 import { TxFlowContext, type TxFlowContextType } from '../../TxFlowProvider'
 
-type ReviewShieldAssetsProps = {
+type ReviewUnshieldAssetsProps = {
   params?: MultiTokenTransferParams
   onSubmit: () => void
   txNonce?: number
 }
 
-const ReviewShieldAssets = ({
+const ReviewUnshieldAssets = ({
   params,
   onSubmit,
   txNonce,
   children,
-}: PropsWithChildren<ReviewShieldAssetsProps>) => {
+}: PropsWithChildren<ReviewUnshieldAssetsProps>) => {
   const { safeAddress } = useSafeInfo()
   const { balances } = useBalances()
   const { setSafeTx, setSafeTxError, setNonce, setBatchSafeTxs } = useContext(SafeTxContext)
@@ -59,7 +59,7 @@ const ReviewShieldAssets = ({
 
     const buildSafeTx = async () => {
       if (!recipient || !recipient.amount || !safeAddress || tokenDecimals == null) {
-        console.info('[ShieldAssets][Review] Skipping build - missing recipient/amount/safe/decimals', {
+        console.info('[UnshieldAssets][Review] Skipping build - missing recipient/amount/safe/decimals', {
           hasRecipient: Boolean(recipient),
           hasAmount: Boolean(recipient?.amount),
           hasSafe: Boolean(safeAddress),
@@ -72,7 +72,7 @@ const ReviewShieldAssets = ({
       }
 
       try {
-        console.info('[ShieldAssets][Review] Building shielded deposit SafeTx', {
+        console.info('[UnshieldAssets][Review] Building shielded deposit SafeTx', {
           safeAddress,
           recipient: recipient.recipient,
           tokenAddress: recipient.tokenAddress,
@@ -92,7 +92,7 @@ const ReviewShieldAssets = ({
         const safeTx = await createMultiSendCallOnlyTx(metaTxs)
 
         if (!isCancelled) {
-          console.info('[ShieldAssets][Review] SafeTx build complete', {
+          console.info('[UnshieldAssets][Review] SafeTx build complete', {
             metaTxCount: metaTxs.length,
           })
           setSafeTx(safeTx)
@@ -101,7 +101,7 @@ const ReviewShieldAssets = ({
         }
       } catch (error) {
         if (!isCancelled) {
-          console.error('[ShieldAssets][Review] Failed to build shielded deposit SafeTx', error)
+          console.error('[UnshieldAssets][Review] Failed to build shielded deposit SafeTx', error)
           setSafeTxError(error as Error)
           setBatchSafeTxs(undefined)
         }
@@ -127,7 +127,7 @@ const ReviewShieldAssets = ({
     <ReviewTransaction onSubmit={onSubmit}>
       {recipient && (
         <Stack divider={<Divider />} gap={2}>
-          <ReviewRecipientRow params={recipient} name="Shielded address" />
+          <ReviewRecipientRow params={recipient} name="Public address" />
         </Stack>
       )}
 
@@ -136,4 +136,4 @@ const ReviewShieldAssets = ({
   )
 }
 
-export default ReviewShieldAssets
+export default ReviewUnshieldAssets
