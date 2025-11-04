@@ -2,6 +2,7 @@ import type { TypedData } from '@safe-global/store/gateway/AUTO_GENERATED/messag
 import { createContext, useState, useEffect } from 'react'
 import type { Dispatch, ReactNode, SetStateAction, ReactElement } from 'react'
 import type { SafeTransaction } from '@safe-global/types-kit'
+import type { BatchSafeTx } from '@/services/tx/tx-sender/dispatch'
 import { createTx } from '@/services/tx/tx-sender'
 import { useRecommendedNonce, useSafeTxGas } from '../tx/SignOrExecuteForm/hooks'
 import { Errors, logError } from '@/services/exceptions'
@@ -15,6 +16,9 @@ export type SafeTxContextParams = {
 
   safeTxError?: Error
   setSafeTxError: Dispatch<SetStateAction<Error | undefined>>
+
+  batchSafeTxs?: BatchSafeTx[]
+  setBatchSafeTxs: Dispatch<SetStateAction<BatchSafeTx[] | undefined>>
 
   nonce?: number
   setNonce: Dispatch<SetStateAction<number | undefined>>
@@ -39,6 +43,7 @@ export const SafeTxContext = createContext<SafeTxContextParams>({
   setSafeTx: () => {},
   setSafeMessage: () => {},
   setSafeTxError: () => {},
+  setBatchSafeTxs: () => {},
   setNonce: () => {},
   setNonceNeeded: () => {},
   setSafeTxGas: () => {},
@@ -52,6 +57,7 @@ const SafeTxProvider = ({ children }: { children: ReactNode }): ReactElement => 
   const [safeTx, setSafeTx] = useState<SafeTransaction>()
   const [safeMessage, setSafeMessage] = useState<TypedData>()
   const [safeTxError, setSafeTxError] = useState<Error>()
+  const [batchSafeTxs, setBatchSafeTxs] = useState<BatchSafeTx[]>()
   const [nonce, setNonce] = useState<number>()
   const [nonceNeeded, setNonceNeeded] = useState<boolean>(true)
   const [safeTxGas, setSafeTxGas] = useState<string>()
@@ -103,6 +109,8 @@ const SafeTxProvider = ({ children }: { children: ReactNode }): ReactElement => 
         safeMessage,
         setSafeMessage,
         nonce: finalNonce,
+        batchSafeTxs,
+        setBatchSafeTxs,
         setNonce,
         nonceNeeded,
         setNonceNeeded,

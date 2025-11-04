@@ -4,6 +4,8 @@ import type { MetaTransactionData } from '@safe-global/types-kit'
 import { safeParseUnits } from '@safe-global/utils/utils/formatters'
 import { sameAddress } from '@safe-global/utils/utils/addresses'
 import { Interface, ZeroAddress } from 'ethers'
+import { OperationType } from '@safe-global/types-kit'
+import type { BatchSafeTx } from '@/services/tx/tx-sender/dispatch'
 
 type BuildShieldedDepositArgs = {
   safeAddress: string
@@ -19,7 +21,7 @@ export const buildShieldedDepositMetaTxs = async ({
   tokenAddress,
   tokenDecimals,
   amount,
-}: BuildShieldedDepositArgs): Promise<{ metaTxs: MetaTransactionData[]; viewingKey?: string }> => {
+}: BuildShieldedDepositArgs): Promise<{ metaTxs: MetaTransactionData[]; batchSafeTxs: BatchSafeTx[]; viewingKey?: string }> => {
   console.info('[ShieldAssets][Builder] Preparing shielded deposit meta txs', {
     safeAddress,
     shieldedAddress,
@@ -113,5 +115,12 @@ export const buildShieldedDepositMetaTxs = async ({
     includesApproval: !isNativeToken,
   })
 
-  return { metaTxs, viewingKey }
+  const batchSafeTxs: BatchSafeTx[] = metaTxs.map((metaTx) => ({
+    to: metaTx.to,
+    data: metaTx.data ?? '0x',
+    value: BigInt(metaTx.value ?? '0'),
+    operation: Number(metaTx.operation ?? OperationType.Call),
+  }))
+
+  return { metaTxs, batchSafeTxs, viewingKey }
 }

@@ -1,5 +1,5 @@
 import { assertTx, assertOnboard, assertChainInfo, assertProvider } from '@/utils/helpers'
-import { useMemo } from 'react'
+import { useContext, useMemo } from 'react'
 import { type TransactionOptions, type SafeTransaction } from '@safe-global/types-kit'
 import { sameString } from '@safe-global/protocol-kit/dist/src/utils'
 import useSafeInfo from '@/hooks/useSafeInfo'
@@ -20,6 +20,7 @@ import useAsync from '@safe-global/utils/hooks/useAsync'
 import { useUpdateBatch } from '@/hooks/useDraftBatch'
 import { type TransactionDetails } from '@safe-global/safe-gateway-typescript-sdk'
 import { useCurrentChain } from '@/hooks/useChains'
+import { SafeTxContext } from '@/components/tx-flow/SafeTxProvider'
 
 type TxActions = {
   addToBatch: (safeTx?: SafeTransaction, origin?: string) => Promise<string>
@@ -42,6 +43,7 @@ export const useTxActions = (): TxActions => {
   const wallet = useWallet()
   const [addTxToBatch] = useUpdateBatch()
   const chain = useCurrentChain()
+  const { batchSafeTxs } = useContext(SafeTxContext)
 
   return useMemo<TxActions>(() => {
     const safeAddress = safe.address.value
@@ -55,6 +57,7 @@ export const useTxActions = (): TxActions => {
         safeTx,
         txId,
         origin,
+        batchSafeTxs,
       })
     }
 
@@ -151,7 +154,7 @@ export const useTxActions = (): TxActions => {
     }
 
     return { addToBatch, signTx, executeTx, signProposerTx, proposeTx }
-  }, [safe, wallet, signer?.provider, signer?.address, signer?.chainId, signer?.isSafe, addTxToBatch, onboard, chain])
+  }, [safe, wallet, signer?.provider, signer?.address, signer?.chainId, signer?.isSafe, addTxToBatch, onboard, chain, batchSafeTxs])
 }
 
 export const useValidateNonce = (safeTx: SafeTransaction | undefined): boolean => {
