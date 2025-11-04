@@ -42,6 +42,7 @@ import PkModulePopup from '@/services/private-key-module/PkModulePopup'
 import { useVisitedSafes } from '@/features/myAccounts/hooks/useVisitedSafes'
 import { GATEWAY_URL } from '@/config/gateway'
 import { AddressBookSourceProvider } from '@/components/common/AddressBookSourceProvider'
+import { BermudaProvider } from '@/contexts/bermuda-context'
 
 const reduxStore = makeStore()
 
@@ -85,7 +86,9 @@ export const AppProviders = ({ children }: { children: ReactNode | ReactNode[] }
         <ThemeProvider theme={safeTheme}>
           <WalletProvider>
             <TxModalProvider>
-              <AddressBookSourceProvider>{children}</AddressBookSourceProvider>
+              <AddressBookSourceProvider>
+                <BermudaProvider>{children}</BermudaProvider>
+              </AddressBookSourceProvider>
             </TxModalProvider>
           </WalletProvider>
         </ThemeProvider>

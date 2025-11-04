@@ -9,6 +9,7 @@ import useSafeInfo from '@/hooks/useSafeInfo'
 import SettingsHeader from '@/components/settings/SettingsHeader'
 import ProposersList from 'src/components/settings/ProposersList'
 import SpendingLimits from '@/components/settings/SpendingLimits'
+import ShieldedAccount from '@/components/settings/ShieldedAccount'
 import { BRAND_NAME } from '@/config/constants'
 import { NestedSafesList } from '@/components/settings/NestedSafesList'
 
@@ -80,6 +81,8 @@ const Setup: NextPage = () => {
         </Paper>
 
         <SpendingLimits />
+
+        <ShieldedAccount sx={{ my: 2 }} />
 
         <NestedSafesList />
       </main>
