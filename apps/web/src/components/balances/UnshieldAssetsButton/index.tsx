@@ -1,26 +1,27 @@
 import { type ReactElement, useContext, useMemo } from 'react'
 import { Button, Tooltip } from '@mui/material'
-import ShieldIcon from '@mui/icons-material/Shield'
+import NoAssetsIcon from '@/public/images/balances/no-assets.svg'
 import CheckWallet from '@/components/common/CheckWallet'
 import Track from '@/components/common/Track'
 import { ASSETS_EVENTS } from '@/services/analytics/events/assets'
 import { useVisibleBalances } from '@/hooks/useVisibleBalances'
 import { TxModalContext } from '@/components/tx-flow'
-import { ShieldAssetsFlow } from '@/components/tx-flow/flows'
+import { UnshieldAssetsFlow } from '@/components/tx-flow/flows'
 
-const ShieldAssetsButton = ({ sx, disabled }: any): ReactElement => {
+const UnshieldAssetsButton = ({ sx, disabled }: any): ReactElement => {
   const { setTxFlow } = useContext(TxModalContext)
   const { balances } = useVisibleBalances()
 
-  const hasAssets = useMemo(() => {
-    return balances.items.some((item) => item.balance !== '0')
+  const hasShieldedAssets = useMemo(() => {
+    // return balances.items.some((item) => item.balance !== '0')
+    return false //TODO TODO TODO TODO TODO TODO TODO TODO TODO
   }, [balances.items])
 
   const onClick = () => {
-    setTxFlow(<ShieldAssetsFlow />)
+    setTxFlow(<UnshieldAssetsFlow />)
   }
 
-  const tooltipTitle = !hasAssets ? 'Cannot shield assets when balance is zero' : ''
+  const tooltipTitle = !hasShieldedAssets ? 'Cannot unshield when shielded asset balance is zero' : ''
 
   return (
     <CheckWallet allowSpendingLimit>
@@ -33,11 +34,11 @@ const ShieldAssetsButton = ({ sx, disabled }: any): ReactElement => {
                 onClick={onClick}
                 variant="contained"
                 size="small"
-                disabled={(disabled ?? !isOk) || !hasAssets}
-                startIcon={<ShieldIcon />}
+                disabled={(disabled ?? !isOk) || !hasShieldedAssets}
+                startIcon={<NoAssetsIcon style={{ width: "19px" }} />}
                 sx={{ ...sx }}
               >
-                Shield tokens
+                Unshield tokens
               </Button>
             </span>
           </Tooltip>
@@ -48,4 +49,4 @@ const ShieldAssetsButton = ({ sx, disabled }: any): ReactElement => {
   )
 }
 
-export default ShieldAssetsButton
+export default UnshieldAssetsButton

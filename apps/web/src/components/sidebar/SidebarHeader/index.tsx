@@ -10,7 +10,6 @@ import { Stack } from '@mui/material'
 import useSafeInfo from '@/hooks/useSafeInfo'
 import SafeIcon from '@/components/common/SafeIcon'
 import NewTxButton from '@/components/sidebar/NewTxButton'
-import ShieldAssetsButton from '@/components/sidebar/ShieldAssetsButton'
 import { useAppSelector } from '@/store'
 
 import css from './styles.module.css'
@@ -92,7 +91,7 @@ const SafeHeader = (): ReactElement => {
             <Typography variant="caption" fontWeight={700} sx={{ color: 'var(--color-text-secondary)' }}>
               {safe.deployed && shieldedBalances.fiatTotal && (
                 <>
-                  Shielded: <FiatValue value={shieldedBalances.fiatTotal} />
+                  𝜟 balance: <FiatValue value={shieldedBalances.fiatTotal} />
                 </>
               )}
             </Typography>
@@ -134,7 +133,6 @@ const SafeHeader = (): ReactElement => {
 
       <Stack spacing={1}>
         <NewTxButton />
-        <ShieldAssetsButton />
       </Stack>
     </div>
   )

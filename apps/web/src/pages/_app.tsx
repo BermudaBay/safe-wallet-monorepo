@@ -85,11 +85,13 @@ export const AppProviders = ({ children }: { children: ReactNode | ReactNode[] }
       {(safeTheme: Theme) => (
         <ThemeProvider theme={safeTheme}>
           <WalletProvider>
-            <TxModalProvider>
-              <AddressBookSourceProvider>
-                <BermudaProvider>{children}</BermudaProvider>
-              </AddressBookSourceProvider>
-            </TxModalProvider>
+            <BermudaProvider>
+              <TxModalProvider>
+                <AddressBookSourceProvider>
+                  {children}
+                </AddressBookSourceProvider>
+              </TxModalProvider>
+            </BermudaProvider>
           </WalletProvider>
         </ThemeProvider>
       )}
