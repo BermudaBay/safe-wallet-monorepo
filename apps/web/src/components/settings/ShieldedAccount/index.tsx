@@ -130,36 +130,30 @@ export default function ShieldedAccount({ sx }: { sx: SxProps }) {
       try {
         const shieldedAddress = keyPair.address()
 
-        const isRegistered = await sdk.registry.isRegistered(shieldedAddress)
+        const chainId = sdk.config.chainId
+        const target = await sdk.config.registry.getAddress()
 
-        if (isRegistered) {
-          const chainId = sdk.config.chainId
-          const target = await sdk.config.registry.getAddress()
+        const data = Interface.from([
+          'function _register(address _nativeAddress, bytes calldata _shieldedAddress, bytes calldata _name) external',
+        ]).encodeFunctionData('_register', [
+          safeAddress,
+          Buffer.from(shieldedAddress.replace('0x', ''), 'hex'),
+          Buffer.from(alias, 'utf-8'),
+        ])
 
-          const data = Interface.from([
-            'function _register(address _nativeAddress, bytes calldata _shieldedAddress, bytes calldata _name) external',
-          ]).encodeFunctionData('_register', [
-            safeAddress,
-            Buffer.from(shieldedAddress.replace('0x', ''), 'hex'),
-            Buffer.from(alias, 'utf-8'),
-          ])
+        const tx = await sdk.utils.relay(sdk.config.relayer, {
+          chainId,
+          target,
+          data,
+        })
 
-          const tx = await sdk.utils.relay(sdk.config.relayer, {
-            chainId,
-            target,
-            data,
-          })
-
-          const receipt = await sdk.config.provider.waitForTransaction(tx)
-          if (receipt.status === 0) {
-            throw new Error(`Registry Transaction ${tx} reverted`)
-          }
-
-          setAlias('')
-          setIsAliasRegistered(true)
-        } else {
-          throw new Error('Shielded Address not yet registered. Please logout and login again.')
+        const receipt = await sdk.config.provider.waitForTransaction(tx)
+        if (receipt.status === 0) {
+          throw new Error(`Registry Transaction ${tx} reverted`)
         }
+
+        setAlias('')
+        setIsAliasRegistered(true)
       } catch (error: unknown) {
         setRegisterAliasError(error as Error)
       } finally {
