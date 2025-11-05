@@ -4,6 +4,7 @@ import useSafeInfo from '@/hooks/useSafeInfo'
 import { useBermuda } from '@/contexts/bermuda-context'
 import { loadShieldedBalances } from '@/on-chain-data/load-safe-sheilded-balances'
 import { type Balances } from '@safe-global/store/gateway/AUTO_GENERATED/balances'
+import { useBermudaSDK } from '@/hooks/bermudaSDK/useBermudaSDK'
 
 const EMPTY_BALANCES: Balances = {
   fiatTotal: '0',
@@ -19,6 +20,7 @@ export const useShieldedBalances = (): {
   const { safe, safeAddress } = useSafeInfo()
   const { keyPair } = useBermuda()
   const chainId = Number(safe.chainId)
+  const sdk = useBermudaSDK()
 
   const [balances, error, loading] = useAsync<Balances>(
     async () => {
