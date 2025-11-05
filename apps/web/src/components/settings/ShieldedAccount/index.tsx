@@ -12,25 +12,26 @@ export default function ShieldedAccount({ sx }: { sx: SxProps }) {
   const [aliasError, setAliasError] = useState<string>('')
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [passwordError, setPasswordError] = useState<string>('')
-  const [isRegistered, setIsRegistered] = useState<boolean>(false)
   const { sdk, keyPair, saveKeyPair, deleteKeyPair } = useBermuda()
   const [registerError, setRegisterError] = useState<Error | undefined>()
+  const [isAliasRegistered, setIsAliasRegistered] = useState<boolean>(false)
+  const [registerAliasError, setRegisterAliasError] = useState<Error | undefined>()
 
   useEffect(() => {
-    if (keyPair) {
+    if (keyPair || isAliasRegistered) {
       async function loadAlias() {
         const shieldedAddress = keyPair.address()
         const name = await sdk.registry.nameOfShieldedAddress(shieldedAddress)
 
         if (name.length) {
           setAlias(name)
-          setIsRegistered(true)
+          setIsAliasRegistered(true)
         }
       }
 
       loadAlias()
     }
-  }, [keyPair])
+  }, [keyPair, isAliasRegistered])
 
   useEffect(() => {
     if (alias.length) {
@@ -71,35 +72,67 @@ export default function ShieldedAccount({ sx }: { sx: SxProps }) {
 
     if (password.length) {
       setIsLoading(true)
-
       setPasswordError('')
+      setRegisterError(undefined)
 
       const seed = await deriveSeedFromPassword(password)
       const keyPair = sdk.types.KeyPair.fromSeed(seed)
 
-      saveKeyPair(keyPair)
+      try {
+        const shieldedAddress = keyPair.address()
 
-      setIsLoading(false)
+        const isRegistered = await sdk.registry.isRegistered(shieldedAddress)
+
+        if (!isRegistered) {
+          const chainId = sdk.config.chainId
+          const target = await sdk.config.registry.getAddress()
+
+          const data = Interface.from([
+            'function _register(address _nativeAddress, bytes calldata _shieldedAddress, bytes calldata _name) external',
+          ]).encodeFunctionData('_register', [
+            safeAddress,
+            Buffer.from(shieldedAddress.replace('0x', ''), 'hex'),
+            Buffer.alloc(0), // Skipping the name field on first registration.
+          ])
+
+          const tx = await sdk.utils.relay(sdk.config.relayer, {
+            chainId,
+            target,
+            data,
+          })
+
+          const receipt = await sdk.config.provider.waitForTransaction(tx)
+          if (receipt.status === 0) {
+            throw new Error(`Registry Transaction ${tx} reverted`)
+          }
+        }
+
+        setPassword('')
+        saveKeyPair(keyPair)
+      } catch (error: unknown) {
+        setRegisterError(error as Error)
+      } finally {
+        setIsLoading(false)
+      }
     } else {
       if (!password.length) setPasswordError("Can't be empty")
     }
   }
 
-  async function handleRegister(event: React.FormEvent) {
+  async function handleRegisterAlias(event: React.FormEvent) {
     event.preventDefault()
 
     if (keyPair && alias.length) {
       setIsLoading(true)
-
       setAliasError('')
-      setRegisterError(undefined)
+      setRegisterAliasError(undefined)
 
       try {
         const shieldedAddress = keyPair.address()
 
-        const taken = await sdk.registry.isRegistered(shieldedAddress)
+        const isRegistered = await sdk.registry.isRegistered(shieldedAddress)
 
-        if (!taken) {
+        if (isRegistered) {
           const chainId = sdk.config.chainId
           const target = await sdk.config.registry.getAddress()
 
@@ -122,16 +155,19 @@ export default function ShieldedAccount({ sx }: { sx: SxProps }) {
             throw new Error(`Registry Transaction ${tx} reverted`)
           }
 
-          setIsRegistered(true)
+          setAlias('')
+          setIsAliasRegistered(true)
+        } else {
+          throw new Error('Shielded Address not yet registered. Please logout and login again.')
         }
       } catch (error: unknown) {
-        setRegisterError(error as Error)
+        setRegisterAliasError(error as Error)
       } finally {
         setIsLoading(false)
       }
     } else {
       if (!alias.length) setAliasError("Can't be empty")
-      if (!keyPair) setRegisterError(new Error('KeyPair not set'))
+      if (!keyPair) setRegisterAliasError(new Error('KeyPair not set'))
     }
   }
 
@@ -142,8 +178,9 @@ export default function ShieldedAccount({ sx }: { sx: SxProps }) {
     setPassword('')
 
     deleteKeyPair()
-    setIsRegistered(false)
+    setIsAliasRegistered(false)
     setRegisterError(undefined)
+    setRegisterAliasError(undefined)
   }
 
   return (
@@ -175,6 +212,7 @@ export default function ShieldedAccount({ sx }: { sx: SxProps }) {
                 noValidate
                 sx={{ display: 'flex', flexDirection: 'column', gap: '10px', width: '300px' }}
               >
+                {registerError && <Alert severity="error">{registerError.message}</Alert>}
                 <TextField
                   required
                   label="Password"
@@ -194,14 +232,14 @@ export default function ShieldedAccount({ sx }: { sx: SxProps }) {
               </Box>
             ) : (
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: '10px', width: '300px' }}>
-                {registerError && <Alert severity="error">{registerError.message}</Alert>}
+                {registerAliasError && <Alert severity="error">{registerAliasError.message}</Alert>}
                 <Typography>
                   <Box component="span" fontWeight="bold">
                     Address
                   </Box>
                   : {shortenHex(keyPair.address())}
                 </Typography>
-                {isRegistered && alias.length ? (
+                {isAliasRegistered && alias.length ? (
                   <Typography>
                     <Box component="span" fontWeight="bold">
                       Alias
@@ -211,7 +249,7 @@ export default function ShieldedAccount({ sx }: { sx: SxProps }) {
                 ) : (
                   <Box
                     component="form"
-                    onSubmit={handleRegister}
+                    onSubmit={handleRegisterAlias}
                     sx={{ display: 'flex', flexDirection: 'column', gap: '10px' }}
                   >
                     <TextField
@@ -227,7 +265,7 @@ export default function ShieldedAccount({ sx }: { sx: SxProps }) {
                       helperText={aliasError}
                     />
                     <Button type="submit" variant="contained" disabled={isLoading || !alias || !!aliasError}>
-                      {!isLoading ? 'Register' : 'Loading...'}
+                      {!isLoading ? 'Register Alias' : 'Loading...'}
                     </Button>
                   </Box>
                 )}
