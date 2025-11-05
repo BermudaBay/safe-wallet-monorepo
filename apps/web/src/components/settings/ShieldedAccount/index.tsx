@@ -263,7 +263,7 @@ export default function ShieldedAccount({ sx }: { sx: SxProps }) {
                     </Button>
                   </Box>
                 )}
-                <Button type="button" variant="outlined" onClick={handleLogout}>
+                <Button type="button" variant="outlined" onClick={handleLogout} disabled={isLoading}>
                   Logout
                 </Button>
               </Box>
