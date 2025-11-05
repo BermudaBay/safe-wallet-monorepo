@@ -18,7 +18,7 @@ export default function ShieldedAccount({ sx }: { sx: SxProps }) {
   const [registerAliasError, setRegisterAliasError] = useState<Error | undefined>()
 
   useEffect(() => {
-    if (keyPair || isAliasRegistered) {
+    if (sdk && (keyPair || isAliasRegistered)) {
       async function loadAlias() {
         const shieldedAddress = keyPair.address()
         const name = await sdk.registry.nameOfShieldedAddress(shieldedAddress)
@@ -31,7 +31,7 @@ export default function ShieldedAccount({ sx }: { sx: SxProps }) {
 
       loadAlias()
     }
-  }, [keyPair, isAliasRegistered])
+  }, [sdk, keyPair, isAliasRegistered])
 
   useEffect(() => {
     if (alias.length) {
