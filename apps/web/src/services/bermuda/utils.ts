@@ -1,7 +1,6 @@
 import { getBermudaSDK } from '@/hooks/bermudaSDK/useBermudaSDK'
-import { formatUnits } from 'ethers'
 
-export async function getShieldedBalance(shieldedKeyPair: any, token: string, decimals: number): Promise<number> {
+export async function getShieldedBalance(shieldedKeyPair: any, token: string): Promise<bigint> {
   token = token.toLowerCase()
   const bermudaSDK = getBermudaSDK()
   if (!bermudaSDK) {
@@ -20,5 +19,5 @@ export async function getShieldedBalance(shieldedKeyPair: any, token: string, de
       from: bermudaSDK.config.startBlock,
     })
     .then((found: any) => bermudaSDK.utils.sumAmounts(found[token]))
-    .then(async (amount: any) => Number(formatUnits(amount, decimals)))
+    .then((amount: bigint) => amount ?? 0n)
 }
