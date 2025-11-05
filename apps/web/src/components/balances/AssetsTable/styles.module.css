@@ -25,7 +25,7 @@
 .token {
   display: flex;
   align-items: center;
-  gap: var(--space-1);
+  gap: var(--space-2);
   position: relative;
   z-index: 1;
 }
@@ -70,6 +70,34 @@
   height: 10px;
   border-radius: 50%;
   background: var(--color-background-paper);
+}
+
+.shieldedRow {
+  color: var(--color-primary-light) !important;
+  border-top: none !important;
+  font-size: 12px !important;
+}
+
+.shieldedRow td {
+  padding-top: 2px !important;
+  padding-bottom: var(--space-2) !important;
+}
+
+.shieldedRow .token {
+  padding-left: var(--space-3);
+}
+
+.shieldedRow Typography,
+.shieldedRow * {
+  font-size: 12px !important;
+}
+
+.hasShieldedBalance {
+  border-bottom: none !important;
+}
+
+.hasShieldedBalance td {
+  padding-bottom: 4px !important;
 }
 
 @media (max-width: 599.95px) {

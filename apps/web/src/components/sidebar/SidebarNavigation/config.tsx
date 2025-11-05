@@ -19,11 +19,6 @@ export const navItems: NavItem[] = [
   { label: 'Home', icon: <SvgIcon component={HomeIcon} inheritViewBox />, href: AppRoutes.home },
   { label: 'Assets', icon: <SvgIcon component={AssetsIcon} inheritViewBox />, href: AppRoutes.balances.index },
   {
-    label: 'Shielded Assets',
-    icon: <SvgIcon component={AssetsIcon} inheritViewBox />,
-    href: AppRoutes.shieldedBalances.index,
-  },
-  {
     label: 'Transactions',
     icon: <SvgIcon component={TransactionIcon} inheritViewBox />,
     href: AppRoutes.transactions.queue,
