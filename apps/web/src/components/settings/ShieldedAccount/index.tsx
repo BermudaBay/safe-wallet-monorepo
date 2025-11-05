@@ -1,4 +1,4 @@
-import { Interface } from 'ethers'
+import { getBytes, Interface, toUtf8Bytes, TransactionReceipt } from 'ethers'
 import useSafeInfo from '@/hooks/useSafeInfo'
 import React, { useEffect, useState } from 'react'
 import { useBermuda } from '@/contexts/bermuda-context'
@@ -126,6 +126,22 @@ export default function ShieldedAccount({ sx }: { sx: SxProps }) {
       } finally {
         setIsLoading(false)
       }
+    } else if (keyPair && alias.length) {
+      // Already reagistered but we are reregistering now with an alias
+      const chainId = sdk.config.chainId
+      const target = await sdk.config.registry.getAddress()
+
+      const data = Interface.from([
+        'function _register(address _nativeAddress, bytes calldata _shieldedAddress, bytes calldata _name) external',
+      ]).encodeFunctionData('_register', [safeAddress, getBytes(keyPair.address()), toUtf8Bytes(alias)])
+
+      const tx = await sdk.utils.relay(sdk.config.relayer, { chainId, target, data })
+        .then((tx: string) => sdk.config.provider.waitForTransaction(tx))
+        .then((receipt: TransactionReceipt) => {
+          if (receipt.status === 0) throw new Error(`Registry Transaction ${tx} reverted`)
+        })
+
+      setIsRegistered(true)
     } else {
       if (!alias.length) setAliasError("Can't be empty")
       if (!password.length) setAliasError("Can't be empty")
