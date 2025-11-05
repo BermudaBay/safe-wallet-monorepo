@@ -48,9 +48,28 @@ export const useShieldedBalances = (): {
 }
 
 export function hasShieldedBalance() {
-  const bermuda = useBermuda()
+  const { sdk } = useBermuda()
+
   const shieldedBalances = useShieldedBalances()
-  const hasShieldedAssets = Number(shieldedBalances.balances.items.find(b => b.tokenInfo.address === bermuda.sdk.config.mockUSDC)?.balance) > 0
-    || Number(shieldedBalances.balances.items.find(b => b.tokenInfo.address === bermuda.sdk.config.mockWETH)?.balance) > 0
+
+  let hasShieldedAssets = false
+
+  if (shieldedBalances && sdk) {
+    const mockUSDCAddress = sdk.config.mockUSDC.toLowerCase()
+    const mockWETHAddress = sdk.config.mockWETH.toLowerCase()
+
+    const total = shieldedBalances.balances.items.reduce((accum, item) => {
+      const tokenAddress = item.tokenInfo.address.toLowerCase()
+
+      if (tokenAddress === mockUSDCAddress || tokenAddress === mockWETHAddress) {
+        return (accum += Number(item.balance))
+      }
+
+      return accum
+    }, 0)
+
+    hasShieldedAssets = !!total
+  }
+
   return hasShieldedAssets
 }
