@@ -3,7 +3,7 @@ import { ZERO_ADDRESS } from '@safe-global/protocol-kit/dist/src/utils/constants
 import type { MetaTransactionData } from '@safe-global/types-kit'
 import { safeParseUnits } from '@safe-global/utils/utils/formatters'
 import { sameAddress } from '@safe-global/utils/utils/addresses'
-import { Interface, ZeroAddress } from 'ethers'
+import { Interface} from 'ethers'
 import { OperationType } from '@safe-global/types-kit'
 import type { BatchSafeTx } from '@/services/tx/tx-sender/dispatch'
 
@@ -44,7 +44,19 @@ export const buildShieldedDepositMetaTxs = async ({
 
   const poolAddress = await poolContract.getAddress()
   const isNativeToken = sameAddress(tokenAddress, ZERO_ADDRESS)
-  const normalizedToken = isNativeToken ? ZeroAddress : tokenAddress.toLowerCase()
+  const normalizedToken = (() => {
+    if (!isNativeToken) {
+      return tokenAddress.toLowerCase()
+    }
+
+    const wethAddress = bermudaSDK.config.mockWETH
+
+    if (!wethAddress) {
+      throw new Error('WETH address not configured for native deposits')
+    }
+
+    return wethAddress.toLowerCase()
+  })()
 
   const parsedAmount = safeParseUnits(amount, tokenDecimals)
 
