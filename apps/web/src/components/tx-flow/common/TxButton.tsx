@@ -20,7 +20,7 @@ const buttonSx = {
   '& svg path': { fill: 'currentColor' },
 }
 
-export const SendTokensButton = ({ onClick, sx }: { onClick: () => void; sx?: ButtonProps['sx'] }) => {
+export const SendTokensButton = ({ onClick, sx, disabled, title }: { onClick: () => void; sx?: ButtonProps['sx'], disabled?: boolean, title?: string }) => {
   return (
     <Track {...MODALS_EVENTS.SEND_FUNDS}>
       <Button
@@ -30,6 +30,8 @@ export const SendTokensButton = ({ onClick, sx }: { onClick: () => void; sx?: Bu
         sx={sx ?? buttonSx}
         fullWidth
         startIcon={<AssetsIcon width={20} />}
+        title={title}
+        disabled={disabled}
       >
         Send tokens
       </Button>

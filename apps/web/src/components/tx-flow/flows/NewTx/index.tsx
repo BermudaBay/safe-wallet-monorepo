@@ -1,4 +1,4 @@
-import { useCallback, useContext } from 'react'
+import { useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { MakeASwapButton, SendTokensButton, TxBuilderButton } from '@/components/tx-flow/common/TxButton'
 import { Container, Grid, Paper, Typography } from '@mui/material'
 import { TxModalContext } from '../../'
@@ -13,12 +13,20 @@ import ShieldAssetsButton from '@/components/balances/ShieldAssetsButton'
 import ShieldedAssetsTransferButton from '@/components/balances/ShieldedAssetsTransferButton'
 import UnshieldAssetsButton from '@/components/balances/UnshieldAssetsButton'
 import { useBermuda } from '@/contexts/bermuda-context'
+import { useVisibleBalances } from '@/hooks/useVisibleBalances'
+import { hasShieldedBalance, useShieldedBalances } from '@/hooks/useShieldedBalances'
 
 const NewTxFlow = () => {
   const txBuilder = useTxBuilderApp()
   const { setTxFlow } = useContext(TxModalContext)
-
   const bermuda = useBermuda()
+  const { balances } = useVisibleBalances()
+
+  const hasAssets = useMemo(() => {
+    return balances.items.some((item) => item.balance !== '0')
+  }, [balances.items])
+
+  const hasShieldedAssets = hasShieldedBalance()
 
   const onTokensClick = useCallback(() => {
     setTxFlow(<TokenTransferFlow />)
@@ -82,8 +90,12 @@ const NewTxFlow = () => {
               </Typography>
 
               <ShieldAssetsButton
-                disabled={!bermuda.keyPair}
-                title={!bermuda.keyPair ? "Setup this Safe's shielded account in the settings" : ""}
+                disabled={!(hasAssets && bermuda.keyPair)}
+                title={
+                  !bermuda.keyPair
+                    ? "Setup this Safe's shielded account in the settings"
+                    : !hasAssets ? "This Safe doesn't have any assets" : ""
+                }
                 sx={{
                   fontSize: "100%",
                   width: "100%",
@@ -94,12 +106,20 @@ const NewTxFlow = () => {
                 }}
               />
               <ShieldedAssetsTransferButton
-                disabled={!bermuda.keyPair}
-                title={!bermuda.keyPair ? "Setup this Safe's shielded account in the settings" : ""}
+                disabled={!(hasShieldedAssets && bermuda.keyPair)}
+                title={
+                  !bermuda.keyPair
+                    ? "Setup this Safe's shielded account in the settings"
+                    : !hasShieldedAssets ? "This Safe doesn't have any shielded assets" : ""
+                }
               />
               <UnshieldAssetsButton
-                disabled={!bermuda.keyPair}
-                title={!bermuda.keyPair ? "Setup this Safe's shielded account in the settings" : ""}
+                disabled={!(hasShieldedAssets && bermuda.keyPair)}
+                title={
+                  !bermuda.keyPair
+                    ? "Setup this Safe's shielded account in the settings"
+                    : !hasShieldedAssets ? "This Safe doesn't have any shielded assets" : ""
+                }
                 sx={{
                   fontSize: "100%",
                   width: "100%",
@@ -109,7 +129,11 @@ const NewTxFlow = () => {
                   }
                 }}
               />
-              <SendTokensButton onClick={onTokensClick} />
+              <SendTokensButton
+                disabled={!hasAssets}
+                title={!hasAssets ? "This Safe doesn't have any assets" : ""}
+                onClick={onTokensClick}
+              />
               {/* <MakeASwapButton /> */}
 
               {txBuilder?.app && (
