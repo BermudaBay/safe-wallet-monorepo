@@ -107,6 +107,12 @@ export default function ShieldedAccount({ sx }: { sx: SxProps }) {
           }
         }
 
+        const nativeAddress = await sdk.registry.nativeAddressOf(shieldedAddress)
+
+        if (nativeAddress.toLowerCase() !== safeAddress.toLowerCase()) {
+          throw new Error('KeyPair already registered with different Safe')
+        }
+
         setPassword('')
         saveKeyPair(keyPair)
       } catch (error: unknown) {
