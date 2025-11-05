@@ -1,20 +1,16 @@
-import { type ReactElement, useContext, useMemo } from 'react'
+import { type ReactElement, useContext } from 'react'
 import { Button, Tooltip } from '@mui/material'
 import CheckWallet from '@/components/common/CheckWallet'
 import Track from '@/components/common/Track'
 import { ASSETS_EVENTS } from '@/services/analytics/events/assets'
-import { useVisibleBalances } from '@/hooks/useVisibleBalances'
 import { TxModalContext } from '@/components/tx-flow'
 import { ShieldedAssetsTransferFlow } from '@/components/tx-flow/flows'
+import { hasShieldedBalance } from '@/hooks/useShieldedBalances'
 
 const ShieldedAssetsTransferButton = ({ disabled }: any): ReactElement => {
   const { setTxFlow } = useContext(TxModalContext)
-  const { balances } = useVisibleBalances()
 
-  const hasShieldedAssets = useMemo(() => {
-    // return balances.items.some((item) => item.balance !== '0')
-    return false //TODO TODO TODO TODO TODO TODO TODO TODO TODO
-  }, [balances.items])
+  const hasShieldedAssets = hasShieldedBalance()
 
   const onClick = () => {
     setTxFlow(<ShieldedAssetsTransferFlow />)

@@ -32,8 +32,8 @@ export async function loadShieldedBalances(chainId: number, keyPair: any, addres
 
   const ethPricePerUsd = Number(formatUnits(ethPrice, ethPriceDecimals))
 
-  const wethAddress = process.env.NEXT_PUBLIC_MOCK_WETH_ADDRESS!
-  const usdcAddress = process.env.NEXT_PUBLIC_MOCK_USDC_ADDRESS!
+  const wethAddress = process.env.NEXT_PUBLIC_MOCK_WETH_ADDRESS!.toLowerCase()
+  const usdcAddress = process.env.NEXT_PUBLIC_MOCK_USDC_ADDRESS!.toLowerCase()
   const ethAddress = '0x0000000000000000000000000000000000000000'
 
 
@@ -66,20 +66,6 @@ export async function loadShieldedBalances(chainId: number, keyPair: any, addres
   const balances: Balances = {
     fiatTotal: String(fiatTotal),
     items: [
-      // ETH
-      {
-        tokenInfo: {
-          type: 'NATIVE_TOKEN',
-          symbol: 'ETH',
-          name: 'Ether',
-          decimals: Number(wethDecimals),
-          address: ethAddress,
-          logoUri: 'https://safe-transaction-assets.safe.global/chains/1/currency_logo.png',
-        },
-        balance: ethBalanceRaw.toString(),
-        fiatBalance: String(ethFiatBalance),
-        fiatConversion: String(ethPricePerUsd),
-      },
       // WETH
       {
         tokenInfo: {

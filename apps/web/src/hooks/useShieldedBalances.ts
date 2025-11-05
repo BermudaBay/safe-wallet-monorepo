@@ -46,3 +46,11 @@ export const useShieldedBalances = (): {
     [balances, error, loading],
   )
 }
+
+export function hasShieldedBalance() {
+  const bermuda = useBermuda()
+  const shieldedBalances = useShieldedBalances()
+  const hasShieldedAssets = Number(shieldedBalances.balances.items.find(b => b.tokenInfo.address === bermuda.sdk.config.mockUSDC)?.balance) > 0
+    || Number(shieldedBalances.balances.items.find(b => b.tokenInfo.address === bermuda.sdk.config.mockWETH)?.balance) > 0
+  return hasShieldedAssets
+}
