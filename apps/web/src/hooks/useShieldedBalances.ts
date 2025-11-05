@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import useAsync from '@safe-global/utils/hooks/useAsync'
 import useSafeInfo from '@/hooks/useSafeInfo'
+import { useBermuda } from '@/contexts/bermuda-context'
 import { loadShieldedBalances } from '@/on-chain-data/load-safe-sheilded-balances'
 import { type Balances } from '@safe-global/store/gateway/AUTO_GENERATED/balances'
 
@@ -16,22 +17,22 @@ export const useShieldedBalances = (): {
   error?: string
 } => {
   const { safe, safeAddress } = useSafeInfo()
+  const { keyPair } = useBermuda()
   const chainId = Number(safe.chainId)
 
   const [balances, error, loading] = useAsync<Balances>(
     async () => {
-      if (!safeAddress || !chainId) {
+      if (!safeAddress || !chainId || !keyPair) {
         return EMPTY_BALANCES
       }
-      const keypairSeed = BigInt(123445)
       try {
-        return await loadShieldedBalances(chainId, keypairSeed, safeAddress)
+        return await loadShieldedBalances(chainId, keyPair, safeAddress)
       } catch (err) {
         console.error('[Shielded Balances] Error loading shielded balances:', err)
         throw err
       }
     },
-    [safeAddress, chainId],
+    [safeAddress, chainId, keyPair],
     false,
   )
 
