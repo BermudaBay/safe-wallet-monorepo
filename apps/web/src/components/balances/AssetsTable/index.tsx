@@ -33,6 +33,7 @@ import useChainId from '@/hooks/useChainId'
 import FiatValue from '@/components/common/FiatValue'
 import { formatPercentage } from '@safe-global/utils/utils/formatters'
 import { useVisibleBalances } from '@/hooks/useVisibleBalances'
+import { useShieldedBalances } from '@/hooks/useShieldedBalances'
 
 const skeletonCells: EnhancedTableProps['rows'][0]['cells'] = {
   asset: {
@@ -158,6 +159,8 @@ const AssetsTable = ({
   const isStakingPromoEnabled = useIsStakingPromoEnabled()
   const isEarnPromoEnabled = useIsEarnPromoEnabled()
 
+  const { balances: shieldedBalances } = useShieldedBalances()
+
   const { isAssetSelected, toggleAsset, hidingAsset, hideAsset, cancel, deselectAll, saveChanges } = useHideAssets(() =>
     setShowHiddenAssets(false),
   )
@@ -175,9 +178,26 @@ const AssetsTable = ({
   const selectedAssetCount =
     visibleAssets?.filter((item: Balance) => isAssetSelected(item.tokenInfo.address)).length || 0
 
+  const shieldedBalancesMap = React.useMemo(() => {
+    const map = new Map<string, Balance>()
+    shieldedBalances.items.forEach((item) => {
+      const normalizedAddress = item.tokenInfo.address.toLowerCase().trim()
+      map.set(normalizedAddress, item)
+    })
+    return map
+  }, [shieldedBalances.items])
+
+  const getShieldedBalanceForAsset = React.useCallback(
+    (assetAddress: string): Balance | undefined => {
+      const normalizedAddress = assetAddress.toLowerCase().trim()
+      return shieldedBalancesMap.get(normalizedAddress)
+    },
+    [shieldedBalancesMap],
+  )
+
   const rows = loading
     ? skeletonRows
-    : (visibleAssets || []).map((item) => {
+    : (visibleAssets || []).flatMap((item) => {
         const rawFiatValue = parseFloat(item.fiatBalance)
         const rawPriceValue = parseFloat(item.fiatConversion)
         const isNative = isNativeToken(item.tokenInfo)
@@ -185,10 +205,14 @@ const AssetsTable = ({
         const fiatTotal = visibleBalances.fiatTotal ? Number(visibleBalances.fiatTotal) : undefined
         const itemShareOfFiatTotal = fiatTotal ? Number(item.fiatBalance) / fiatTotal : null
 
-        return {
+        const shieldedBalance = getShieldedBalanceForAsset(item.tokenInfo.address)
+        const hasShieldedBalance = !!shieldedBalance
+
+        const mainRow = {
           key: item.tokenInfo.address,
           selected: isSelected,
           collapsed: item.tokenInfo.address === hidingAsset,
+          className: hasShieldedBalance ? css.hasShieldedBalance : undefined,
           cells: {
             asset: {
               rawValue: item.tokenInfo.name,
@@ -319,6 +343,71 @@ const AssetsTable = ({
             },
           },
         }
+
+        if (hasShieldedBalance && shieldedBalance) {
+          const shieldedRawFiatValue = parseFloat(shieldedBalance.fiatBalance)
+          const shieldedRawPriceValue = parseFloat(shieldedBalance.fiatConversion)
+
+          const shieldedRow = {
+            key: `${item.tokenInfo.address}-shielded`,
+            className: css.shieldedRow,
+            cells: {
+              asset: {
+                rawValue: 'Shielded balance',
+                content: (
+                  <div className={css.token}>
+                    <Typography color="inherit" fontWeight="bold">
+                      Shielded balance
+                    </Typography>
+                  </div>
+                ),
+              },
+              price: {
+                rawValue: shieldedRawPriceValue,
+                content: (
+                  <Typography textAlign="right" color="inherit">
+                    <FiatValue value={shieldedBalance.fiatConversion == '0' ? null : shieldedBalance.fiatConversion} />
+                  </Typography>
+                ),
+              },
+              balance: {
+                rawValue: Number(shieldedBalance.balance) / 10 ** (shieldedBalance.tokenInfo.decimals ?? 0),
+                content: (
+                  <Typography sx={{ '& b': { fontWeight: '400' } }} textAlign="right" color="inherit">
+                    <TokenAmount
+                      value={shieldedBalance.balance}
+                      decimals={shieldedBalance.tokenInfo.decimals}
+                      tokenSymbol={shieldedBalance.tokenInfo.symbol}
+                    />
+                  </Typography>
+                ),
+              },
+              value: {
+                rawValue: shieldedRawFiatValue,
+                content: (
+                  <Box textAlign="right">
+                    <Typography color="inherit">
+                      <FiatValue value={shieldedBalance.fiatBalance} />
+                    </Typography>
+                  </Box>
+                ),
+              },
+              weight: {
+                rawValue: null,
+                content: <></>,
+              },
+              actions: {
+                rawValue: '',
+                sticky: true,
+                content: <></>,
+              },
+            },
+          }
+
+          return [mainRow, shieldedRow]
+        }
+
+        return [mainRow]
       })
 
   return (

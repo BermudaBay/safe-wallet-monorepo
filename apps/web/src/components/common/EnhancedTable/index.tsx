@@ -28,6 +28,7 @@ type EnhancedRow = {
   selected?: boolean
   collapsed?: boolean
   key?: string
+  className?: string
   cells: Record<string, EnhancedCell>
 }
 
@@ -181,7 +182,10 @@ function EnhancedTable({ rows, headCells, mobileVariant, compact }: EnhancedTabl
                     tabIndex={-1}
                     key={rowKey}
                     selected={row.selected}
-                    className={row.collapsed ? css.collapsedRow : undefined}
+                    className={classNames({
+                      [css.collapsedRow]: row.collapsed,
+                      [row.className || '']: !!row.className,
+                    })}
                   >
                     {Object.entries(row.cells).map(([key, cell]) => (
                       <TableCell

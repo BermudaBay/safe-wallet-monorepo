@@ -12,7 +12,7 @@ import { useVisibleAssets } from '@/components/balances/AssetsTable/useHideAsset
 import SendButton from '@/components/balances/AssetsTable/SendButton'
 import useIsSwapFeatureEnabled from '@/features/swap/hooks/useIsSwapFeatureEnabled'
 import { FiatBalance } from '@/components/balances/AssetsTable/FiatBalance'
-import { type Balances } from '@safe-global/store/gateway/AUTO_GENERATED/balances'
+import { type Balances, type Balance } from '@safe-global/store/gateway/AUTO_GENERATED/balances'
 import { FiatChange } from '@/components/balances/AssetsTable/FiatChange'
 import { isEligibleEarnToken } from '@/features/earn/utils'
 import EarnButton from '@/features/earn/components/EarnButton'
@@ -25,6 +25,8 @@ import { TokenType } from '@safe-global/safe-gateway-typescript-sdk'
 import StakeButton from '@/features/stake/components/StakeButton'
 import { STAKE_LABELS } from '@/services/analytics/events/stake'
 import NoAssetsIcon from '@/public/images/common/no-assets.svg'
+import { useShieldedBalances } from '@/hooks/useShieldedBalances'
+import FiatValue from '@/components/common/FiatValue'
 
 const MAX_ASSETS = 4
 
@@ -56,46 +58,76 @@ const AssetRow = ({
   showSwap,
   showEarn,
   showStake,
+  shieldedBalance,
 }: {
   item: Balances['items'][number]
   chainId: string
   showSwap?: boolean
   showEarn?: boolean
   showStake?: boolean
+  shieldedBalance?: Balance
 }) => {
   return (
-    <Box className={css.container} key={item.tokenInfo.address}>
-      <Stack direction="row" gap={1.5} alignItems="center">
-        <TokenIcon tokenSymbol={item.tokenInfo.symbol} logoUri={item.tokenInfo.logoUri ?? undefined} size={32} />
-        <Box>
-          <Typography fontWeight="600">{item.tokenInfo.name}</Typography>
-          <Typography variant="body2" className={css.tokenAmount}>
-            <TokenAmount value={item.balance} decimals={item.tokenInfo.decimals} tokenSymbol={item.tokenInfo.symbol} />
-          </Typography>
+    <>
+      <Box className={css.container} key={item.tokenInfo.address}>
+        <Stack direction="row" gap={1.5} alignItems="center">
+          <TokenIcon tokenSymbol={item.tokenInfo.symbol} logoUri={item.tokenInfo.logoUri ?? undefined} size={32} />
+          <Box>
+            <Typography fontWeight="600">{item.tokenInfo.name}</Typography>
+            <Typography variant="body2" className={css.tokenAmount}>
+              <TokenAmount value={item.balance} decimals={item.tokenInfo.decimals} tokenSymbol={item.tokenInfo.symbol} />
+            </Typography>
+          </Box>
+        </Stack>
+
+        <Box flex={1} display="block" textAlign="right" height="44px">
+          <FiatBalance balanceItem={item} />
+          <FiatChange balanceItem={item} inline />
         </Box>
-      </Stack>
 
-      <Box flex={1} display="block" textAlign="right" height="44px">
-        <FiatBalance balanceItem={item} />
-        <FiatChange balanceItem={item} inline />
+        <Box className={css.assetButtons}>
+          {showSwap ? (
+            <SwapButton tokenInfo={item.tokenInfo} amount="0" trackingLabel={SWAP_LABELS.dashboard_assets} light />
+          ) : (
+            <SendButton tokenInfo={item.tokenInfo} light />
+          )}
+
+          {showEarn && isEligibleEarnToken(chainId, item.tokenInfo.address) && (
+            <EarnButton tokenInfo={item.tokenInfo} trackingLabel={EARN_LABELS.dashboard_asset} compact={false} />
+          )}
+
+          {showStake && item.tokenInfo.type === TokenType.NATIVE_TOKEN && (
+            <StakeButton tokenInfo={item.tokenInfo} trackingLabel={STAKE_LABELS.asset} compact={false} />
+          )}
+        </Box>
       </Box>
 
-      <Box className={css.assetButtons}>
-        {showSwap ? (
-          <SwapButton tokenInfo={item.tokenInfo} amount="0" trackingLabel={SWAP_LABELS.dashboard_assets} light />
-        ) : (
-          <SendButton tokenInfo={item.tokenInfo} light />
-        )}
+      {shieldedBalance && (
+        <Box className={css.shieldedContainer}>
+          <Stack direction="row" gap={1.5} alignItems="center">
+            <Box sx={{ width: 32 }} /> {/* Spacer for icon alignment */}
+            <Box>
+              <Typography className={css.shieldedText} fontWeight="600">
+                Shielded balance
+              </Typography>
+              <Typography variant="body2" className={css.shieldedText}>
+                <TokenAmount
+                  value={shieldedBalance.balance}
+                  decimals={shieldedBalance.tokenInfo.decimals}
+                  tokenSymbol={shieldedBalance.tokenInfo.symbol}
+                />
+              </Typography>
+            </Box>
+          </Stack>
 
-        {showEarn && isEligibleEarnToken(chainId, item.tokenInfo.address) && (
-          <EarnButton tokenInfo={item.tokenInfo} trackingLabel={EARN_LABELS.dashboard_asset} compact={false} />
-        )}
-
-        {showStake && item.tokenInfo.type === TokenType.NATIVE_TOKEN && (
-          <StakeButton tokenInfo={item.tokenInfo} trackingLabel={STAKE_LABELS.asset} compact={false} />
-        )}
-      </Box>
-    </Box>
+          <Box flex={1} display="block" textAlign="right">
+            <Typography className={css.shieldedText}>
+              <FiatValue value={shieldedBalance.fiatBalance} />
+            </Typography>
+          </Box>
+        </Box>
+      )}
+    </>
   )
 }
 
@@ -104,6 +136,21 @@ const AssetList = ({ items }: { items: Balances['items'] }) => {
   const isEarnPromoEnabled = useIsEarnPromoEnabled()
   const isStakingPromoEnabled = useIsStakingPromoEnabled()
   const chainId = useChainId()
+  const { balances: shieldedBalances } = useShieldedBalances()
+
+  const shieldedBalancesMap = useMemo(() => {
+    const map = new Map<string, Balance>()
+    shieldedBalances.items.forEach((item) => {
+      const normalizedAddress = item.tokenInfo.address.toLowerCase().trim()
+      map.set(normalizedAddress, item)
+    })
+    return map
+  }, [shieldedBalances.items])
+
+  const getShieldedBalance = (assetAddress: string): Balance | undefined => {
+    const normalizedAddress = assetAddress.toLowerCase().trim()
+    return shieldedBalancesMap.get(normalizedAddress)
+  }
 
   return (
     <Box display="flex" flexDirection="column">
@@ -116,6 +163,7 @@ const AssetList = ({ items }: { items: Balances['items'] }) => {
             showSwap={isSwapFeatureEnabled}
             showEarn={isEarnPromoEnabled}
             showStake={isStakingPromoEnabled}
+            shieldedBalance={getShieldedBalance(item.tokenInfo.address)}
           />
         </Box>
       ))}
