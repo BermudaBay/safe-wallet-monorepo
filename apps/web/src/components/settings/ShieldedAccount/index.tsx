@@ -72,23 +72,26 @@ export default function ShieldedAccount({ sx }: { sx: SxProps }) {
     if (password.length) {
       setIsLoading(true)
 
+      setPasswordError('')
+
       const seed = await deriveSeedFromPassword(password)
       const keyPair = sdk.types.KeyPair.fromSeed(seed)
 
       saveKeyPair(keyPair)
 
       setIsLoading(false)
+    } else {
+      if (!password.length) setPasswordError("Can't be empty")
     }
   }
 
   async function handleRegister(event: React.FormEvent) {
     event.preventDefault()
 
-    if (keyPair && alias.length && password.length) {
+    if (keyPair && alias.length) {
       setIsLoading(true)
 
       setAliasError('')
-      setPasswordError('')
       setRegisterError(undefined)
 
       try {
@@ -128,7 +131,6 @@ export default function ShieldedAccount({ sx }: { sx: SxProps }) {
       }
     } else {
       if (!alias.length) setAliasError("Can't be empty")
-      if (!password.length) setAliasError("Can't be empty")
       if (!keyPair) setRegisterError(new Error('KeyPair not set'))
     }
   }
