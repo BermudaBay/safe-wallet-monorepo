@@ -7,10 +7,12 @@ import { ASSETS_EVENTS } from '@/services/analytics/events/assets'
 import { useVisibleBalances } from '@/hooks/useVisibleBalances'
 import { TxModalContext } from '@/components/tx-flow'
 import { ShieldAssetsFlow } from '@/components/tx-flow/flows'
+import { useBermuda } from '@/contexts/bermuda-context'
 
 const ShieldAssetsButton = ({ sx, disabled }: any): ReactElement => {
-  const { setTxFlow } = useContext(TxModalContext)
+  const { keyPair } = useBermuda()
   const { balances } = useVisibleBalances()
+  const { setTxFlow } = useContext(TxModalContext)
 
   const hasAssets = useMemo(() => {
     return balances.items.some((item) => item.balance !== '0')
@@ -20,7 +22,13 @@ const ShieldAssetsButton = ({ sx, disabled }: any): ReactElement => {
     setTxFlow(<ShieldAssetsFlow />)
   }
 
-  const tooltipTitle = !hasAssets ? 'Cannot shield assets when balance is zero' : ''
+  let tooltipTitle = ''
+
+  if (!keyPair) {
+    tooltipTitle = "Setup this Safe's shielded account in the settings"
+  } else if (!hasAssets) {
+    tooltipTitle = "This Safe doesn't have any assets"
+  }
 
   return (
     <CheckWallet allowSpendingLimit>
@@ -33,7 +41,7 @@ const ShieldAssetsButton = ({ sx, disabled }: any): ReactElement => {
                 onClick={onClick}
                 variant="contained"
                 size="small"
-                disabled={(disabled ?? !isOk) || !hasAssets}
+                disabled={!keyPair || (disabled ?? !isOk) || !hasAssets}
                 startIcon={<ShieldIcon />}
                 sx={{ ...sx }}
               >
@@ -42,9 +50,8 @@ const ShieldAssetsButton = ({ sx, disabled }: any): ReactElement => {
             </span>
           </Tooltip>
         </Track>
-      )
-      }
-    </CheckWallet >
+      )}
+    </CheckWallet>
   )
 }
 
