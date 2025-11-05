@@ -13,6 +13,7 @@ type BuildShieldedDepositArgs = {
   tokenAddress: string
   tokenDecimals: number
   amount: string
+  shieldedKeyPair?: any
 }
 
 export const buildShieldedDepositMetaTxs = async ({
@@ -21,6 +22,7 @@ export const buildShieldedDepositMetaTxs = async ({
   tokenAddress,
   tokenDecimals,
   amount,
+  shieldedKeyPair,
 }: BuildShieldedDepositArgs): Promise<{ metaTxs: MetaTransactionData[]; batchSafeTxs: BatchSafeTx[]; viewingKey?: string }> => {
   console.info('[ShieldAssets][Builder] Preparing shielded deposit meta txs', {
     safeAddress,
@@ -58,8 +60,6 @@ export const buildShieldedDepositMetaTxs = async ({
   if (!shieldedAddress) {
     throw new Error('Missing shielded address')
   }
-
-  const shieldedKeyPair = bermudaSDK.types.KeyPair.fromAddress(shieldedAddress)
 
   const utxo = new bermudaSDK.types.Utxo({
     amount: parsedAmount,

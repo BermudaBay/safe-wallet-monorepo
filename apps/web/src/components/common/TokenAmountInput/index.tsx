@@ -5,7 +5,7 @@ import { validateDecimalLength, validateLimitedAmount } from '@safe-global/utils
 import { Button, Divider, FormControl, InputLabel, MenuItem, TextField } from '@mui/material'
 import { type SafeBalanceResponse } from '@safe-global/safe-gateway-typescript-sdk'
 import classNames from 'classnames'
-import { useCallback } from 'react'
+import { useCallback, useEffect } from 'react'
 import { get, useFormContext } from 'react-hook-form'
 import type { FieldArrayPath, FieldValues } from 'react-hook-form'
 import css from './styles.module.css'
@@ -54,6 +54,7 @@ const TokenAmountInput = ({
   const amountField = getFieldName(TokenAmountFields.amount, fieldArray)
 
   const tokenAddress = watch(tokenAddressField)
+  const amountValue = watch(amountField)
 
   const isAmountError = !!get(errors, tokenAddressField) || !!get(errors, amountField)
 
@@ -90,6 +91,12 @@ const TokenAmountInput = ({
 
     trigger(deps)
   }, [maxAmount, selectedToken, setValue, amountField, trigger, deps])
+
+  useEffect(() => {
+    if (!amountValue) return
+
+    trigger(amountField)
+  }, [amountValue, amountField, trigger, maxAmount, selectedToken?.balance])
 
   const onChangeToken = useCallback(() => {
     const amountDefaultValue = get(

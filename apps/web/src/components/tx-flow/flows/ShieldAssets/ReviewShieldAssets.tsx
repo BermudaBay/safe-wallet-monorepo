@@ -11,6 +11,7 @@ import { ZERO_ADDRESS } from '@safe-global/protocol-kit/dist/src/utils/constants
 import { Divider, Stack } from '@mui/material'
 import ReviewRecipientRow from '../TokenTransfer/ReviewRecipientRow'
 import { useCurrentChain } from '@/hooks/useChains'
+import { useBermuda } from '@/contexts/bermuda-context'
 import { TxFlowContext, type TxFlowContextType } from '../../TxFlowProvider'
 
 type ReviewShieldAssetsProps = {
@@ -26,6 +27,7 @@ const ReviewShieldAssets = ({
   children,
 }: PropsWithChildren<ReviewShieldAssetsProps>) => {
   const { safeAddress } = useSafeInfo()
+  const { keyPair } = useBermuda()
   const { balances } = useBalances()
   const { setSafeTx, setSafeTxError, setNonce, setBatchSafeTxs } = useContext(SafeTxContext)
   const currentChain = useCurrentChain()
@@ -87,6 +89,7 @@ const ReviewShieldAssets = ({
           tokenAddress: recipient.tokenAddress,
           tokenDecimals,
           amount: recipient.amount,
+          shieldedKeyPair: keyPair,
         })
 
         const safeTx = await createMultiSendCallOnlyTx(metaTxs)
@@ -118,6 +121,7 @@ const ReviewShieldAssets = ({
     recipient,
     safeAddress,
     tokenDecimals,
+    keyPair,
     setSafeTx,
     setSafeTxError,
     setBatchSafeTxs,
