@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react'
 import { useBermuda } from '@/contexts/bermuda-context'
 import { deriveSeedFromPassword, shortenHex } from '@/utils/misc'
 import { Paper, Grid, Typography, Box, Button, SxProps, TextField, Alert } from '@mui/material'
+import { copyToClipboard } from './utils'
 
 export default function ShieldedAccount({ sx }: { sx: SxProps }) {
   const { safeAddress } = useSafeInfo()
@@ -233,7 +234,7 @@ export default function ShieldedAccount({ sx }: { sx: SxProps }) {
             ) : (
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: '10px', width: '300px' }}>
                 {registerAliasError && <Alert severity="error">{registerAliasError.message}</Alert>}
-                <Typography>
+                <Typography title="Click to copy" onClick={e => copyToClipboard(keyPair.address(), e)} sx={{ cursor: "grab" }}>
                   <Box component="span" fontWeight="bold">
                     Address
                   </Box>
