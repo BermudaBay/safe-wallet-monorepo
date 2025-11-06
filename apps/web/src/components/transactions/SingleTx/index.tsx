@@ -16,6 +16,7 @@ import { isMultisigDetailedExecutionInfo } from '@/utils/transaction-guards'
 import { useGetTransactionDetailsQuery } from '@/store/api/gateway'
 import { skipToken } from '@reduxjs/toolkit/query/react'
 import { asError } from '@safe-global/utils/services/exceptions/utils'
+import useLoadTransactionDetails from '@/on-chain-data/hooks/useLoadTransactionDetails'
 
 const SingleTxGrid = ({ txDetails }: { txDetails: TransactionDetails }): ReactElement => {
   const tx: Transaction = makeTxFromDetails(txDetails)
@@ -56,6 +57,15 @@ const SingleTx = () => {
       : skipToken,
   )
 
+  // Load Transaction Details via on-chain data.
+  const chainId = Number(safe.chainId)
+  const { data: ocTxDetails, error: ocTxDetailsError } = useLoadTransactionDetails(chainId, safeAddress, transactionId)
+
+  if (!txDetails) {
+    txDetails = ocTxDetails
+    txDetailsError = ocTxDetailsError
+  }
+
   useEffect(() => {
     !isUninitialized && refetch()
   }, [safe.txHistoryTag, safe.txQueuedTag, safeAddress, refetch, isUninitialized])
@@ -64,7 +74,7 @@ const SingleTx = () => {
     txDetailsError = new Error('Transaction with this id was not found in this Safe Account')
   }
 
-  if (txDetailsError) {
+  if (!txDetails && txDetailsError) {
     return <ErrorMessage error={asError(txDetailsError)}>Failed to load transaction</ErrorMessage>
   }
 
