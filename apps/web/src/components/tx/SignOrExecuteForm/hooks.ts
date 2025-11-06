@@ -97,17 +97,18 @@ export const useTxActions = (): TxActions => {
       if (!targetTxId) {
         const tx = await _propose(signer.address, safeTx, txId, origin)
         targetTxId = tx.txId
+      } else {
+        await dispatchOnChainSigning(
+          safeTx,
+          targetTxId,
+          signer.provider,
+          chainId,
+          signer.address,
+          safeAddress,
+          Boolean(isSmartAccount),
+        )
       }
 
-      await dispatchOnChainSigning(
-        safeTx,
-        targetTxId,
-        signer.provider,
-        chainId,
-        signer.address,
-        safeAddress,
-        Boolean(isSmartAccount),
-      )
       return targetTxId
     }
 
