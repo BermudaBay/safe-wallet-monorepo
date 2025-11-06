@@ -81,7 +81,7 @@ const toTransaction = (
   }
 }
 
-const toTransactionDetails = (
+export const toTransactionDetails = (
   cacheEntry: CachedSdkTx,
   owners: AddressEx[],
   threshold: number,
