@@ -18,6 +18,7 @@ import { selectSpendingLimits } from '@/store/spendingLimitsSlice'
 import { sameAddress } from '@safe-global/utils/utils/addresses'
 import Track from '@/components/common/Track'
 import { MODALS_EVENTS } from '@/services/analytics'
+import { useBermuda } from '@/contexts/bermuda-context'
 
 const getFieldName = (
   field: keyof TokenTransferParams,
@@ -32,6 +33,7 @@ type RecipientRowProps = {
 }
 
 export const RecipientRow = ({ fieldArray, removable = true, remove, disableSpendingLimit }: RecipientRowProps) => {
+  const { keyPair } = useBermuda()
   const { balances } = useVisibleBalances()
   const spendingLimits = useSelector(selectSpendingLimits)
 
@@ -61,6 +63,8 @@ export const RecipientRow = ({ fieldArray, removable = true, remove, disableSpen
 
   const isSpendingLimitType = type === TokenTransferType.spendingLimit
 
+  const isShieldedDeposit = keyPair && keyPair.address().toLowerCase() === (recipient as string).toLowerCase()
+
   const spendingLimitBalances = useMemo(
     () =>
       balances.items.filter(({ tokenInfo }) =>
@@ -84,9 +88,11 @@ export const RecipientRow = ({ fieldArray, removable = true, remove, disableSpen
     <>
       <Stack spacing={1}>
         <Stack spacing={2}>
-          <FormControl fullWidth>
-            <AddressBookInput name={recipientFieldName} canAdd={isAddressValid} />
-          </FormControl>
+          {!isShieldedDeposit && (
+            <FormControl fullWidth>
+              <AddressBookInput name={recipientFieldName} canAdd={isAddressValid} />
+            </FormControl>
+          )}
 
           <FormControl fullWidth>
             <TokenAmountInput
