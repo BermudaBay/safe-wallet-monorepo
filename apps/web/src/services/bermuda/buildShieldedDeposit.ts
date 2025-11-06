@@ -147,12 +147,7 @@ export const buildShieldedDepositMetaTxs = async ({
     includesApproval: !isNativeToken,
   })
 
-  const batchSafeTxs: BatchSafeTx[] = metaTxs.map((metaTx) => ({
-    to: metaTx.to,
-    data: metaTx.data ?? '0x',
-    value: BigInt(metaTx.value ?? '0'),
-    operation: Number(metaTx.operation ?? OperationType.Call),
-  }))
+  const batchSafeTxs: BatchSafeTx[] = []
 
   return { metaTxs, batchSafeTxs, viewingKey }
 }
