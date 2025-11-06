@@ -9,10 +9,12 @@ import {
   TransactionStatus,
 } from '@safe-global/safe-gateway-typescript-sdk'
 import { clearSdkQueuedTxs, getSdkQueuedTx, setSdkQueuedTx, type CachedSdkTx } from './txCache'
+import { getBermudaSDK } from '@/hooks/bermudaSDK/useBermudaSDK'
+import { ZeroAddress } from 'ethers'
 
 type MapArgs = {
   safeAddress: string
-  pendingTxs: SdkSafeTxInfo[]
+  allTxs: SdkSafeTxInfo[]
   owners: AddressEx[]
   threshold: number
 }
@@ -133,8 +135,49 @@ export const toTransactionDetails = (
   }
 }
 
-export const mapSdkQueueToTransactionPage = ({ safeAddress, pendingTxs, owners, threshold }: MapArgs): TransactionListPage => {
+export const mapSdkQueueToTransactionPage = ({ safeAddress, allTxs, owners, threshold }: MapArgs): TransactionListPage => {
   clearSdkQueuedTxs()
+
+  // If executed and target === signMsgHashLib then inject stx with exec btn triggering zk-proving
+  const signMsgHashLibAdrs = getBermudaSDK().config.signMsgHashLib
+  const adjTxs: any[] = []
+  for (let i = 0; i < allTxs.length; i++) {
+    adjTxs.push(allTxs[i])
+    if (allTxs[i].executed && allTxs[i].details.to === signMsgHashLibAdrs) {
+
+      //TODO list all MessageCiphertext events, try decrypt, then decode, then stxhash()
+      // if resulting stxhash included in allTxs[i].details.data its most likely the preimage
+      // correspnding to the stx hash that got "signed" thru the multisig 
+      // (probly better to check for the exact position of the stx hash in the payload)
+      // ->
+      // then would be good if we could pkg that into a tx list item to display stx details
+      // <- the stx details should also be shown in the (pub) multisig tx (signMsgHashLib.signMessageHash) list item details view if possible
+      //
+      // BUT the important part is injecting a custom tx box into the queue with an execute 
+      // button that onclick generates the mpt zk proof then the stx proof and sends them off via the relayer
+
+      adjTxs.push({
+        hash: allTxs[i].hash,
+        details: {
+          to: ZeroAddress,
+          data: "0x",
+          value: '0',
+          operation: 0,
+          safeTxGas: '0',
+          baseGas: '0',
+          gasPrice: '0',
+          gasToken: ZeroAddress,
+          refundReceiver: ZeroAddress,
+          nonce: '0',
+        },
+        signatures: allTxs[i].signatures,
+        executed: false,
+        stxExecuted: false
+      })
+    }
+  }
+
+  const pendingTxs = adjTxs.filter(tx => !tx.executed && !tx.stxExecuted)
 
   const sorted = [...pendingTxs].sort((a, b) => Number(a.details.nonce) - Number(b.details.nonce))
   const now = Date.now()

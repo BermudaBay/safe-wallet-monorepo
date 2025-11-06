@@ -3,7 +3,6 @@ import { SafeTxContext } from '../../SafeTxProvider'
 import ReviewTransaction from '@/components/tx/ReviewTransactionV2'
 import type { MultiTokenTransferParams } from '../TokenTransfer'
 import { createMultiSendCallOnlyTx } from '@/services/tx/tx-sender'
-import { buildShieldedDepositMetaTxs } from '@/services/bermuda/buildShieldedDeposit'
 import useSafeInfo from '@/hooks/useSafeInfo'
 import useBalances from '@/hooks/useBalances'
 import { sameAddress } from '@safe-global/utils/utils/addresses'
@@ -13,6 +12,7 @@ import ReviewRecipientRow from '../TokenTransfer/ReviewRecipientRow'
 import { useCurrentChain } from '@/hooks/useChains'
 import { useBermuda } from '@/contexts/bermuda-context'
 import { TxFlowContext, type TxFlowContextType } from '../../TxFlowProvider'
+import { buildShieldedTransferMetaTxs } from '@/services/bermuda/buildShieldedTransfer'
 
 type ReviewShieldedAssetsTransferProps = {
   params?: MultiTokenTransferParams
@@ -83,7 +83,7 @@ const ReviewShieldedAssetsTransfer = ({
         })
         setSafeTxError(undefined)
 
-        const { metaTxs, batchSafeTxs } = await buildShieldedDepositMetaTxs({
+        const { metaTxs, batchSafeTxs } = await buildShieldedTransferMetaTxs({
           safeAddress,
           shieldedAddress: recipient.recipient,
           tokenAddress: recipient.tokenAddress,

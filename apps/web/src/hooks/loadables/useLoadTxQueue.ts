@@ -33,10 +33,10 @@ export const useLoadTxQueue = (): AsyncResult<TransactionListPage> => {
       }))
 
       return bermudaSDK.safe.listTxs(safeAddress, owner).then((result: unknown) => {
-        const { pending } = result as SdkListTxsResult
+        const { all, pending } = result as SdkListTxsResult
         return mapSdkQueueToTransactionPage({
           safeAddress,
-          pendingTxs: pending,
+          allTxs: all,
           owners,
           threshold: safe.threshold,
         })
