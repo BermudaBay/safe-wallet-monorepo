@@ -3,7 +3,7 @@ import { ZERO_ADDRESS } from '@safe-global/protocol-kit/dist/src/utils/constants
 import type { MetaTransactionData } from '@safe-global/types-kit'
 import { safeParseUnits } from '@safe-global/utils/utils/formatters'
 import { sameAddress } from '@safe-global/utils/utils/addresses'
-import { Interface} from 'ethers'
+import { Interface } from 'ethers'
 import { OperationType } from '@safe-global/types-kit'
 import type { BatchSafeTx } from '@/services/tx/tx-sender/dispatch'
 
@@ -78,14 +78,34 @@ export const buildShieldedDepositMetaTxs = async ({
     token: normalizedToken,
     keypair: shieldedKeyPair,
     type: bermudaSDK.types.UtxoType.Fund,
+    safe: safeAddress
   })
   console.info('[ShieldAssets][Builder] Constructed output UTXO')
 
+  const bogus1 = new bermudaSDK.types.Utxo({
+    amount: 0n,
+    token: normalizedToken,
+    keypair: shieldedKeyPair,
+    safe: safeAddress,
+  })
+  const bogus2 = new bermudaSDK.types.Utxo({
+    amount: 0n,
+    token: normalizedToken,
+    keypair: shieldedKeyPair,
+    safe: safeAddress,
+  })
+  const bogus3 = new bermudaSDK.types.Utxo({
+    amount: 0n,
+    token: normalizedToken,
+    keypair: shieldedKeyPair,
+    safe: safeAddress,
+  })
+
   const { args, extData, viewingKey } = await bermudaSDK.core.prepareTransact({
-    outputs: [utxo],
+    inputs: [bogus1, bogus2],
+    outputs: [utxo, bogus3],
     token: normalizedToken,
     funder: safeAddress,
-    recipient: safeAddress,
     fee: 0n,
   })
   console.info('[ShieldAssets][Builder] Prepared transact payload', {
