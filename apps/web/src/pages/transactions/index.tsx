@@ -1,3 +1,3 @@
-import HistoryPage from './history'
+import QueuePage from './queue'
 
-export default HistoryPage
+export default QueuePage
