@@ -1,4 +1,6 @@
 import { getBermudaSDK } from '@/hooks/bermudaSDK/useBermudaSDK'
+import { getBytes, hexlify, toBeHex, toUtf8Bytes, toUtf8String } from 'ethers'
+import { SafeStxHashParams } from './types'
 
 export async function getShieldedBalance(shieldedKeyPair: any, token: string): Promise<bigint> {
   token = token.toLowerCase()
@@ -47,4 +49,24 @@ export async function queryFilterBatched(
     }
   }
   return batchedEvents
+}
+
+// : SafeStxHashParams
+export function simpleEncodeStx(stx: any): string {
+  stx.spendingLimit = toBeHex(stx.spendingLimit)
+  stx.amounts = stx.amounts.map((a: bigint) => toBeHex(a, 32))
+  stx.inputNullifiers = stx.inputNullifiers.map((n: bigint) => toBeHex(n, 32))
+  stx.outputPubkeys = stx.outputPubkeys.map((p: bigint) => toBeHex(p, 32))
+  stx.outputAmounts = stx.outputAmounts.map((o: bigint) => toBeHex(o, 32))
+  return hexlify(toUtf8Bytes(JSON.stringify(stx)))
+}
+
+export function simpleDecodeStx(encoded: string): SafeStxHashParams {
+  const raw = JSON.parse(toUtf8String(getBytes(encoded)))
+  raw.spendingLimit = BigInt(raw.spendingLimit)
+  raw.amounts = raw.amounts.map(BigInt)
+  raw.inputNullifiers = raw.inputNullifiers.map(BigInt)
+  raw.outputPubkeys = raw.outputPubkeys.map(BigInt)
+  raw.outputAmounts = raw.outputAmounts.map(BigInt)
+  return raw
 }

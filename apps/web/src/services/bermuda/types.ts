@@ -25,3 +25,14 @@ export type SdkListTxsResult = {
   pending: SdkSafeTxInfo[]
   unconfirmed?: SdkSafeTxInfo[]
 }
+
+export type SafeStxHashParams = {
+  token: string
+  safe: string
+  inputNullifiers: bigint[]
+  spendingLimit: bigint
+  amounts: bigint[]
+  recipient: string
+  outputPubkeys: bigint[]
+  outputAmounts: bigint[]
+}

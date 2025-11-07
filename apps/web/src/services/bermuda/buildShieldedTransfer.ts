@@ -4,6 +4,7 @@ import { safeParseUnits } from '@safe-global/utils/utils/formatters'
 import { Interface, ZeroAddress } from 'ethers'
 import { OperationType } from '@safe-global/types-kit'
 import type { BatchSafeTx } from '@/services/tx/tx-sender/dispatch'
+import { simpleEncodeStx } from './utils'
 
 type BuildShieldedTransferArgs = {
     safeAddress: string
@@ -68,8 +69,9 @@ export const buildShieldedTransferMetaTxs = async ({
     const stxHash = bermudaSDK.safe.stxHash(stx)
 
     // Encrypt the stx hash preimage and publish it
-    const encodedStx = bermudaSDK.utils.encodeStx(stx)
-    const encryptionKey = bermudaSDK.utils.bigint2bytes(shieldedKeyPair.x25519.secretKey)
+    // const encodedStx = bermudaSDK.utils.encodeStx(stx)
+    const encodedStx = simpleEncodeStx(stx)
+    const encryptionKey = shieldedKeyPair.x25519.secretKey
     const encryptedStx = bermudaSDK.utils.encryptMessageCiphertext(encryptionKey, encodedStx).payload
     const topic = bermudaSDK.utils.calcMessageCiphertextTopic({
         chainId: bermudaSDK.config.chainId,

@@ -33,6 +33,7 @@ const ExecuteTxButton = ({
   const expiredSwap = useIsExpiredSwap(txSummary.txInfo)
 
   //REVISIT and CHECK
+  //FIXME disable for shielded deposits
   const problyStx = safe.nonce === (txNonce || 0) + 1
   const isNext = (txNonce !== undefined && txNonce === safe.nonce) || problyStx
   const isDisabled = !isNext || !bermuda.sdk || expiredSwap || isPending
