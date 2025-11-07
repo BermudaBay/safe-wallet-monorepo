@@ -159,33 +159,13 @@ export const getSafeSDKWithSigner = async (provider: Eip1193Provider): Promise<S
 }
 
 export const tryOffChainTxSigning = async (safeAddress: string, safeTx: SafeTransaction/*, sdk: Safe*/, provider: Eip1193Provider): Promise<SafeTransaction> => {
-  // return sdk.signTransaction(safeTx, SigningMethod.ETH_SIGN_TYPED_DATA)
   const bermudaSDK = getBermudaSDK()
 
   const signer = await getUncheckedSigner(provider)
 
-  const safeTxHash = await getSafeTxHash(safeAddress, safeTx.data)
-
-  // let signature: SafeSignature
-  // if (isEthSignWallet(wallet)) {
-  //   const txHash = await sdk.getTransactionHash(safeTx)
-  //   signature = await sdk.signHash(txHash)
-  // } else {
-  //   signature = await sdk.signTypedData(safeTx)
-  // }
-  // get chain id as bigint
-  // const chainIdHex = await provider.request({ method: 'eth_chainId' })
-  // const chainId = BigInt(chainIdHex as string)
-  // const signature = await bermudaSDK.safe.utils.signSafeTxHash(signer, safeAddress, safeTx.data, chainId, provider)
-
-  // const bermudaSDK = getBermudaSDK()
-  // const signer = await getUncheckedSigner()
-
   const chainIdHex = await provider.request({ method: 'eth_chainId' })
   const chainIdBigInt = BigInt(chainIdHex as string)
-  // const signature = await bermudaSDK.safe.utils.signSafeTxHash(signer, safeAddress, safeTx.data, chainId, wallet.provider)
 
-  // 
   if (!signer) {
     throw new Error('SafeProvider must be initialized with a signer to use this method')
   }
@@ -219,73 +199,8 @@ export const tryOffChainTxSigning = async (safeAddress: string, safeTx: SafeTran
           ? { SafeMessage: (typedData as EIP712TypedDataMessage).types.SafeMessage }
           : { SafeTx: (typedData as EIP712TypedDataTx).types.SafeTx }
     , typedData.message)
-  // Convert SafeTransactionData (strings) to ISafeTx (bigints) for Bermuda SDK
-  // const safeTxData = convertToISafeTx(safeTx.data)
-  
-  // // Build EIP-712 typed data with full Safe transaction structure
-  // // Must match Bermuda SDK's generateTypedData format exactly
-  // const typedData = {
-  //   domain: {
-  //     chainId: chainId.toString(), // Keep as string to match Bermuda SDK
-  //     verifyingContract: safeAddress
-  //   },
-  //   types: {
-  //     EIP712Domain: [
-  //       { name: 'chainId', type: 'uint256' },
-  //       { name: 'verifyingContract', type: 'address' }
-  //     ],
-  //     SafeTx: [
-  //       { name: 'to', type: 'address' },
-  //       { name: 'value', type: 'uint256' },
-  //       { name: 'data', type: 'bytes' },
-  //       { name: 'operation', type: 'uint8' },
-  //       { name: 'safeTxGas', type: 'uint256' },
-  //       { name: 'baseGas', type: 'uint256' },
-  //       { name: 'gasPrice', type: 'uint256' },
-  //       { name: 'gasToken', type: 'address' },
-  //       { name: 'refundReceiver', type: 'address' },
-  //       { name: 'nonce', type: 'uint256' }
-  //     ]
-  //   },
-  //   primaryType: 'SafeTx',
-  //   message: {
-  //     to: safeTxData.to,
-  //     value: safeTxData.value.toString(),
-  //     data: safeTxData.data,
-  //     operation: safeTxData.operation,
-  //     safeTxGas: safeTxData.safeTxGas.toString(),
-  //     baseGas: safeTxData.baseGas.toString(),
-  //     gasPrice: safeTxData.gasPrice.toString(),
-  //     gasToken: safeTxData.gasToken,
-  //     refundReceiver: safeTxData.refundReceiver,
-  //     nonce: safeTxData.nonce.toString()
-  //   }
-  // }
 
-  // console.log('EIP-712 Typed Data:', JSON.stringify(typedData, null, 2))
-
-  // // // Use eth_signTypedData_v4 directly for better MetaMask compatibility
   const signerAddress = await signer.getAddress()
-  // // let signature = await provider.request({
-  // //   method: 'eth_signTypedData_v4',
-  // //   params: [signerAddress, JSON.stringify(typedData)]
-  // // }) as string
-  // const signature = await signer.signTypedData(typedData.domain, typedData.types, typedData.message)
-
-  // console.log('Raw signature from MetaMask:', signature)
-  
-  // // For EIP-712 signatures, Safe expects v to be 27 or 28 (standard ECDSA)
-  // // MetaMask should return v as 27/28 or 0/1, we need to normalize to 27/28
-  // let v = Number(`0x${signature.slice(-2)}`)
-  // console.log('Original v value:', v)
-  
-  // // Normalize v to 27/28 if it's 0/1
-  // if (v < 27) {
-  //   v += 27
-  //   signature = signature.slice(0, -2) + v.toString(16).padStart(2, '0')
-  //   console.log('Adjusted v to:', v)
-  // }
-
   safeTx.addSignature(new EthSafeSignature(signerAddress, signature))
 
   return safeTx
