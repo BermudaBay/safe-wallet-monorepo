@@ -1,5 +1,5 @@
 import { TransactionSummary } from "@safe-global/safe-gateway-typescript-sdk";
-import { queryFilterBatched } from "./utils";
+import { queryFilterBatched, simpleDecodeStx } from "./utils";
 import { Contract, getBytes } from "ethers";
 import { getBermudaSDK } from "@/hooks/bermudaSDK/useBermudaSDK";
 
@@ -41,7 +41,8 @@ export async function dispatchProofs(shieldedKeyPair: any, safeAddress: string, 
     let stx
     for (const c of ciphertexts) {
         const plaintext = bermudaSDK.utils.decryptMessageCiphertext(encryptionKey, getBytes(c))
-        const decoded = bermudaSDK.utils.decodeStx(bermudaSDK.utils.hex(plaintext))
+        // const decoded = bermudaSDK.utils.decodeStx(bermudaSDK.utils.hex(plaintext))
+        const decoded = simpleDecodeStx(bermudaSDK.utils.hex(plaintext))
         console.log("$$$$$ decoded", decoded)
         const stxHash = bermudaSDK.safe.stxHash(decoded)
         if (signMsgHashTx.data.includes(stxHash.slice(2))) {
