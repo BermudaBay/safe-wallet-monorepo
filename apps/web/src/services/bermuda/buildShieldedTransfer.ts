@@ -60,6 +60,7 @@ export const buildShieldedTransferMetaTxs = async ({
         safe: safeAddress,
         inputNullifiers: utxos.map((u: any) => u.getNullifier()),
         amounts: utxos.map((u: any) => u.amount),
+        spendingLimit: parsedAmount,
         recipient: ZeroAddress,
         outputPubkeys: [otherPubKey, ownPubKey],
         outputAmounts: [otherAmount, ownAmount]
@@ -68,7 +69,7 @@ export const buildShieldedTransferMetaTxs = async ({
 
     // Encrypt the stx hash preimage and publish it
     const encodedStx = bermudaSDK.utils.encodeStx(stx)
-    const encryptionKey = bermudaSDK.utils.bigint2bytes(shieldedKeyPair.privkey)
+    const encryptionKey = bermudaSDK.utils.bigint2bytes(shieldedKeyPair.x25519.secretKey)
     const encryptedStx = bermudaSDK.utils.encryptMessageCiphertext(encryptionKey, encodedStx).payload
     const topic = bermudaSDK.utils.calcMessageCiphertextTopic({
         chainId: bermudaSDK.config.chainId,

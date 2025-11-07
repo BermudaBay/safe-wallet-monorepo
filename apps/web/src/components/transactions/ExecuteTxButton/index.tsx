@@ -11,9 +11,10 @@ import Track from '@/components/common/Track'
 import { TX_LIST_EVENTS } from '@/services/analytics/events/txList'
 import { ReplaceTxHoverContext } from '../GroupedTxListItems/ReplaceTxHoverProvider'
 import CheckWallet from '@/components/common/CheckWallet'
-import { useBermudaSDK } from '@/hooks/bermudaSDK/useBermudaSDK'
 import { TxModalContext } from '@/components/tx-flow'
 import { ConfirmTxFlow } from '@/components/tx-flow/flows'
+import { dispatchProofs } from '@/services/bermuda/dispatchProofs'
+import { useBermuda } from '@/contexts/bermuda-context'
 
 const ExecuteTxButton = ({
   txSummary,
@@ -27,17 +28,24 @@ const ExecuteTxButton = ({
   const txNonce = isMultisigExecutionInfo(txSummary.executionInfo) ? txSummary.executionInfo.nonce : undefined
   const isPending = useIsPending(txSummary.id)
   const { setSelectedTxId } = useContext(ReplaceTxHoverContext)
-  const bermudaSDK = useBermudaSDK()
+  const bermuda = useBermuda()
 
   const expiredSwap = useIsExpiredSwap(txSummary.txInfo)
 
-  const isNext = txNonce !== undefined && txNonce === safe.nonce
-  const isDisabled = !isNext || !bermudaSDK || expiredSwap || isPending
+  //REVISIT and CHECK
+  const problyStx = safe.nonce === (txNonce || 0) + 1
+  const isNext = (txNonce !== undefined && txNonce === safe.nonce) || problyStx
+  const isDisabled = !isNext || !bermuda.sdk || expiredSwap || isPending
 
   const onClick = (e: SyntheticEvent) => {
     e.stopPropagation()
     e.preventDefault()
-    setTxFlow(<ConfirmTxFlow txSummary={txSummary} />, undefined, false)
+
+    if (problyStx) {
+      dispatchProofs(bermuda.keyPair, txSummary)
+    } else {
+      setTxFlow(<ConfirmTxFlow txSummary={txSummary} />, undefined, false)
+    }
   }
 
   const onMouseEnter = () => {
