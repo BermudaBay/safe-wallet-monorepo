@@ -10,7 +10,7 @@ import {
 } from '@safe-global/safe-gateway-typescript-sdk'
 import { clearSdkQueuedTxs, getSdkQueuedTx, setSdkQueuedTx, type CachedSdkTx } from './txCache'
 import { getBermudaSDK } from '@/hooks/bermudaSDK/useBermudaSDK'
-import { ZeroAddress } from 'ethers'
+import { Interface, ZeroAddress } from 'ethers'
 
 type MapArgs = {
   safeAddress: string
@@ -40,13 +40,29 @@ const getStatus = (info: SdkSafeTxInfo, threshold: number) => {
 const toCustomTxInfo = (info: SdkSafeTxInfo): Transaction['transaction']['txInfo'] => {
   const dataSize = info.details.data ? Math.max(0, (info.details.data.length - 2) / 2) : 0
 
+  let methodName = "Custom Transaction"
+  if (info.details.to === process.env.NEXT_PUBLIC_POOL_ADDRESS) {
+    const extAmount = Interface.from(getBermudaSDK().abis.POOL_ABI).parseTransaction(info.details)?.args._extData.extAmount
+    console.log("extAmount", extAmount)
+    if (extAmount && extAmount > 0n) {
+      methodName = "Shield"
+    } else if (extAmount && extAmount < 0n) {
+      methodName = "Unshield"
+    } else if (!extAmount || extAmount === 0n) {
+      methodName = "Shielded transfer"
+    }
+
+  } else if (info.details.to === process.env.NEXT_PUBLIC_SIGN_MSG_HASH_LIB_ADDRESS) {
+    methodName = "Shielded tx multisig"
+  }
+
   return {
     type: TransactionInfoType.CUSTOM,
     to: { value: info.details.to },
     dataSize: dataSize.toString(),
     value: info.details.value.toString(),
     isCancellation: false,
-    methodName: 'Custom transaction',
+    methodName,
   }
 }
 
@@ -140,9 +156,12 @@ export const mapSdkQueueToTransactionPage = ({ safeAddress, allTxs, owners, thre
 
   // If executed and target === signMsgHashLib then inject stx with exec btn triggering zk-proving
   const signMsgHashLibAdrs = getBermudaSDK().config.signMsgHashLib
+  let fakeNonce = 1_000_000n
   const adjTxs: any[] = []
   for (let i = 0; i < allTxs.length; i++) {
     adjTxs.push(allTxs[i])
+    console.log("allTxs[i].executed", allTxs[i].executed)
+    console.log("allTxs[i].details.to === signMsgHashLibAdrs", allTxs[i].details.to === signMsgHashLibAdrs)
     if (allTxs[i].executed && allTxs[i].details.to === signMsgHashLibAdrs) {
 
       //TODO list all MessageCiphertext events, try decrypt, then decode, then stxhash()
@@ -155,12 +174,15 @@ export const mapSdkQueueToTransactionPage = ({ safeAddress, allTxs, owners, thre
       //
       // BUT the important part is injecting a custom tx box into the queue with an execute 
       // button that onclick generates the mpt zk proof then the stx proof and sends them off via the relayer
-
+      console.log(">>>>>>>>>>><>> execd signmsghash dcall", allTxs[i].hash)
       adjTxs.push({
-        hash: allTxs[i].hash,
+        hash: "0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef",
         details: {
-          to: ZeroAddress,
-          data: "0x",
+          to: process.env.NEXT_PUBLIC_POOL_ADDRESS,
+          // Passing `data: allTxs[i].details.data` through so dispatchProofs 
+          // can identify matching stx hash preimage by checking the computed 
+          // stx hash is included in the calldata
+          data: allTxs[i].details.data,
           value: '0',
           operation: 0,
           safeTxGas: '0',
@@ -168,7 +190,8 @@ export const mapSdkQueueToTransactionPage = ({ safeAddress, allTxs, owners, thre
           gasPrice: '0',
           gasToken: ZeroAddress,
           refundReceiver: ZeroAddress,
-          nonce: '0',
+          //nonce: '0', 
+          nonce: allTxs[i].details.nonce
         },
         signatures: allTxs[i].signatures,
         executed: false,
@@ -177,7 +200,7 @@ export const mapSdkQueueToTransactionPage = ({ safeAddress, allTxs, owners, thre
     }
   }
 
-  const pendingTxs = adjTxs.filter(tx => !tx.executed && !tx.stxExecuted)
+  const pendingTxs = adjTxs//.filter(tx => !tx.executed && tx.stxExecuted ===undefined || tx.stxExecuted === false)
 
   const sorted = [...pendingTxs].sort((a, b) => Number(a.details.nonce) - Number(b.details.nonce))
   const now = Date.now()

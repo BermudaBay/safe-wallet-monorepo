@@ -7,7 +7,21 @@ export type AddressBook = { [address: string]: string }
 
 export type AddressBookState = { [chainId: string]: AddressBook }
 
-const initialState: AddressBookState = {}
+const initialState: AddressBookState = {
+  '31337': {
+    [process.env.NEXT_PUBLIC_POOL_ADDRESS!]: 'bermuda.bay',
+    [process.env.NEXT_PUBLIC_SIGN_MSG_HASH_LIB_ADDRESS!]: 'SignMsgHashLib'
+  },
+  '84532': {
+    [process.env.NEXT_PUBLIC_POOL_ADDRESS!]: 'bermuda.bay'
+  },
+  '8453': {
+    [process.env.NEXT_PUBLIC_POOL_ADDRESS!]: 'bermuda.bay'
+  },
+  '100': {
+    [process.env.NEXT_PUBLIC_POOL_ADDRESS!]: 'bermuda.bay'
+  },
+}
 
 export const addressBookSlice = createSlice({
   name: 'addressBook',

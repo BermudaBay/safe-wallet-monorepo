@@ -21,3 +21,30 @@ export async function getShieldedBalance(shieldedKeyPair: any, token: string): P
     .then((found: any) => bermudaSDK.utils.sumAmounts(found[token]))
     .then((amount: bigint) => amount ?? 0n)
 }
+
+export async function queryFilterBatched(
+  fromBlock: bigint,
+  toBlock: bigint,
+  contract: any,
+  filter: any
+): Promise<any[]> {
+  const batchSize = 1000n
+  let batchedEvents: any[] = []
+  let i = fromBlock
+  let batchToBlock
+  const currentBlockNumber = await contract.runner.provider.getBlockNumber()
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    batchToBlock = i + batchSize
+    if (batchToBlock > currentBlockNumber) {
+      batchToBlock = currentBlockNumber
+    }
+    const events = await contract.queryFilter(filter, i, batchToBlock)
+    batchedEvents = [...batchedEvents, ...events]
+    i += batchSize
+    if (i >= toBlock) {
+      break
+    }
+  }
+  return batchedEvents
+}
