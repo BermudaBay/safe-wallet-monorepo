@@ -1724,7 +1724,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@bermuda/sdk@git+ssh://git@github.com:BermudaBay/sdk":
+"@bermuda/sdk@git+ssh://git@github.com:BermudaBay/sdk#feat/typed-data-sig":
   version: 0.0.1
   resolution: "@bermuda/sdk@git+ssh://git@github.com:BermudaBay/sdk#commit=27233564bc2c69b14a6dc3420bacf95ecb417c6c"
   dependencies:
@@ -9173,7 +9173,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@safe-global/web@workspace:apps/web"
   dependencies:
-    "@bermuda/sdk": "git+ssh://git@github.com:BermudaBay/sdk"
+    "@bermuda/sdk": "git+ssh://git@github.com:BermudaBay/sdk#feat/typed-data-sig"
     "@chromatic-com/storybook": "npm:^1.3.1"
     "@cowprotocol/app-data": "npm:^3.1.0"
     "@cowprotocol/widget-react": "npm:^0.13.0"
