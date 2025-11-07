@@ -23,14 +23,16 @@ export async function getSafeTxHash(safeAddress: string, safeTxData: SafeTransac
     )
 }
 
-export async function getAdjustedSignature(signer: Signer, safeTxHash: string): Promise<string> {
-    let sig = await signer.signMessage(getBytes(safeTxHash))
-    let v = Number(`0x${sig.slice(-2)}`)
-    if (v === 27 || v === 28) {
-        sig = sig.slice(0, -2) + (v + 4).toString(16)
-    }
-    return sig
-}
+// DEPRECATED: This function used raw message signing instead of EIP-712 typed data.
+// All signing now uses bermudaSDK.safe.signSafeTxHash() which implements EIP-712.
+// export async function getAdjustedSignature(signer: Signer, safeTxHash: string): Promise<string> {
+//     let sig = await signer.signMessage(getBytes(safeTxHash))
+//     let v = Number(`0x${sig.slice(-2)}`)
+//     if (v === 27 || v === 28) {
+//         sig = sig.slice(0, -2) + (v + 4).toString(16)
+//     }
+//     return sig
+// }
 
 export async function getConfirmPayload(
     safeAddress: string,

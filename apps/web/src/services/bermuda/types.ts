@@ -1,14 +1,14 @@
 export type SdkSafeTx = {
   to: string
   data: string
-  value: bigint
+  value: string
   operation: number
-  safeTxGas: bigint
-  baseGas: bigint
-  gasPrice: bigint
+  safeTxGas: string
+  baseGas: string
+  gasPrice: string
   gasToken: string
   refundReceiver: string
-  nonce: bigint
+  nonce: number
 }
 
 export type SdkSafeTxInfo = {
