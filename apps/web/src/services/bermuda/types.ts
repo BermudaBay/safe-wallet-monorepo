@@ -17,6 +17,7 @@ export type SdkSafeTxInfo = {
   signatures: Record<string, string>
   executed: boolean
   stxExecuted?: boolean
+  txHash?: string
 }
 
 export type SdkListTxsResult = {
