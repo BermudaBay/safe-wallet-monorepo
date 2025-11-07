@@ -10,7 +10,7 @@ import {
 } from '@safe-global/safe-gateway-typescript-sdk'
 import { clearSdkQueuedTxs, getSdkQueuedTx, setSdkQueuedTx, type CachedSdkTx } from './txCache'
 import { getBermudaSDK } from '@/hooks/bermudaSDK/useBermudaSDK'
-import { Interface, ZeroAddress } from 'ethers'
+import { hexlify, Interface, toBeHex, ZeroAddress } from 'ethers'
 
 type MapArgs = {
   safeAddress: string
@@ -87,7 +87,7 @@ const toTransaction = (
       timestamp,
       txStatus,
       txInfo: toCustomTxInfo(info),
-      txHash: null,
+      txHash: info.txHash ?? null,
       executionInfo: {
         type: DetailedExecutionInfoType.MULTISIG,
         nonce: Number(info.details.nonce),
@@ -176,7 +176,8 @@ export const mapSdkQueueToTransactionPage = ({ safeAddress, allTxs, owners, thre
       // button that onclick generates the mpt zk proof then the stx proof and sends them off via the relayer
       console.log(">>>>>>>>>>><>> execd signmsghash dcall", allTxs[i].hash)
       adjTxs.push({
-        hash: "0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef",
+        // bogus just to have a unique tx id
+        hash: toBeHex(BigInt(allTxs[i].hash) - 1n),
         details: {
           to: process.env.NEXT_PUBLIC_POOL_ADDRESS,
           // Passing `data: allTxs[i].details.data` through so dispatchProofs 
@@ -195,7 +196,8 @@ export const mapSdkQueueToTransactionPage = ({ safeAddress, allTxs, owners, thre
         },
         signatures: allTxs[i].signatures,
         executed: false,
-        stxExecuted: false
+        stxExecuted: false,
+        txHash: allTxs[i].txHash
       })
     }
   }

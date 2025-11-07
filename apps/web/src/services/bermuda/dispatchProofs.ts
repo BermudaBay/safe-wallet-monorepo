@@ -1,26 +1,25 @@
-import useSafeInfo from "@/hooks/useSafeInfo";
 import { TransactionSummary } from "@safe-global/safe-gateway-typescript-sdk";
 import { queryFilterBatched } from "./utils";
-import { Contract, ZeroAddress } from "ethers";
+import { Contract, getBytes } from "ethers";
 import { getBermudaSDK } from "@/hooks/bermudaSDK/useBermudaSDK";
 
-export async function dispatchProofs(shieldedKeyPair: any, txSummary: TransactionSummary) {
-    const { safeAddress } = useSafeInfo()
+export async function dispatchProofs(shieldedKeyPair: any, safeAddress: string, txSummary: TransactionSummary) {
+    // const { safeAddress } = useSafeInfo()
     const bermudaSDK = getBermudaSDK()
 
     // List all MessageCiphertext events, try decrypt, then decode, then stxhash
     // If the resulting stxhash is included in txSummary.data (SignMsgHash data) 
     // its most likely the preimage corresponding to the stx hash that got 
     // "signed" thru the multisig 
-
+    console.log("$$$$$ txSummary.txHash", txSummary.txHash)
     const signMsgHashTx = await bermudaSDK.config.provider.getTransaction(txSummary.txHash)
     if (!signMsgHashTx) throw Error("Cannot find SignMsgHashLib tx")
 
-    const secretKey = bermudaSDK.utils.bigint2bytes(shieldedKeyPair.x25519.secretKey)
+    const encryptionKey = shieldedKeyPair.x25519.secretKey
     const topic = bermudaSDK.utils.calcMessageCiphertextTopic({
         chainId: bermudaSDK.config.chainId,
         safeAddress,
-        secretKey
+        secretKey: encryptionKey
     })
 
     const toBlock = await bermudaSDK.config.provider.getBlockNumber()
@@ -30,13 +29,20 @@ export async function dispatchProofs(shieldedKeyPair: any, txSummary: Transactio
         { provider: bermudaSDK.config.provider }
     )
 
-    const ciphertexts = await queryFilterBatched(0n, toBlock, signMsgHashLib, signMsgHashLib.filters.MessageCiphertext(topic, null))
+    const ciphertexts = await queryFilterBatched(
+        0n,
+        toBlock,
+        signMsgHashLib,
+        // indexing by topic returns an empty result
+        signMsgHashLib.filters.MessageCiphertext(null/*topic*/, null)
+    )
         .then(events => events.map(e => e.args.ciphertext))
-
+    console.log("ciphertexts", ciphertexts)
     let stx
     for (const c of ciphertexts) {
-        const plaintext = bermudaSDK.utils.decryptMessageCiphertext(secretKey, c)
-        const decoded = bermudaSDK.utils.decodeStx(plaintext)
+        const plaintext = bermudaSDK.utils.decryptMessageCiphertext(encryptionKey, getBytes(c))
+        const decoded = bermudaSDK.utils.decodeStx(bermudaSDK.utils.hex(plaintext))
+        console.log("$$$$$ decoded", decoded)
         const stxHash = bermudaSDK.safe.stxHash(decoded)
         if (signMsgHashTx.data.includes(stxHash.slice(2))) {
             stx = decoded

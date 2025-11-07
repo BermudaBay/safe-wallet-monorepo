@@ -42,7 +42,7 @@ const ExecuteTxButton = ({
     e.preventDefault()
 
     if (problyStx) {
-      dispatchProofs(bermuda.keyPair, txSummary)
+      dispatchProofs(bermuda.keyPair, safe.address.value, txSummary)
     } else {
       setTxFlow(<ConfirmTxFlow txSummary={txSummary} />, undefined, false)
     }
