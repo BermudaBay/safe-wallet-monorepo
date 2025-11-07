@@ -24,7 +24,7 @@ export const useShieldedBalances = (): {
 
   const [balances, error, loading] = useAsync<Balances>(
     async () => {
-      if (!safeAddress || !chainId || !keyPair) {
+      if (!safeAddress || !chainId || !keyPair || !sdk) {
         return EMPTY_BALANCES
       }
       try {
@@ -34,7 +34,7 @@ export const useShieldedBalances = (): {
         throw err
       }
     },
-    [safeAddress, chainId, keyPair],
+    [safeAddress, chainId, keyPair, sdk],
     false,
   )
 
