@@ -1731,10 +1731,12 @@ __metadata:
     "@aztec/bb.js": "npm:0.87.6"
     "@noble/curves": "npm:1.9.0"
     "@noir-lang/noir_js": "npm:1.0.0-beta.9"
+    "@safe-global/protocol-kit": "npm:^6.1.1"
+    "@safe-global/types-kit": "npm:^3.0.0"
     "@stablelib/x25519": "npm:2.0.1"
     "@stablelib/xchacha20poly1305": "npm:2.0.1"
     blake3-hash-wasm: "git+ssh://git@github.com:bermudabay/blake3-hash-wasm"
-    ethers: "npm:6.14.4"
+    ethers: "npm:^6.13.5"
     fsevents: "npm:*"
     mpecdh: "git+ssh://git@github.com:BermudaBay/mpecdh"
     poseidon2-compression-ts: "git+ssh://git@github.com:BermudaBay/poseidon2-compression-ts"
@@ -19284,22 +19286,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ethers@npm:6.14.4":
-  version: 6.14.4
-  resolution: "ethers@npm:6.14.4"
-  dependencies:
-    "@adraffy/ens-normalize": "npm:1.10.1"
-    "@noble/curves": "npm:1.2.0"
-    "@noble/hashes": "npm:1.3.2"
-    "@types/node": "npm:22.7.5"
-    aes-js: "npm:4.0.0-beta.5"
-    tslib: "npm:2.7.0"
-    ws: "npm:8.17.1"
-  checksum: 10/1f49ab3b29f1b86d91a1b5e31a4a4b857128fe302d9d3dca9002a31cf5305c37bf03c1b658c940de42dd909c929ca8d70612fcd9be56210986009ec9aa6b3bf5
-  languageName: node
-  linkType: hard
-
-"ethers@npm:6.15.0, ethers@npm:^6.14.3":
+"ethers@npm:6.15.0, ethers@npm:^6.13.5, ethers@npm:^6.14.3":
   version: 6.15.0
   resolution: "ethers@npm:6.15.0"
   dependencies:

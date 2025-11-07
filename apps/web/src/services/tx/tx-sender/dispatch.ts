@@ -177,41 +177,7 @@ export const dispatchProposerTxSigning = async (safeAddress: string, safeTx: Saf
 
   const chainIdHex = await wallet.provider.request({ method: 'eth_chainId' })
   const chainIdBigInt = BigInt(chainIdHex as string)
-
-  if (!signer) {
-    throw new Error('SafeProvider must be initialized with a signer to use this method')
-  }
-  const safeContract = new Contract(
-    safeAddress,
-    bermudaSDK.abis.SAFE_ABI,
-    { provider: bermudaSDK.config.provider }
-  )
-  let safeVersion = '1.5.0'
-  try {
-    safeVersion = await safeContract.VERSION()  
-  } catch (error) {
-    throw new Error(`Failed to fetch safe version: ${error}`)
-  }
-
-  const safeEIP712Args: SafeEIP712Args = {
-    safeAddress,
-    safeVersion: safeVersion,
-    chainId: chainIdBigInt,
-    data: safeTx.data
-  }
-
-    const typedData = generateTypedData(safeEIP712Args)
-    const { chainId, verifyingContract } = typedData.domain
-    const chain = chainId ? Number(chainId) : undefined 
-    const domain = { verifyingContract: verifyingContract, chainId: chain }
-
-    const signature = await signer.signTypedData(
-      domain,
-        typedData.primaryType === 'SafeMessage'
-          ? { SafeMessage: (typedData as EIP712TypedDataMessage).types.SafeMessage }
-          : { SafeTx: (typedData as EIP712TypedDataTx).types.SafeTx }
-    , typedData.message)
-
+  const signature = await bermudaSDK.safe.utils.signSafeTx(signer, safeAddress, safeTx.data, chainIdBigInt, wallet.provider)
   const signerAddress = await signer.getAddress()
   safeTx.addSignature(new EthSafeSignature(signerAddress, signature))
 
