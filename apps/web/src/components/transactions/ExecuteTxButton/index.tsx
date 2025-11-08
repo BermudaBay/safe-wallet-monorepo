@@ -1,7 +1,7 @@
 import useIsExpiredSwap from '@/features/swap/hooks/useIsExpiredSwap'
 import useIsPending from '@/hooks/useIsPending'
 import type { SyntheticEvent } from 'react'
-import { type ReactElement, useContext } from 'react'
+import { type ReactElement, useContext, useEffect, useState } from 'react'
 import { type TransactionSummary } from '@safe-global/safe-gateway-typescript-sdk'
 import { Button, Tooltip } from '@mui/material'
 
@@ -32,17 +32,30 @@ const ExecuteTxButton = ({
 
   const expiredSwap = useIsExpiredSwap(txSummary.txInfo)
 
+  // If txSummary.txHash went to SignMsgHashLib this is a custom stx box and
+  // we want to enable the execute button
+  let [isStx, setIsStx] = useState(false)
+  useEffect(() => {
+    (async function checkTx() {
+      console.log("$$$$$ txSummary.txHash", txSummary.txHash)
+      const tx = await bermuda.sdk.config.provider.getTransaction(txSummary.txHash)
+      console.log("$$$$$ tx", tx)
+      setIsStx(tx?.to?.toLowerCase() === bermuda.sdk.config.signMsgHashLib.toLowerCase())
+    })()
+  }, [bermuda.sdk.config, txSummary.txHash])
+
   //REVISIT and CHECK
   //FIXME disable for shielded deposits
-  const problyStx = safe.nonce === (txNonce || 0) + 1
-  const isNext = (txNonce !== undefined && txNonce === safe.nonce) || problyStx
-  const isDisabled = !isNext || !bermuda.sdk || expiredSwap || isPending
+  // const problyStx = safe.nonce === (txNonce || 0) + 1
+
+  const isNext = (txNonce !== undefined && txNonce === safe.nonce) //|| problyStx
+  const isDisabled = !isStx && (!isNext || !bermuda.sdk || expiredSwap || isPending)
 
   const onClick = (e: SyntheticEvent) => {
     e.stopPropagation()
     e.preventDefault()
 
-    if (problyStx) {
+    if (isStx) {
       dispatchProofs(bermuda.keyPair, safe.address.value, txSummary)
     } else {
       setTxFlow(<ConfirmTxFlow txSummary={txSummary} />, undefined, false)
