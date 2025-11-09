@@ -1,7 +1,7 @@
 import { getBermudaSDK } from '@/hooks/bermudaSDK/useBermudaSDK'
 import type { MetaTransactionData } from '@safe-global/types-kit'
 import { safeParseUnits } from '@safe-global/utils/utils/formatters'
-import { Interface, ZeroAddress } from 'ethers'
+import { Interface, toUtf8Bytes, ZeroAddress } from 'ethers'
 import { OperationType } from '@safe-global/types-kit'
 import type { BatchSafeTx } from '@/services/tx/tx-sender/dispatch'
 import { simpleEncodeStx } from './utils'
@@ -41,21 +41,47 @@ export const buildShieldedTransferMetaTxs = async ({
     const parsedAmount = safeParseUnits(amount, tokenDecimals)
 
     if (parsedAmount === undefined) throw new Error('Invalid shielded deposit amount')
-
+    console.log("$$$$$ normalizedToken", normalizedToken)
     // Select UTXOs up to amount
-    const utxos = await bermudaSDK.utils
-        .findUtxosUpTo({
+    let utxos = await bermudaSDK.utils
+        .findUtxos({
             pool: bermudaSDK.config.pool,
             keypair: shieldedKeyPair,
-            token: normalizedToken,
-            amount: parsedAmount
+            peers: [
+                /*empty since we won't need to decrypt stx history, i.e. historical, spent UTXOs*/
+            ],
+            tokens: [normalizedToken],
+            excludeSpent: true,
+            excludeOthers: true,
+            from: bermudaSDK.config.startBlock,
         })
+    // .then((found: any) => found[normalizedToken])
+    // await bermudaSDK.utils
+    //     .findUtxosUpTo({
+    //         pool: bermudaSDK.config.pool,
+    //         keypair: shieldedKeyPair,
+    //         token: normalizedToken,
+    //         amount: parsedAmount,
+    //     })
+
+    console.log("$$$$$ utxos found", utxos)
+    utxos = utxos[normalizedToken]
+
+    console.log("$$$$$ utxos", utxos.length, utxos)
+    // In-place desc sort
+    utxos.sort((a: any, b: any) => Number(b.amount - a.amount))
+    // Max inputs are 16
+    utxos = utxos.slice(0, 16)
 
     // Calculate the stx hash using the selected UTXOs, given recipient, and additional data
+    const sumIns = bermudaSDK.utils.sumAmounts(utxos)
+    console.log({ sumIns, parsedAmount })
+    if (sumIns < parsedAmount) throw Error("Shielded balance not sufficient")
+
     const otherPubKey = BigInt(shieldedAddress.slice(0, 66))
     const ownPubKey = BigInt(shieldedKeyPair.address().slice(0, 66))
     const otherAmount = parsedAmount
-    const ownAmount = bermudaSDK.utils.sumAmounts(utxos) - parsedAmount
+    const ownAmount = sumIns - parsedAmount
     const stx = {
         token: tokenAddress,
         safe: safeAddress,

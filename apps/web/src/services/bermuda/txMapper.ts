@@ -156,34 +156,16 @@ export const mapSdkQueueToTransactionPage = ({ safeAddress, allTxs, owners, thre
 
   // If executed and target === signMsgHashLib then inject stx with exec btn triggering zk-proving
   const signMsgHashLibAdrs = getBermudaSDK().config.signMsgHashLib
-  let fakeNonce = 1_000_000n
   const adjTxs: any[] = []
   for (let i = 0; i < allTxs.length; i++) {
     adjTxs.push(allTxs[i])
-    console.log("allTxs[i].executed", allTxs[i].executed)
-    console.log("allTxs[i].details.to === signMsgHashLibAdrs", allTxs[i].details.to === signMsgHashLibAdrs)
     if (allTxs[i].executed && allTxs[i].details.to === signMsgHashLibAdrs) {
-
-      //TODO list all MessageCiphertext events, try decrypt, then decode, then stxhash()
-      // if resulting stxhash included in allTxs[i].details.data its most likely the preimage
-      // correspnding to the stx hash that got "signed" thru the multisig 
-      // (probly better to check for the exact position of the stx hash in the payload)
-      // ->
-      // then would be good if we could pkg that into a tx list item to display stx details
-      // <- the stx details should also be shown in the (pub) multisig tx (signMsgHashLib.signMessageHash) list item details view if possible
-      //
-      // BUT the important part is injecting a custom tx box into the queue with an execute 
-      // button that onclick generates the mpt zk proof then the stx proof and sends them off via the relayer
-      console.log(">>>>>>>>>>><>> execd signmsghash dcall", allTxs[i].hash)
       adjTxs.push({
-        // bogus just to have a unique tx id
-        hash: toBeHex(BigInt(allTxs[i].hash) - 1n),
+        // bogus just to have a unique tx id - not sure if this required
+        hash: '0x',//toBeHex(BigInt(allTxs[i].hash) - 1n),
         details: {
           to: process.env.NEXT_PUBLIC_POOL_ADDRESS,
-          // Passing `data: allTxs[i].details.data` through so dispatchProofs 
-          // can identify matching stx hash preimage by checking the computed 
-          // stx hash is included in the calldata
-          data: allTxs[i].details.data,
+          data: '0x',
           value: '0',
           operation: 0,
           safeTxGas: '0',
@@ -191,17 +173,22 @@ export const mapSdkQueueToTransactionPage = ({ safeAddress, allTxs, owners, thre
           gasPrice: '0',
           gasToken: ZeroAddress,
           refundReceiver: ZeroAddress,
-          //nonce: '0', 
+          // "Inheriting" the nonce here to display a grouped tx for the 
+          // mutlisig auth and shielded exec bundle
           nonce: allTxs[i].details.nonce
         },
+        // "Inheriting" signatures is important to mark this as executable
         signatures: allTxs[i].signatures,
         executed: false,
         stxExecuted: false,
+        // "Inheriting" the txHash here to display a grouped tx for the 
+        // mutlisig auth and shielded exec bundle
         txHash: allTxs[i].txHash
       })
     }
   }
 
+  //FIXME filter 
   const pendingTxs = adjTxs//.filter(tx => !tx.executed && tx.stxExecuted ===undefined || tx.stxExecuted === false)
 
   const sorted = [...pendingTxs].sort((a, b) => Number(a.details.nonce) - Number(b.details.nonce))

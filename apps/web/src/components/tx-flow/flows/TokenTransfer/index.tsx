@@ -17,11 +17,17 @@ enum Fields {
   recipient = 'recipient',
 }
 
-export const TokenTransferFields = { ...Fields, ...TokenAmountFields }
+enum ShieldedTransferFields {
+  shieldedTokenAddress = 'shieldedTokenAddress',
+}
+
+// export const TokenTransferFields = { ...Fields, ...TokenAmountFields,/* ...ShieldedTransferFields*/ }
+export const TokenTransferFields = { ...Fields, ...TokenAmountFields, ...ShieldedTransferFields }
 
 export type TokenTransferParams = {
   [TokenTransferFields.recipient]: string
   [TokenTransferFields.tokenAddress]: string
+  [TokenTransferFields.shieldedTokenAddress]: string
   [TokenTransferFields.amount]: string
 }
 
@@ -47,6 +53,7 @@ const defaultParams: MultiTokenTransferParams = {
     {
       recipient: '',
       tokenAddress: ZERO_ADDRESS,
+      shieldedTokenAddress: (process.env.NEXT_PUBLIC_MOCK_WETH_ADDRESS || process.env.NEXT_PUBLIC_WETH_ADDRESS || process.env.NEXT_PUBLIC_WETH)!.toLowerCase(),
       amount: '',
     },
   ],
@@ -59,9 +66,9 @@ const TokenTransferFlow = ({ txNonce, ...params }: MultiTokenTransferFlowProps) 
       ...defaultParams,
       recipients: params.recipients
         ? params.recipients.map((recipient) => ({
-            ...defaultParams.recipients[0],
-            ...recipient,
-          }))
+          ...defaultParams.recipients[0],
+          ...recipient,
+        }))
         : defaultParams.recipients,
     }),
     [params.recipients],
