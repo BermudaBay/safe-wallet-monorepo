@@ -32,30 +32,17 @@ const ExecuteTxButton = ({
 
   const expiredSwap = useIsExpiredSwap(txSummary.txInfo)
 
-  // If txSummary.txHash went to SignMsgHashLib this is a custom stx box and
-  // we want to enable the execute button
-  let [isStx, setIsStx] = useState(false)
-  useEffect(() => {
-    (async function checkTx() {
-      console.log("$$$$$ txSummary.txHash", txSummary.txHash)
-      const tx = await bermuda.sdk.config.provider.getTransaction(txSummary.txHash)
-      console.log("$$$$$ tx", tx)
-      setIsStx(tx?.to?.toLowerCase() === bermuda.sdk.config.signMsgHashLib.toLowerCase())
-    })()
-  }, [bermuda.sdk.config, txSummary.txHash])
-
-  //REVISIT and CHECK
-  //FIXME disable for shielded deposits
-  // const problyStx = safe.nonce === (txNonce || 0) + 1
+  const methodName = (txSummary.txInfo as any).methodName
+  const isStxTransferOrUnshield = methodName === "Shielded transfer" || methodName === "Unshield"
 
   const isNext = (txNonce !== undefined && txNonce === safe.nonce) //|| problyStx
-  const isDisabled = !isStx && (!isNext || !bermuda.sdk || expiredSwap || isPending)
+  const isDisabled = !isStxTransferOrUnshield && (!isNext || !bermuda.sdk || expiredSwap || isPending)
 
   const onClick = (e: SyntheticEvent) => {
     e.stopPropagation()
     e.preventDefault()
 
-    if (isStx) {
+    if (isStxTransferOrUnshield) {
       dispatchProofs(bermuda.keyPair, safe.address.value, txSummary)
     } else {
       setTxFlow(<ConfirmTxFlow txSummary={txSummary} />, undefined, false)
@@ -74,7 +61,7 @@ const ExecuteTxButton = ({
     <>
       <CheckWallet allowNonOwner>
         {(isOk) => (
-          <Tooltip title={isOk && !isNext ? 'You must execute the transaction with the lowest nonce first' : ''}>
+          <Tooltip title={isOk && !isNext && !isStxTransferOrUnshield ? 'You must execute the transaction with the lowest nonce first' : ''}>
             <span>
               <Track {...TX_LIST_EVENTS.EXECUTE}>
                 <Button

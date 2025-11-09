@@ -52,17 +52,18 @@ export async function queryFilterBatched(
 }
 
 // : SafeStxHashParams
-export function simpleEncodeStx(stx: any): string {
+export function simpleEncodeStx(stx: any): Uint8Array {
   stx.spendingLimit = toBeHex(stx.spendingLimit)
   stx.amounts = stx.amounts.map((a: bigint) => toBeHex(a, 32))
   stx.inputNullifiers = stx.inputNullifiers.map((n: bigint) => toBeHex(n, 32))
   stx.outputPubkeys = stx.outputPubkeys.map((p: bigint) => toBeHex(p, 32))
   stx.outputAmounts = stx.outputAmounts.map((o: bigint) => toBeHex(o, 32))
-  return hexlify(toUtf8Bytes(JSON.stringify(stx)))
+  return toUtf8Bytes(JSON.stringify(stx))
 }
 
-export function simpleDecodeStx(encoded: string): SafeStxHashParams {
-  const raw = JSON.parse(toUtf8String(getBytes(encoded)))
+export function simpleDecodeStx(encoded: string | Uint8Array): SafeStxHashParams {
+  const s = encoded instanceof Uint8Array ? toUtf8String(encoded) : encoded
+  const raw = JSON.parse(s)
   raw.spendingLimit = BigInt(raw.spendingLimit)
   raw.amounts = raw.amounts.map(BigInt)
   raw.inputNullifiers = raw.inputNullifiers.map(BigInt)

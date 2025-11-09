@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import AssetsIcon from '@/public/images/sidebar/assets.svg'
 import { TxFlow } from '@/components/tx-flow/TxFlow'
 import { TxFlowStep } from '@/components/tx-flow/TxFlowStep'
-import CreateTokenTransfer, { type CreateTokenTransferProps } from '../TokenTransfer/CreateTokenTransfer'
+import CreateShieldedTokenTransfer, { type CreateTokenTransferProps } from '../TokenTransfer/CreateShieldedTokenTransfer'
 import { TokenTransferFields } from '../TokenTransfer'
 import { ZERO_ADDRESS } from '@safe-global/protocol-kit/dist/src/utils/constants'
 import { TokenTransferType } from '../TokenTransfer'
@@ -37,7 +37,7 @@ const ShieldedAssetsTransferFlow = ({ txNonce }: ShieldedAssetsTransferFlowProps
       ReviewTransactionComponent={ReviewShieldedAssetsTranfer}
     >
       <TxFlowStep title="New transaction">
-        <CreateTokenTransfer txNonce={txNonce} />
+        <CreateShieldedTokenTransfer txNonce={txNonce} />
       </TxFlowStep>
     </TxFlow>
   )

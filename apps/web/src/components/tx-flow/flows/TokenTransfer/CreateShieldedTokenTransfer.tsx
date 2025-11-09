@@ -31,7 +31,7 @@ import { SafeTxContext } from '@/components/tx-flow/SafeTxProvider'
 import { useHasPermission } from '@/permissions/hooks/useHasPermission'
 import { Permission } from '@/permissions/config'
 import { ZERO_ADDRESS } from '@safe-global/protocol-kit/dist/src/utils/constants'
-import RecipientRow from './RecipientRow'
+import ShieldedRecipientRow from './ShieldedRecipientRow'
 import { SafeAppsName } from '@/config/constants'
 import { useRemoteSafeApps } from '@/hooks/safe-apps/useRemoteSafeApps'
 import CSVAirdropAppModal from './CSVAirdropAppModal'
@@ -75,7 +75,7 @@ export type CreateTokenTransferProps = {
   txNonce?: number
 }
 
-export const CreateTokenTransfer = ({ txNonce }: CreateTokenTransferProps): ReactElement => {
+export const CreateShieldedTokenTransfer = ({ txNonce }: CreateTokenTransferProps): ReactElement => {
   const disableSpendingLimit = txNonce !== undefined
   const [csvAirdropModalOpen, setCsvAirdropModalOpen] = useState<boolean>(false)
   const [maxRecipientsInfo, setMaxRecipientsInfo] = useState<boolean>(false)
@@ -172,7 +172,7 @@ export const CreateTokenTransfer = ({ txNonce }: CreateTokenTransferProps): Reac
           <Stack spacing={3}>
             <Stack spacing={8}>
               {recipientFields.map((field, index) => (
-                <RecipientRow
+                <ShieldedRecipientRow
                   key={field.id}
                   removable={recipientFields.length > 1}
                   fieldArray={{ name: MultiTokenTransferFields.recipients, index }}
@@ -258,4 +258,4 @@ export const CreateTokenTransfer = ({ txNonce }: CreateTokenTransferProps): Reac
   )
 }
 
-export default CreateTokenTransfer
+export default CreateShieldedTokenTransfer

@@ -42,7 +42,7 @@ export async function dispatchProofs(shieldedKeyPair: any, safeAddress: string, 
     for (const c of ciphertexts) {
         const plaintext = bermudaSDK.utils.decryptMessageCiphertext(encryptionKey, getBytes(c))
         // const decoded = bermudaSDK.utils.decodeStx(bermudaSDK.utils.hex(plaintext))
-        const decoded = simpleDecodeStx(bermudaSDK.utils.hex(plaintext))
+        const decoded = simpleDecodeStx(plaintext)
         console.log("$$$$$ decoded", decoded)
         const stxHash = bermudaSDK.safe.stxHash(decoded)
         if (signMsgHashTx.data.includes(stxHash.slice(2))) {
@@ -118,7 +118,7 @@ export async function dispatchProofs(shieldedKeyPair: any, safeAddress: string, 
         outputs,
         token: stx.token
     })
-
+    console.log({ args, extData })
     //TODO pack transact payload
 
     //TODO relay

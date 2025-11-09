@@ -82,7 +82,6 @@ const ReviewShieldedAssetsTransfer = ({
           tokenDecimals,
         })
         setSafeTxError(undefined)
-
         const { metaTxs, batchSafeTxs } = await buildShieldedTransferMetaTxs({
           safeAddress,
           shieldedAddress: recipient.recipient,
