@@ -74,7 +74,6 @@ export const settingsNavItems = [
   { label: 'Security', href: AppRoutes.settings.security },
   { label: 'Notifications', href: AppRoutes.settings.notifications },
   { label: 'Modules', href: AppRoutes.settings.modules },
-  { label: 'Safe Apps', href: AppRoutes.settings.safeApps.index },
   { label: 'Data', href: AppRoutes.settings.data },
   { label: 'Environment variables', href: AppRoutes.settings.environmentVariables },
 ]
