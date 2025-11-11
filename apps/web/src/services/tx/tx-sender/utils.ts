@@ -1,8 +1,18 @@
 import { getBermudaSDK } from '@/hooks/bermudaSDK/useBermudaSDK'
 import { SafeTransactionData } from '@safe-global/types-kit'
 import { Contract, Interface, getBytes, Signer } from 'ethers'
+import { EthSafeSignature, generateTypedData, type MultiSendCallOnlyContractImplementationType } from '@safe-global/protocol-kit'
+import {
+  EIP712TypedDataMessage,
+  EIP712TypedDataTx,
+  Eip3770Address,
+  SafeEIP712Args
+} from '@safe-global/types-kit'
 
-export async function getSafeTxHash(safeAddress: string, safeTxData: SafeTransactionData): Promise<string> {
+// Note: SafeTransactionData and ISafeTx from Bermuda SDK are compatible
+// Both use strings for gas fields and number for nonce
+
+export async function getSafeTxHash(safeAddress: string, safeTxData: SafeTransactionData) {
     const bermudaSDK = getBermudaSDK()
     const safeContract = new Contract(
         safeAddress,
@@ -35,9 +45,12 @@ export async function getSafeTxHash(safeAddress: string, safeTxData: SafeTransac
 // }
 
 export async function getConfirmPayload(
-    safeAddress: string,
-    safeTxHash: string,
-    signer: Signer,
+  safeAddress: string,
+  safeTxHash: string,
+  safeTxData: SafeTransactionData,
+  signer: Signer,
+  chainId: bigint,
+  provider: any, // Eip1193Provider
 ): Promise<{ to: string; data: string }> {
 
   const bermudaSDK = getBermudaSDK()
@@ -47,15 +60,15 @@ export async function getConfirmPayload(
 
   const signature = await bermudaSDK.safe.utils.signSafeTx(signer, safeAddress, safeTxData, chainIdBigInt, provider)
 
-    const proposeTxLib = bermudaSDK.config.proposeTxLib
-    if (!proposeTxLib) {
-        throw new Error('ProposeTxLib address not configured')
-    }
+  const proposeTxLib = bermudaSDK.config.proposeTxLib
+  if (!proposeTxLib) {
+    throw new Error('ProposeTxLib address not configured')
+  }
 
-    const iface = Interface.from(bermudaSDK.abis.PROPOSE_TX_LIB_ABI)
+  const iface = Interface.from(bermudaSDK.abis.PROPOSE_TX_LIB_ABI)
 
-    return {
-        to: proposeTxLib,
-        data: iface.encodeFunctionData('confirm', [safeAddress, safeTxHash, signature]),
-    }
+  return {
+    to: proposeTxLib,
+    data: iface.encodeFunctionData('confirm', [safeAddress, safeTxHash, signature]),
+  }
 }
