@@ -38,7 +38,7 @@
     "node": ">=18"
   },
   "dependencies": {
-    "@bermuda/sdk": "git+ssh://git@github.com:BermudaBay/sdk#feat/typed-data-sig",
+    "@bermuda/sdk": "git+ssh://git@github.com:BermudaBay/sdk",
     "@cowprotocol/widget-react": "^0.13.0",
     "@datadog/browser-logs": "^6.6.3",
     "@ducanh2912/next-pwa": "^10.2.9",
