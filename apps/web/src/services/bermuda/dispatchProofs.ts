@@ -1,5 +1,5 @@
 import { TransactionSummary } from "@safe-global/safe-gateway-typescript-sdk";
-import { queryFilterBatched, simpleDecodeStx } from "./utils";
+import { queryFilterBatched, shieldedAddressFromSpendingPubkey, simpleDecodeStx } from "./utils";
 import { Contract, getBytes } from "ethers";
 import { getBermudaSDK } from "@/hooks/bermudaSDK/useBermudaSDK";
 
@@ -81,15 +81,37 @@ export async function dispatchProofs(shieldedKeyPair: any, safeAddress: string, 
     const inputs = utxos.filter((u: any) => stx.inputNullifiers.includes(u.getNullifier()))
     if (!inputs.length) throw Error("Cannot find input nullifiers")
 
+    while (inputs.length !== 2 && inputs.length < 16) {
+        inputs.push(
+            new bermudaSDK.types.Utxo({
+                token: stx.token,
+                safe: safeAddress,
+                amount: 0n,
+                keypair: shieldedKeyPair,
+            })
+        )
+    }
+
+    //NOTE We load all registered peers from tehe regsitry here once
+    // so that all subsequent shieldedAddressFromSpendingPubkey() invocations 
+    // have the fresh registry available. sdk.registry.load() internally 
+    // concats loaded shielded addresses to sdk.config.peers
+    await bermudaSDK.registry.load()
+
+    const registered = await bermudaSDK.registry.list()
+    console.log("registered", registered)
+    console.log("registered sas", registered.map(r => r.shieldedAddress))
+
     const output0: any = {}
     const output1: any = {}
     if (shieldedKeyPair.address().startsWith(bermudaSDK.utils.hex(stx.outputPubkeys[0], 32))) {
         output0.keypair = shieldedKeyPair
-        output1.keypair = bermudaSDK.types.KeyPair.fromString(bermudaSDK.utils.hex(stx.outputPubkeys[1], 32) + "0".repeat(64))
+        // output1.keypair = bermudaSDK.types.KeyPair.fromString(bermudaSDK.utils.hex(stx.outputPubkeys[1], 32) + "0".repeat(64))
+        output1.keypair = bermudaSDK.types.KeyPair.fromAddress(shieldedAddressFromSpendingPubkey(stx.outputPubkeys[1]))
         output0.safe = safeAddress
     } else if (shieldedKeyPair.address().startsWith(bermudaSDK.utils.hex(stx.outputPubkeys[1], 32))) {
         output1.keypair = shieldedKeyPair
-        output0.keypair = bermudaSDK.types.KeyPair.fromString(bermudaSDK.utils.hex(stx.outputPubkeys[0], 32) + "0".repeat(64))
+        output0.keypair = bermudaSDK.types.KeyPair.fromAddress(shieldedAddressFromSpendingPubkey(stx.outputPubkeys[0]))
         output1.safe = safeAddress
     } else {
         throw Error("Cannot find output pubkey matching given shielded key pair")
@@ -112,7 +134,8 @@ export async function dispatchProofs(shieldedKeyPair: any, safeAddress: string, 
             token: stx.token
         })
     ]
-
+    console.log("𝜟𝜟𝜟𝜟𝜟 inputs", inputs.length, inputs)
+    console.log("𝜟𝜟𝜟𝜟𝜟 outputs", outputs.length, outputs)
     const { args, extData } = await bermudaSDK.core.prepareTransact({
         inputs,
         outputs,

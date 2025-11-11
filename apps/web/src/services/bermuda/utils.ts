@@ -71,3 +71,14 @@ export function simpleDecodeStx(encoded: string | Uint8Array): SafeStxHashParams
   raw.outputAmounts = raw.outputAmounts.map(BigInt)
   return raw
 }
+
+export function shieldedAddressFromSpendingPubkey(outputPubkey: bigint, shieldedKeyPair?: any): Promise<string> {
+  const spendingPubkey = toBeHex(outputPubkey, 32)
+  if (shieldedKeyPair && shieldedKeyPair.address().startsWith(spendingPubkey)) return shieldedKeyPair.address()
+  const bermudaSDK = getBermudaSDK()
+  console.log("prefix", spendingPubkey)
+  console.log("bermudaSDK.config.peers", bermudaSDK.config.peers)
+  const shieldedAdrs = bermudaSDK.config.peers.find((shieldedAdrs: string) => shieldedAdrs.startsWith(spendingPubkey))
+  if (!shieldedAdrs) throw Error('Cannot resolve shielded address')
+  return shieldedAdrs
+}
