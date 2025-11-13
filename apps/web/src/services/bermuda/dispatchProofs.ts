@@ -45,6 +45,7 @@ export async function dispatchProofs(shieldedKeyPair: any, safeAddress: string, 
         const decoded = simpleDecodeStx(plaintext)
         console.log("$$$$$ decoded", decoded)
         const stxHash = bermudaSDK.safe.stxHash(decoded)
+        console.log("$$$$$$$$$ dispatchProofs stxHash", stxHash)
         if (signMsgHashTx.data.includes(stxHash.slice(2))) {
             stx = decoded
             break
@@ -88,6 +89,7 @@ export async function dispatchProofs(shieldedKeyPair: any, safeAddress: string, 
                 safe: safeAddress,
                 amount: 0n,
                 keypair: shieldedKeyPair,
+                blinding: 0n
             })
         )
     }

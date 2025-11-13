@@ -68,6 +68,19 @@ export const buildShieldedTransferMetaTxs = async ({
     utxos = utxos[normalizedToken]
 
     console.log("$$$$$ utxos", utxos.length, utxos)
+
+    while (utxos.length !== 2 && utxos.length < 16) {
+        utxos.push(
+            new bermudaSDK.types.Utxo({
+                token: normalizedToken,
+                safe: safeAddress,
+                amount: 0n,
+                keypair: shieldedKeyPair,
+                blinding: 0n
+            })
+        )
+    }
+
     // In-place desc sort
     utxos.sort((a: any, b: any) => Number(b.amount - a.amount))
     // Max inputs are 16
@@ -92,8 +105,9 @@ export const buildShieldedTransferMetaTxs = async ({
         outputPubkeys: [otherPubKey, ownPubKey],
         outputAmounts: [otherAmount, ownAmount]
     }
+    console.log('build shielded tx inout ', stx)
     const stxHash = bermudaSDK.safe.stxHash(stx)
-
+    console.log("$$$$$$$$$ buildShieldedTransferMetaTxs stxHash", stxHash)
     // Encrypt the stx hash preimage and publish it
     // const encodedStx = bermudaSDK.utils.encodeStx(stx)
     const encodedStx = simpleEncodeStx(stx)
