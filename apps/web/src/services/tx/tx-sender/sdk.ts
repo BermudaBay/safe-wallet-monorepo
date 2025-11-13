@@ -166,7 +166,7 @@ export const tryOffChainTxSigning = async (safeAddress: string, safeTx: SafeTran
   const chainIdHex = await provider.request({ method: 'eth_chainId' })
   const chainIdBigInt = BigInt(chainIdHex as string)
 
-  const signature = await bermudaSDK.safe.utils.signSafeTx(signer, safeAddress, safeTx.data, chainIdBigInt, provider)
+  const signature = await bermudaSDK.safe.utils.signSafeTx(signer, safeAddress, safeTx.data, chainIdBigInt)
   const signerAddress = await signer.getAddress()
   safeTx.addSignature(new EthSafeSignature(signerAddress, signature))
 
