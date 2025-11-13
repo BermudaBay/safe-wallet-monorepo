@@ -177,7 +177,7 @@ export const dispatchProposerTxSigning = async (safeAddress: string, safeTx: Saf
 
   const chainIdHex = await wallet.provider.request({ method: 'eth_chainId' })
   const chainIdBigInt = BigInt(chainIdHex as string)
-  const signature = await bermudaSDK.safe.utils.signSafeTx(signer, safeAddress, safeTx.data, chainIdBigInt, wallet.provider)
+  const signature = await bermudaSDK.safe.utils.signSafeTx(signer, safeAddress, safeTx.data, chainIdBigInt)
   const signerAddress = await signer.getAddress()
   safeTx.addSignature(new EthSafeSignature(signerAddress, signature))
 

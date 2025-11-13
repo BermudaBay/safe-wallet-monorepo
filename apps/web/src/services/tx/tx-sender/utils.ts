@@ -58,7 +58,7 @@ export async function getConfirmPayload(
   const chainIdHex = await provider.request({ method: 'eth_chainId' })
   const chainIdBigInt = BigInt(chainIdHex as string)
 
-  const signature = await bermudaSDK.safe.utils.signSafeTx(signer, safeAddress, safeTxData, chainIdBigInt, provider)
+  const signature = await bermudaSDK.safe.utils.signSafeTx(signer, safeAddress, safeTxData, chainIdBigInt)
 
   const proposeTxLib = bermudaSDK.config.proposeTxLib
   if (!proposeTxLib) {
