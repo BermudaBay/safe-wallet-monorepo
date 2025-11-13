@@ -1724,9 +1724,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@bermuda/sdk@git+ssh://git@github.com:BermudaBay/sdk":
+"@bermuda/sdk@git+ssh://git@github.com:BermudaBay/sdk#fix/provider":
   version: 0.0.1
-  resolution: "@bermuda/sdk@git+ssh://git@github.com:BermudaBay/sdk#commit=eeabfa9451d902fa29d452d2f3b5d3492d12747d"
+  resolution: "@bermuda/sdk@git+ssh://git@github.com:BermudaBay/sdk#commit=83d612995b7ff1f4a2b3719882b9015ab332d5d1"
   dependencies:
     "@aztec/bb.js": "npm:0.87.6"
     "@noble/curves": "npm:1.9.0"
@@ -1743,7 +1743,7 @@ __metadata:
   dependenciesMeta:
     fsevents:
       optional: true
-  checksum: 10/719ceae12356ad79bcfa9c89c862043d7eb96734b6bb5a58e6f6f708d27671020fdd34bd97c99b4dbab1ba92e4ff5e03dce0eb34985c8879a4d182968fe2db66
+  checksum: 10/77352ad7c3e6b66cc219dd0b8de9fb1ae76400794a7c2eb8c09c52d4fb0f192a8d0ffc732135bf94b0d0a11ae1824acd7697f7a81876f24602fedd40ff2d212d
   languageName: node
   linkType: hard
 
@@ -9064,9 +9064,9 @@ __metadata:
   linkType: hard
 
 "@safe-global/safe-modules-deployments@npm:^2.2.14":
-  version: 2.2.19
-  resolution: "@safe-global/safe-modules-deployments@npm:2.2.19"
-  checksum: 10/970c6f76d7e4452d690c3fd5524a1808d9e14a44a6e6ab4665d7effefc0574363de9881a461a11a55744dec3e175534902f2aa40b5f0b7d266c4e09cd0597803
+  version: 2.2.20
+  resolution: "@safe-global/safe-modules-deployments@npm:2.2.20"
+  checksum: 10/d48922c39867448eb68460d38fe50fcb47fa8325f0b6a7b43d68095bd1a6b26ba6e6fdfee78ed2048a55345c95eac900373b158770131814f52ce63020dea154
   languageName: node
   linkType: hard
 
@@ -9174,7 +9174,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@safe-global/web@workspace:apps/web"
   dependencies:
-    "@bermuda/sdk": "git+ssh://git@github.com:BermudaBay/sdk"
+    "@bermuda/sdk": "git+ssh://git@github.com:BermudaBay/sdk#fix/provider"
     "@chromatic-com/storybook": "npm:^1.3.1"
     "@cowprotocol/app-data": "npm:^3.1.0"
     "@cowprotocol/widget-react": "npm:^0.13.0"
