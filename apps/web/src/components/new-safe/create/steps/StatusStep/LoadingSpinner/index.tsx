@@ -1,4 +1,4 @@
-import { Box } from '@mui/material'
+import { Box, CircularProgress } from '@mui/material'
 import css from '@/components/new-safe/create/steps/StatusStep/LoadingSpinner/styles.module.css'
 import classnames from 'classnames'
 import { useCallback, useEffect, useRef } from 'react'
@@ -35,7 +35,7 @@ export enum SpinnerStatus {
   PROCESSING = 'isProcessing',
 }
 
-const LoadingSpinner = ({ status }: { status: SpinnerStatus }) => {
+export const SafeLoadingSpinner = ({ status }: { status: SpinnerStatus }) => {
   // TODO: only monitoring the PendingTxs we can't determine the transaction's result
   const isError = status === SpinnerStatus.ERROR
   const isSuccess = status === SpinnerStatus.SUCCESS
@@ -78,6 +78,13 @@ const LoadingSpinner = ({ status }: { status: SpinnerStatus }) => {
       </svg>
     </Box>
   )
+}
+
+function LoadingSpinner({ status }: { status: SpinnerStatus }) {
+  if (status === SpinnerStatus.PROCESSING) {
+    return <CircularProgress color="primary" size="3rem" />
+  }
+  return <></>
 }
 
 export default LoadingSpinner
