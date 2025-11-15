@@ -144,9 +144,14 @@ export async function dispatchProofs(shieldedKeyPair: any, safeAddress: string, 
         token: stx.token
     })
     console.log({ args, extData })
-    //TODO pack transact payload
 
-    //TODO relay
+    const [_args, _extData] = bermudaSDK.utils.mapTransactArgs([args, extData])
+    const target = await bermudaSDK.config.pool.getAddress()
+    const data = bermudaSDK.config.pool.interface.encodeFuncctionData("transact", [_args, _extData])
 
-    alert("services>bermuda>dispatchProofs")
+    bermudaSDK.utils.relay(bermudaSDK.config.relayer, {
+        chainId: bermudaSDK.config.chainId,
+        target,
+        data
+    })
 }
