@@ -1,6 +1,6 @@
 import { TransactionSummary } from "@safe-global/safe-gateway-typescript-sdk";
 import { queryFilterBatched, shieldedAddressFromSpendingPubkey, simpleDecodeStx } from "./utils";
-import { Contract, getBytes } from "ethers";
+import { Contract, getBytes, ZeroHash } from "ethers";
 import { getBermudaSDK } from "@/hooks/bermudaSDK/useBermudaSDK";
 
 export async function dispatchProofs(shieldedKeyPair: any, safeAddress: string, txSummary: TransactionSummary) {
@@ -147,7 +147,14 @@ export async function dispatchProofs(shieldedKeyPair: any, safeAddress: string, 
 
     const [_args, _extData] = bermudaSDK.utils.mapTransactArgs([args, extData])
     const target = await bermudaSDK.config.pool.getAddress()
-    const data = bermudaSDK.config.pool.interface.encodeFuncctionData("transact", [_args, _extData])
+    const data = bermudaSDK.config.pool.interface.encodeFunctionData(
+        'transact((bytes,bytes32[],bytes32,bytes32[],bytes32[2],uint256,bytes32,bytes,bytes32[],bytes32,uint256,bytes32),(address,int256,address,uint256,bytes,bytes,bool,address,uint256,bytes32,address),(uint256,uint8,bytes32,bytes32))',
+        [
+            _args,
+            _extData,
+            [0n, 0, ZeroHash, ZeroHash]
+        ]
+    )
 
     bermudaSDK.utils.relay(bermudaSDK.config.relayer, {
         chainId: bermudaSDK.config.chainId,
