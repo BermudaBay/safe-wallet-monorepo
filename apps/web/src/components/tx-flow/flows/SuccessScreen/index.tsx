@@ -21,6 +21,8 @@ import { usePredictSafeAddressFromTxDetails } from '@/hooks/usePredictSafeAddres
 import { AppRoutes } from '@/config/routes'
 import { NESTED_SAFE_EVENTS, NESTED_SAFE_LABELS } from '@/services/analytics/events/nested-safes'
 import Track from '@/components/common/Track'
+import { useBermuda } from '@/contexts/bermuda-context'
+import { useRouter } from 'next/router'
 
 interface Props {
   /** The ID assigned to the transaction in the client-gateway */
@@ -34,14 +36,42 @@ const SuccessScreen = ({ txId, txHash }: Props) => {
   const [error, setError] = useState<Error>()
   const { setTxFlow } = useContext(TxModalContext)
   const chain = useCurrentChain()
+  const router = useRouter()
+  const { isStx } = useBermuda()
   const pendingTx = useAppSelector((state) => (txId ? selectPendingTxById(state, txId) : undefined))
   const { safeAddress } = useSafeInfo()
   const status = !txId && txHash ? PendingStatus.INDEXING : pendingTx?.status
   const pendingTxHash = pendingTx && 'txHash' in pendingTx ? pendingTx.txHash : undefined
   const txLink = chain && txId && getTxLink(txId, chain, safeAddress)
   const [txDetails] = useTxDetails(txId)
+  // const [isShieldedDeposit, setIsShieldedDeposit] = useState<boolean>(true)
   const isSwapOrder = txDetails && isSwapTransferOrderTxInfo(txDetails.txInfo)
   const [predictedSafeAddress] = usePredictSafeAddressFromTxDetails(txDetails)
+
+  // useEffect(() => {
+  //   async function run() {
+  //     // const { all } = await sdk.safe.listTxs(safeAddress)
+  //     // const transaction = all.find((item: any) => item.hash.toLowerCase() === txHash!.toLowerCase())
+
+  //     const txHash = txId?.split("_").pop()
+  //     console.log("$$$$$txHash && safeAddress", { txHash, safeAddress, txId })
+
+  //     const transaction = await sdk.config.provider.getTransaction(txHash)
+
+  //     console.log('transaction', transaction)
+
+  //     // if (transaction.details.to.toLowerCase() === sdk.config.signMsgHashLib.toLowerCase()) {
+  //     if (transaction.to.toLowerCase() === safeAddress.toLowerCase() && transaction.data.includes(sdk.config.signMsgHashLib.toLowerCase())) {
+  //       setIsShieldedDeposit(false)
+  //     }
+  //   }
+
+  //   if (sdk && txId && safeAddress) {
+  //     run()
+  //   }
+  // }, [txId, sdk, safeAddress])
+
+  // console.log('isShieldedDeposit', isShieldedDeposit)
 
   useEffect(() => {
     if (!pendingTxHash) return
@@ -65,6 +95,13 @@ const SuccessScreen = ({ txId, txHash }: Props) => {
 
   const isSuccess = status === undefined
   const spinnerStatus = error ? SpinnerStatus.ERROR : isSuccess ? SpinnerStatus.SUCCESS : SpinnerStatus.PROCESSING
+
+  useEffect(() => {
+    if (isSuccess && isStx && router.isReady) {
+      console.log("$$$$$$ `/transactions/queue?safe=dev:${safeAddress}`", `/transactions/queue?safe=dev:${safeAddress}`)
+      router.push(`/transactions/queue?safe=dev:${safeAddress}`)
+    }
+  }, [isSuccess, isStx, router])
 
   let StatusComponent
   switch (status) {

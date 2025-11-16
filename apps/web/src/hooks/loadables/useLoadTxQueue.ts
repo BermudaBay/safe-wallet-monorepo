@@ -36,7 +36,7 @@ export const useLoadTxQueue = (): AsyncResult<TransactionListPage> => {
         const { all, pending } = result as SdkListTxsResult
         return mapSdkQueueToTransactionPage({
           safeAddress,
-          allTxs: all,
+          allTxs: pending,
           owners,
           threshold: safe.threshold,
         })
