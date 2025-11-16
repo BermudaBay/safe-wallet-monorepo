@@ -3,7 +3,7 @@ import useIsPending from '@/hooks/useIsPending'
 import type { SyntheticEvent } from 'react'
 import { type ReactElement, useContext, useEffect, useState } from 'react'
 import { type TransactionSummary } from '@safe-global/safe-gateway-typescript-sdk'
-import { Button, Tooltip } from '@mui/material'
+import { Button, CircularProgress, Tooltip } from '@mui/material'
 
 import useSafeInfo from '@/hooks/useSafeInfo'
 import { isMultisigExecutionInfo } from '@/utils/transaction-guards'
@@ -28,7 +28,9 @@ const ExecuteTxButton = ({
   const txNonce = isMultisigExecutionInfo(txSummary.executionInfo) ? txSummary.executionInfo.nonce : undefined
   const isPending = useIsPending(txSummary.id)
   const { setSelectedTxId } = useContext(ReplaceTxHoverContext)
-  const bermuda = useBermuda()
+  const { keyPair, sdk, saveStxExecuted, isStxExecuted } = useBermuda()
+  const [isDispatchingProofs, setIsDispatchingProofs] = useState(false)
+
 
   const expiredSwap = useIsExpiredSwap(txSummary.txInfo)
 
@@ -36,14 +38,22 @@ const ExecuteTxButton = ({
   const isStxTransferOrUnshield = methodName === "Shielded transfer" || methodName === "Unshield"
 
   const isNext = (txNonce !== undefined && txNonce === safe.nonce) //|| problyStx
-  const isDisabled = !isStxTransferOrUnshield && (!isNext || !bermuda.sdk || expiredSwap || isPending)
+  const isDisabled = !sdk || isStxExecuted(txSummary.id) || isDispatchingProofs || !isStxTransferOrUnshield && (!isNext || !sdk || expiredSwap || isPending)
 
   const onClick = (e: SyntheticEvent) => {
     e.stopPropagation()
     e.preventDefault()
 
     if (isStxTransferOrUnshield) {
-      dispatchProofs(bermuda.keyPair, safe.address.value, txSummary)
+      try {
+        setIsDispatchingProofs(true)
+        dispatchProofs(keyPair, safe.address.value, txSummary)
+        saveStxExecuted(txSummary.id)
+      } catch (err) {
+        console.error(err)
+      } finally {
+        setIsDispatchingProofs(false)
+      }
     } else {
       setTxFlow(<ConfirmTxFlow txSummary={txSummary} />, undefined, false)
     }
@@ -71,9 +81,9 @@ const ExecuteTxButton = ({
                   variant="contained"
                   disabled={!isOk || isDisabled}
                   size={compact ? 'small' : 'stretched'}
-                  sx={{ minWidth: '106.5px', py: compact ? 0.8 : undefined }}
+                  sx={{ minWidth: '106.5px', py: compact ? 0.8 : undefined, cursor: isDisabled ? 'default' : 'pointer' }}
                 >
-                  Execute
+                  {isDispatchingProofs ? <CircularProgress color='primary' size='15px' thickness={5} /> : 'Execute'}
                 </Button>
               </Track>
             </span>
