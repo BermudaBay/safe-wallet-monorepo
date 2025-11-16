@@ -98,10 +98,11 @@ const SuccessScreen = ({ txId, txHash }: Props) => {
 
   useEffect(() => {
     if (isSuccess && isStx && router.isReady) {
-      console.log("$$$$$$ `/transactions/queue?safe=dev:${safeAddress}`", `/transactions/queue?safe=dev:${safeAddress}`)
+      //TODO instead of hard reloading would be better to close the success screen overlay modal
       router.push(`/transactions/queue?safe=dev:${safeAddress}`)
+      router.reload()
     }
-  }, [isSuccess, isStx, router])
+  }, [isSuccess, isStx, router.isReady])
 
   let StatusComponent
   switch (status) {
