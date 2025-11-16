@@ -31,6 +31,7 @@ const ReviewShieldedAssetsTransfer = ({
   const { balances } = useBalances()
   const { setSafeTx, setSafeTxError, setNonce, setBatchSafeTxs } = useContext(SafeTxContext)
   const currentChain = useCurrentChain()
+  const { sdk, saveIsStx } = useBermuda()
   const { data } = useContext(TxFlowContext) as TxFlowContextType<MultiTokenTransferParams>
   const formData = params ?? data
 
@@ -82,6 +83,7 @@ const ReviewShieldedAssetsTransfer = ({
           tokenDecimals,
         })
         setSafeTxError(undefined)
+        sdk && saveIsStx(true)
         const { metaTxs, batchSafeTxs } = await buildShieldedTransferMetaTxs({
           safeAddress,
           shieldedAddress: recipient.recipient,
@@ -117,6 +119,7 @@ const ReviewShieldedAssetsTransfer = ({
       setBatchSafeTxs(undefined)
     }
   }, [
+    sdk,
     recipient,
     safeAddress,
     tokenDecimals,

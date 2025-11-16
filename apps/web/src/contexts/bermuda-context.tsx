@@ -1,8 +1,10 @@
 import useSafeInfo from '@/hooks/useSafeInfo'
 import { useBermudaSDK } from '@/hooks/bermudaSDK/useBermudaSDK'
-import { useState, useContext, createContext, type ReactNode, useEffect } from 'react'
+import { useState, useContext, createContext, type ReactNode, useEffect, Dispatch, SetStateAction } from 'react'
 
 const KEYPAIRS_NAMESPACE = 'keypairs'
+const EXECUTIONS_NAMESPACE = 'executions'
+const MISCELLANEOUS_NAMESPACE = 'misc'
 
 export function useBermuda() {
   const context = useContext(BermudaContext)
@@ -17,7 +19,19 @@ export function useBermuda() {
 export function BermudaProvider(props: Props) {
   const sdk = useBermudaSDK()
   const { safeAddress } = useSafeInfo()
+  const [isStx, setIsStx] = useState<boolean | undefined>()
   const [keyPair, setKeyPair] = useState<any | undefined>()
+
+  useEffect(() => {
+    if (sdk) {
+      const key = 'is-stx'
+      const namespace = MISCELLANEOUS_NAMESPACE
+
+      const result = sdk.storage.get({ namespace, key })
+
+      setIsStx(result)
+    }
+  }, [sdk])
 
   useEffect(() => {
     if (sdk && safeAddress) {
@@ -34,6 +48,15 @@ export function BermudaProvider(props: Props) {
       setKeyPair(result)
     }
   }, [sdk, safeAddress])
+
+  function saveIsStx(value: boolean) {
+    const key = 'is-stx'
+    const namespace = MISCELLANEOUS_NAMESPACE
+
+    sdk.storage.set({ namespace, key, value })
+
+    setIsStx(value)
+  }
 
   function saveKeyPair(keyPair: any) {
     const key = safeAddress.toLowerCase()
@@ -54,8 +77,27 @@ export function BermudaProvider(props: Props) {
     setKeyPair(undefined)
   }
 
+  function saveStxExecuted(id: string) {
+    const key = id.toLowerCase()
+    const namespace = EXECUTIONS_NAMESPACE
+    const value = true
+
+    sdk.storage.set({ namespace, key, value })
+
+    setKeyPair(keyPair)
+  }
+
+  function isStxExecuted(id: string): boolean {
+    const key = id.toLowerCase()
+    const namespace = EXECUTIONS_NAMESPACE
+
+    const result = sdk.storage.get({ namespace, key })
+
+    return result
+  }
+
   return (
-    <BermudaContext.Provider value={{ sdk, keyPair, safeAddress, saveKeyPair, deleteKeyPair }}>
+    <BermudaContext.Provider value={{ sdk, keyPair, safeAddress, saveKeyPair, deleteKeyPair, saveIsStx, isStx, saveStxExecuted, isStxExecuted }}>
       {props.children}
     </BermudaContext.Provider>
   )
@@ -69,6 +111,10 @@ type BermudaContext = {
   safeAddress: string
   saveKeyPair: (keyPair: any) => void
   deleteKeyPair: () => void
+  isStx: boolean | undefined
+  saveIsStx: (value: boolean) => void
+  saveStxExecuted: (id: string) => void
+  isStxExecuted(id: string): boolean
 }
 
 type Props = {
