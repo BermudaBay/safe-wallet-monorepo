@@ -13,7 +13,7 @@ import { ReplaceTxHoverContext } from '../GroupedTxListItems/ReplaceTxHoverProvi
 import CheckWallet from '@/components/common/CheckWallet'
 import { TxModalContext } from '@/components/tx-flow'
 import { ConfirmTxFlow } from '@/components/tx-flow/flows'
-import { dispatchProofs } from '@/services/bermuda/dispatchProofs'
+import { dispatchShieldedTransfer } from '@/services/bermuda/dispatchShieldedTransfer'
 import { useBermuda } from '@/contexts/bermuda-context'
 
 const ExecuteTxButton = ({
@@ -48,7 +48,7 @@ const ExecuteTxButton = ({
       try {
         setIsDispatchingProofs(true)
         console.log(isDispatchingProofs)
-        await dispatchProofs(keyPair, safe.address.value, txSummary)
+        await dispatchShieldedTransfer(keyPair, safe.address.value, txSummary)
         saveStxExecuted(txSummary.txHash!.toLowerCase())
       } catch (err) {
         console.error(err)
