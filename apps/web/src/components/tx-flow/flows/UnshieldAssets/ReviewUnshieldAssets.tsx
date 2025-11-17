@@ -11,8 +11,9 @@ import { ZERO_ADDRESS } from '@safe-global/protocol-kit/dist/src/utils/constants
 import { Divider, Stack } from '@mui/material'
 import ReviewRecipientRow from '../TokenTransfer/ReviewRecipientRow'
 import { useCurrentChain } from '@/hooks/useChains'
-import { useBermuda } from '@/contexts/bermuda-context'
+import { STXType, useBermuda } from '@/contexts/bermuda-context'
 import { TxFlowContext, type TxFlowContextType } from '../../TxFlowProvider'
+import { buildShieldedWithdrawalMetaTxs } from '@/services/bermuda/buildShieldedWithdrawal'
 
 type ReviewUnshieldAssetsProps = {
   params?: MultiTokenTransferParams
@@ -27,7 +28,7 @@ const ReviewUnshieldAssets = ({
   children,
 }: PropsWithChildren<ReviewUnshieldAssetsProps>) => {
   const { safeAddress } = useSafeInfo()
-  const { keyPair } = useBermuda()
+  const { sdk, keyPair, saveStxType } = useBermuda()
   const { balances } = useBalances()
   const { setSafeTx, setSafeTxError, setNonce, setBatchSafeTxs } = useContext(SafeTxContext)
   const currentChain = useCurrentChain()
@@ -74,7 +75,7 @@ const ReviewUnshieldAssets = ({
       }
 
       try {
-        console.info('[UnshieldAssets][Review] Building shielded deposit SafeTx', {
+        console.info('[UnshieldAssets][Review] Building shielded withdrawal SafeTx', {
           safeAddress,
           recipient: recipient.recipient,
           tokenAddress: recipient.tokenAddress,
@@ -83,9 +84,10 @@ const ReviewUnshieldAssets = ({
         })
         setSafeTxError(undefined)
 
-        const { metaTxs, batchSafeTxs } = await buildShieldedDepositMetaTxs({
+        sdk && saveStxType(STXType.Withdrawal)
+        const { metaTxs, batchSafeTxs } = await buildShieldedWithdrawalMetaTxs({
           safeAddress,
-          shieldedAddress: recipient.recipient,
+          nativeAddress: safeAddress,
           tokenAddress: recipient.tokenAddress,
           tokenDecimals,
           amount: recipient.amount,
