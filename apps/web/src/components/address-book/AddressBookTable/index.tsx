@@ -1,7 +1,7 @@
-import { useContext, useMemo, useState } from 'react'
-import { Box } from '@mui/material'
+import React, { useCallback, useContext, useState } from 'react'
+import { Box, Typography } from '@mui/material'
 import type { ChainInfo } from '@safe-global/safe-gateway-typescript-sdk'
-
+import { useAsyncMemo } from '@/utils/misc'
 import EnhancedTable from '@/components/common/EnhancedTable'
 import type { AddressEntry } from '@/components/address-book/EntryDialog'
 import EntryDialog from '@/components/address-book/EntryDialog'
@@ -27,6 +27,9 @@ import { TxModalContext, type TxModalContextType } from '@/components/tx-flow'
 import { TokenTransferFlow } from '@/components/tx-flow/flows'
 import CheckWallet from '@/components/common/CheckWallet'
 import madProps from '@/utils/mad-props'
+import { useBermuda } from '@/contexts/bermuda-context'
+import { shortenAddress } from '@/utils/misc'
+import { copyToClipboard } from '@/components/settings/ShieldedAccount/utils'
 
 const headCells = [
   { id: 'name', label: 'Name' },
@@ -54,9 +57,31 @@ type AddressBookTableProps = {
 }
 
 function AddressBookTable({ chain, setTxFlow }: AddressBookTableProps) {
+  const { sdk } = useBermuda()
   const [open, setOpen] = useState<typeof defaultOpen>(defaultOpen)
   const [searchQuery, setSearchQuery] = useState('')
   const [defaultValues, setDefaultValues] = useState<AddressEntry | undefined>(undefined)
+
+  const resolveToBermudaAddress = useCallback(
+    async (address: string) => {
+      if (sdk) {
+        const name = await sdk.registry.nameOfNativeAddress(address)
+        // We check if length is > 2, because an "empty result" is `0x`.
+        if (name.length > 2) {
+          return name
+        }
+
+        const shieldedAddress = await sdk.registry.shieldedAddressOf(address)
+        // We check if length is > 2, because an "empty result" is `0x`.
+        if (shieldedAddress.length > 2) {
+          return shieldedAddress
+        }
+
+        return null
+      }
+    },
+    [sdk],
+  )
 
   const handleOpenModal = (type: keyof typeof open) => () => {
     setOpen((prev) => ({ ...prev, [type]: true }))
@@ -74,18 +99,34 @@ function AddressBookTable({ chain, setTxFlow }: AddressBookTableProps) {
 
   const addressBook = useAddressBook()
   const addressBookEntries = Object.entries(addressBook)
-  const filteredEntries = useMemo(() => {
-    if (!searchQuery) {
-      return addressBookEntries
-    }
+  const filteredEntries =
+    useAsyncMemo(async () => {
+      if (sdk && addressBookEntries.length) {
+        const enhancedEntries = []
 
-    const query = searchQuery.toLowerCase()
-    return addressBookEntries.filter(([address, name]) => {
-      return address.toLowerCase().includes(query) || name.toLowerCase().includes(query)
-    })
-  }, [addressBookEntries, searchQuery])
+        for (const entry of addressBookEntries) {
+          const address = entry[0]
+          const resolved = await resolveToBermudaAddress(address)
 
-  const rows = filteredEntries.map(([address, name]) => ({
+          if (resolved) {
+            enhancedEntries.push([...entry, resolved])
+          } else {
+            enhancedEntries.push([...entry])
+          }
+        }
+
+        if (!searchQuery) {
+          return enhancedEntries
+        }
+
+        const query = searchQuery.toLowerCase()
+        return enhancedEntries.filter(([address, name]) => {
+          return address.toLowerCase().includes(query) || name.toLowerCase().includes(query)
+        })
+      }
+    }, [searchQuery, sdk, resolveToBermudaAddress]) || []
+
+  const rows = filteredEntries.map(([nativeAddress, name, bermudaAddress]) => ({
     cells: {
       name: {
         rawValue: name,
@@ -93,9 +134,25 @@ function AddressBookTable({ chain, setTxFlow }: AddressBookTableProps) {
         mobileLabel: 'Name',
       },
       address: {
-        rawValue: address,
+        rawValue: nativeAddress,
         mobileLabel: 'Address',
-        content: <EthHashInfo address={address} showName={false} shortAddress={false} hasExplorer showCopyButton />,
+        content: (
+          <>
+            <EthHashInfo address={nativeAddress} showName={false} shortAddress={false} hasExplorer showCopyButton />
+            {bermudaAddress && (
+              <Typography
+                sx={{ ml: '47px', fontSize: '14px' }}
+                onClick={(e) => copyToClipboard(bermudaAddress, e)}
+                style={{ cursor: 'copy' }}
+              >
+                <Typography fontWeight="bold" sx={{ fontSize: 'inherit', display: 'inline' }}>
+                  dev:
+                </Typography>
+                {bermudaAddress.startsWith('0x') ? `bay:${shortenAddress(bermudaAddress, 20)}` : bermudaAddress}
+              </Typography>
+            )}
+          </>
+        ),
       },
       actions: {
         rawValue: '',
@@ -104,7 +161,10 @@ function AddressBookTable({ chain, setTxFlow }: AddressBookTableProps) {
           <div className={tableCss.actions}>
             <Track {...ADDRESS_BOOK_EVENTS.EDIT_ENTRY}>
               <Tooltip title="Edit entry" placement="top">
-                <IconButton onClick={() => handleOpenModalWithValues(ModalType.ENTRY, address, name)} size="small">
+                <IconButton
+                  onClick={() => handleOpenModalWithValues(ModalType.ENTRY, nativeAddress, name)}
+                  size="small"
+                >
                   <SvgIcon component={EditIcon} inheritViewBox color="border" fontSize="small" />
                 </IconButton>
               </Tooltip>
@@ -112,7 +172,10 @@ function AddressBookTable({ chain, setTxFlow }: AddressBookTableProps) {
 
             <Track {...ADDRESS_BOOK_EVENTS.DELETE_ENTRY}>
               <Tooltip title="Delete entry" placement="top">
-                <IconButton onClick={() => handleOpenModalWithValues(ModalType.REMOVE, address, name)} size="small">
+                <IconButton
+                  onClick={() => handleOpenModalWithValues(ModalType.REMOVE, nativeAddress, name)}
+                  size="small"
+                >
                   <SvgIcon component={DeleteIcon} inheritViewBox color="error" fontSize="small" />
                 </IconButton>
               </Tooltip>
@@ -126,7 +189,7 @@ function AddressBookTable({ chain, setTxFlow }: AddressBookTableProps) {
                     variant="contained"
                     color="primary"
                     size="small"
-                    onClick={() => setTxFlow(<TokenTransferFlow recipients={[{ recipient: address }]} />)}
+                    onClick={() => setTxFlow(<TokenTransferFlow recipients={[{ recipient: nativeAddress }]} />)}
                     disabled={!isOk}
                   >
                     Send
