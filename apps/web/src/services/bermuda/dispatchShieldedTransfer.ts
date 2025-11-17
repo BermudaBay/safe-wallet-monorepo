@@ -3,7 +3,7 @@ import { queryFilterBatched, shieldedAddressFromSpendingPubkey, simpleDecodeStx 
 import { Contract, getBytes, ZeroHash } from "ethers";
 import { getBermudaSDK } from "@/hooks/bermudaSDK/useBermudaSDK";
 
-export async function dispatchProofs(shieldedKeyPair: any, safeAddress: string, txSummary: TransactionSummary) {
+export async function dispatchShieldedTransfer(shieldedKeyPair: any, safeAddress: string, txSummary: TransactionSummary) {
     // const { safeAddress } = useSafeInfo()
     const bermudaSDK = getBermudaSDK()
 
