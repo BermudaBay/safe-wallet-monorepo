@@ -1,5 +1,5 @@
 import AddressBookInput from '@/components/common/AddressBookInput'
-import TokenAmountInput from '@/components/common/TokenAmountInput'
+import ShieldedTokenAmountInput from '@/components/common/ShieldedTokenAmountInput'
 import { useShieldedBalances } from '@/hooks/useShieldedBalances'
 import DeleteIcon from '@/public/images/common/delete.svg'
 import { Box, Button, FormControl, Stack, SvgIcon } from '@mui/material'
@@ -95,7 +95,7 @@ export const ShieldedRecipientRow = ({ fieldArray, removable = true, remove, dis
           </FormControl>
 
           <FormControl fullWidth>
-            <TokenAmountInput
+            <ShieldedTokenAmountInput
               fieldArray={fieldArray}
               balances={isSpendingLimitType ? spendingLimitBalances : balances.items}
               selectedToken={selectedToken}
