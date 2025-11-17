@@ -151,7 +151,7 @@ export const toTransactionDetails = (
   }
 }
 
-export const mapSdkQueueToTransactionPage = ({ safeAddress, allTxs, owners, threshold }: MapArgs): TransactionListPage => {
+export const mapSdkQueueToTransactionPage = ({ safeAddress, allTxs, owners, threshold }: MapArgs, isStxExecuted: (_: string) => boolean): TransactionListPage => {
   clearSdkQueuedTxs()
 
   // If executed and target === signMsgHashLib then inject stx with exec btn triggering zk-proving
@@ -160,6 +160,9 @@ export const mapSdkQueueToTransactionPage = ({ safeAddress, allTxs, owners, thre
   for (let i = 0; i < allTxs.length; i++) {
     adjTxs.push(allTxs[i])
     if (allTxs[i].executed && allTxs[i].details.to === signMsgHashLibAdrs) {
+
+      const stxExecuted = isStxExecuted(allTxs[i].txHash ?? "0x")
+
       adjTxs.push({
         // bogus just to have a unique tx id - not sure if this required
         hash: '0x',//toBeHex(BigInt(allTxs[i].hash) - 1n),
@@ -180,7 +183,7 @@ export const mapSdkQueueToTransactionPage = ({ safeAddress, allTxs, owners, thre
         // "Inheriting" signatures is important to mark this as executable
         signatures: allTxs[i].signatures,
         executed: false,
-        stxExecuted: false,
+        stxExecuted,
         // "Inheriting" the txHash here to display a grouped tx for the 
         // mutlisig auth and shielded exec bundle
         txHash: allTxs[i].txHash
@@ -188,21 +191,10 @@ export const mapSdkQueueToTransactionPage = ({ safeAddress, allTxs, owners, thre
     }
   }
 
-  //FIXME filter 
   const pendingTxs = adjTxs
     .filter((tx, i, arr) => {
-      // console.log("$$$$$$ mapSdkQueueToTransactionPAge tx i", i, tx)
-
-      // //TODO if the current tx.details.nonce is contained in the arr twice (=hasDup) it/both are pending
-      // // so filter out any that are not exectuted or that are not dups `!tx.executed || !hasDup`
-      // const nonceOccurrence = countNonceOccurrence(tx.details.nonce, arr)
-      // console.log("$$$$$ nonceOccurrence", nonceOccurrence)
-      // console.log("$$$$$ tx.executed", tx.executed)
-
-      // // return !tx.executed && tx.stxExecuted === undefined || tx.stxExecuted === false
-      // return !tx.executed || nonceOccurrence !== 2
-      console.log("$$$$4 tx.executed || !tx.stxExecuted", { txExecuted: tx.executed, stxExecuted: tx.stxExecuted })
-      return !tx.executed || !tx.stxExecuted
+      console.log("$$$$ exec status", { txExecuted: tx.executed, stxExecuted: tx.stxExecuted })
+      return !(tx.executed || tx.stxExecuted)
     })
 
   const sorted = [...pendingTxs].sort((a, b) => Number(a.details.nonce) - Number(b.details.nonce))
@@ -218,15 +210,6 @@ export const mapSdkQueueToTransactionPage = ({ safeAddress, allTxs, owners, thre
   })
 
   return { results }
-}
-
-function countNonceOccurrence(nonce: number, arr: any) {
-  return arr.reduce((acc: number, cur: any) => {
-    if (cur.details.nonce === nonce) {
-      acc += 1
-    }
-    return acc
-  }, 0)
 }
 
 export const getCachedTransactionDetails = (
