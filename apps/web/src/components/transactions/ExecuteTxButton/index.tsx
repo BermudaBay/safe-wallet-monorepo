@@ -37,7 +37,8 @@ const ExecuteTxButton = ({
   const isStxTransferOrUnshield = methodName === "Shielded transfer" || methodName === "Unshield"
 
   const isNext = (txNonce !== undefined && txNonce === safe.nonce) //|| problyStx
-  const isDisabled = !sdk || isStxExecuted(txSummary.txHash!.toLowerCase()) || isDispatchingProofs || !isStxTransferOrUnshield && (!isNext || !sdk || expiredSwap || isPending)
+  const _isStxExecuted = sdk && isStxExecuted(txSummary.txHash!.toLowerCase())
+  const isDisabled = _isStxExecuted || isDispatchingProofs || !isStxTransferOrUnshield && (!isNext || !sdk || expiredSwap || isPending)
 
   const onClick = async (e: SyntheticEvent) => {
     e.stopPropagation()

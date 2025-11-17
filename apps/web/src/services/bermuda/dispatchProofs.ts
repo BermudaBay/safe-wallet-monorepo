@@ -41,35 +41,14 @@ export async function dispatchProofs(shieldedKeyPair: any, safeAddress: string, 
     let stx
     for (const c of ciphertexts) {
         const plaintext = bermudaSDK.utils.decryptMessageCiphertext(encryptionKey, getBytes(c))
-        // const decoded = bermudaSDK.utils.decodeStx(bermudaSDK.utils.hex(plaintext))
         const decoded = simpleDecodeStx(plaintext)
-        console.log("$$$$$ decoded", decoded)
         const stxHash = bermudaSDK.safe.stxHash(decoded)
-        console.log("$$$$$$$$$ dispatchProofs stxHash", stxHash)
         if (signMsgHashTx.data.includes(stxHash.slice(2))) {
             stx = decoded
             break
         }
     }
     if (!stx) throw Error("Cannot find stx hash preimage")
-
-    //TODO
-    // export async function prepareTransact({
-    //   pool,
-    //   fee = 0n,
-    //   inputs = [],
-    //   outputs = [],
-    //   unwrap = false,
-    //   token = ZeroAddress,
-    //   funder = ZeroAddress,
-    //   relayer = ZeroAddress,
-    //   recipient = ZeroAddress,
-    //   merkleTreeHeight,
-    //   fromBlock,
-    //   toBlock,
-    //   safeModule
-    //   // feeToken,
-    // }: ITransactInputs): Promise<IProofArtifacts>
 
     const utxos = await bermudaSDK.utils
         .findUtxosUpTo({
@@ -101,14 +80,12 @@ export async function dispatchProofs(shieldedKeyPair: any, safeAddress: string, 
     await bermudaSDK.registry.load()
 
     const registered = await bermudaSDK.registry.list()
-    console.log("registered", registered)
-    console.log("registered sas", registered.map(r => r.shieldedAddress))
+    console.log("registered", registered.map(r => r.shieldedAddress))
 
     const output0: any = {}
     const output1: any = {}
     if (shieldedKeyPair.address().startsWith(bermudaSDK.utils.hex(stx.outputPubkeys[0], 32))) {
         output0.keypair = shieldedKeyPair
-        // output1.keypair = bermudaSDK.types.KeyPair.fromString(bermudaSDK.utils.hex(stx.outputPubkeys[1], 32) + "0".repeat(64))
         output1.keypair = bermudaSDK.types.KeyPair.fromAddress(shieldedAddressFromSpendingPubkey(stx.outputPubkeys[1]))
         output0.safe = safeAddress
     } else if (shieldedKeyPair.address().startsWith(bermudaSDK.utils.hex(stx.outputPubkeys[1], 32))) {

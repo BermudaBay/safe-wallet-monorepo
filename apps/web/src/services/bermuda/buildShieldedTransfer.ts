@@ -36,12 +36,11 @@ export const buildShieldedTransferMetaTxs = async ({
     if (!bermudaSDK.config.pool) throw new Error('Bermuda pool contract not configured')
     if (!shieldedAddress) throw new Error('Missing shielded address')
 
-    const poolAddress = await bermudaSDK.config.pool.getAddress()
     const normalizedToken = tokenAddress.toLowerCase()
     const parsedAmount = safeParseUnits(amount, tokenDecimals)
 
     if (parsedAmount === undefined) throw new Error('Invalid shielded deposit amount')
-    console.log("$$$$$ normalizedToken", normalizedToken)
+
     // Select UTXOs up to amount
     let utxos = await bermudaSDK.utils
         .findUtxos({
@@ -55,16 +54,7 @@ export const buildShieldedTransferMetaTxs = async ({
             excludeOthers: true,
             from: bermudaSDK.config.startBlock,
         })
-    // .then((found: any) => found[normalizedToken])
-    // await bermudaSDK.utils
-    //     .findUtxosUpTo({
-    //         pool: bermudaSDK.config.pool,
-    //         keypair: shieldedKeyPair,
-    //         token: normalizedToken,
-    //         amount: parsedAmount,
-    //     })
 
-    console.log("$$$$$ utxos found", utxos)
     utxos = utxos[normalizedToken]
 
     console.log("$$$$$ utxos", utxos.length, utxos)
