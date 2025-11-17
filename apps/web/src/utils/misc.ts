@@ -1,3 +1,5 @@
+import { useEffect, useState } from 'react'
+
 export function shortenAddress(address: string, partLength = 4) {
   return shortenHex(address, partLength)
 }
@@ -31,6 +33,26 @@ export async function deriveSeedFromPassword(password: string, iterations = 100_
   )
 
   const result = new Uint8Array(derivedBits)
+
+  return result
+}
+
+export function useAsyncMemo<T>(func: () => Promise<T>, dependencies: React.DependencyList) {
+  const [result, setResult] = useState<T | undefined>(undefined)
+
+  useEffect(() => {
+    let cancelled = false
+
+    func().then((value: any) => {
+      if (!cancelled) {
+        setResult(value)
+      }
+    })
+
+    return () => {
+      cancelled = true
+    }
+  }, dependencies)
 
   return result
 }
