@@ -14,7 +14,8 @@ import CheckWallet from '@/components/common/CheckWallet'
 import { TxModalContext } from '@/components/tx-flow'
 import { ConfirmTxFlow } from '@/components/tx-flow/flows'
 import { dispatchShieldedTransfer } from '@/services/bermuda/dispatchShieldedTransfer'
-import { useBermuda } from '@/contexts/bermuda-context'
+import { STXType, useBermuda } from '@/contexts/bermuda-context'
+import { dispatchShieldedWithdrawal } from '@/services/bermuda/dispatchShieldedWithdrawal'
 
 const ExecuteTxButton = ({
   txSummary,
@@ -28,7 +29,7 @@ const ExecuteTxButton = ({
   const txNonce = isMultisigExecutionInfo(txSummary.executionInfo) ? txSummary.executionInfo.nonce : undefined
   const isPending = useIsPending(txSummary.id)
   const { setSelectedTxId } = useContext(ReplaceTxHoverContext)
-  const { keyPair, sdk, saveStxExecuted, isStxExecuted } = useBermuda()
+  const { keyPair, sdk, saveStxExecuted, isStxExecuted, stxType } = useBermuda()
   const [isDispatchingProofs, setIsDispatchingProofs] = useState(false)
 
   const expiredSwap = useIsExpiredSwap(txSummary.txInfo)
@@ -48,7 +49,15 @@ const ExecuteTxButton = ({
       try {
         setIsDispatchingProofs(true)
         console.log(isDispatchingProofs)
-        await dispatchShieldedTransfer(keyPair, safe.address.value, txSummary)
+        console.log("$$$$$ stxType", stxType, "stxType === STXType.Withdrawal", stxType === STXType.Withdrawal)
+        if (stxType === STXType.Transfer) {
+          await dispatchShieldedTransfer(keyPair, safe.address.value, txSummary)
+        } else if (stxType === STXType.Withdrawal) {
+          await dispatchShieldedWithdrawal(keyPair, safe.address.value, txSummary)
+        } else {
+          throw Error("Unexpected stx type " + stxType)
+        }
+
         saveStxExecuted(txSummary.txHash!.toLowerCase())
       } catch (err) {
         console.error(err)

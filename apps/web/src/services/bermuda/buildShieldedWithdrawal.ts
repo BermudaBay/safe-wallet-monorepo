@@ -99,7 +99,7 @@ export const buildShieldedWithdrawalMetaTxs = async ({
         // outputAmounts: [otherAmount, ownAmount]
         outputAmounts: [0n, ownAmount]
     }
-    console.log('build shielded tx inout ', stx)
+    console.log("$$$$$$ build withdrawal stx preimage", stx)
     const stxHash = bermudaSDK.safe.stxHash(stx)
     console.log("$$$$$$$$$ buildShieldedWithdrawalMetaTxs stxHash", stxHash)
     // Encrypt the stx hash preimage and publish it

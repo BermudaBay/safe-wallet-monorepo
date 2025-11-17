@@ -10,7 +10,7 @@ import { ZERO_ADDRESS } from '@safe-global/protocol-kit/dist/src/utils/constants
 import { Divider, Stack } from '@mui/material'
 import ReviewRecipientRow from '../TokenTransfer/ReviewRecipientRow'
 import { useCurrentChain } from '@/hooks/useChains'
-import { useBermuda } from '@/contexts/bermuda-context'
+import { STXType, useBermuda } from '@/contexts/bermuda-context'
 import { TxFlowContext, type TxFlowContextType } from '../../TxFlowProvider'
 import { buildShieldedTransferMetaTxs } from '@/services/bermuda/buildShieldedTransfer'
 
@@ -31,7 +31,7 @@ const ReviewShieldedAssetsTransfer = ({
   const { balances } = useBalances()
   const { setSafeTx, setSafeTxError, setNonce, setBatchSafeTxs } = useContext(SafeTxContext)
   const currentChain = useCurrentChain()
-  const { sdk, saveIsStx } = useBermuda()
+  const { sdk, saveStxType } = useBermuda()
   const { data } = useContext(TxFlowContext) as TxFlowContextType<MultiTokenTransferParams>
   const formData = params ?? data
 
@@ -83,7 +83,7 @@ const ReviewShieldedAssetsTransfer = ({
           tokenDecimals,
         })
         setSafeTxError(undefined)
-        sdk && saveIsStx(true)
+        sdk && saveStxType(STXType.Transfer)
         const { metaTxs, batchSafeTxs } = await buildShieldedTransferMetaTxs({
           safeAddress,
           shieldedAddress: recipient.recipient,

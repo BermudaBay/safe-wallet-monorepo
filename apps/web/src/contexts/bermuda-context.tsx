@@ -6,6 +6,14 @@ const KEYPAIRS_NAMESPACE = 'keypairs'
 const EXECUTIONS_NAMESPACE = 'executions'
 const MISCELLANEOUS_NAMESPACE = 'misc'
 
+const STX_TYPE_KEY = 'stx-type'
+
+export enum STXType {
+  Deposit,
+  Transfer,
+  Withdrawal
+}
+
 export function useBermuda() {
   const context = useContext(BermudaContext)
 
@@ -19,17 +27,17 @@ export function useBermuda() {
 export function BermudaProvider(props: Props) {
   const sdk = useBermudaSDK()
   const { safeAddress } = useSafeInfo()
-  const [isStx, setIsStx] = useState<boolean | undefined>()
   const [keyPair, setKeyPair] = useState<any | undefined>()
+  const [stxType, setStxType] = useState<STXType | undefined>()
 
   useEffect(() => {
     if (sdk) {
-      const key = 'is-stx'
+      const key = STX_TYPE_KEY
       const namespace = MISCELLANEOUS_NAMESPACE
 
       const result = sdk.storage.get({ namespace, key })
 
-      setIsStx(result)
+      setStxType(result)
     }
   }, [sdk])
 
@@ -49,13 +57,14 @@ export function BermudaProvider(props: Props) {
     }
   }, [sdk, safeAddress])
 
-  function saveIsStx(value: boolean) {
-    const key = 'is-stx'
+  function saveStxType(type: STXType) {
+    const key = STX_TYPE_KEY
     const namespace = MISCELLANEOUS_NAMESPACE
+    const value = type
 
     sdk.storage.set({ namespace, key, value })
 
-    setIsStx(value)
+    setStxType(value)
   }
 
   function saveKeyPair(keyPair: any) {
@@ -97,7 +106,7 @@ export function BermudaProvider(props: Props) {
   }
 
   return (
-    <BermudaContext.Provider value={{ sdk, keyPair, safeAddress, saveKeyPair, deleteKeyPair, saveIsStx, isStx, saveStxExecuted, isStxExecuted }}>
+    <BermudaContext.Provider value={{ sdk, keyPair, safeAddress, saveKeyPair, deleteKeyPair, saveStxType, stxType, saveStxExecuted, isStxExecuted }}>
       {props.children}
     </BermudaContext.Provider>
   )
@@ -111,8 +120,8 @@ type BermudaContext = {
   safeAddress: string
   saveKeyPair: (keyPair: any) => void
   deleteKeyPair: () => void
-  isStx: boolean | undefined
-  saveIsStx: (value: boolean) => void
+  stxType: STXType | undefined
+  saveStxType: (value: STXType) => void
   saveStxExecuted: (id: string) => void
   isStxExecuted(id: string): boolean
 }

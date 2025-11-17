@@ -10,6 +10,7 @@ import { getBermudaSDK } from '@/hooks/bermudaSDK/useBermudaSDK'
 import ReviewShieldAssets from './ReviewUnshieldAssets'
 import useSafeInfo from '@/hooks/useSafeInfo'
 import { Checkbox, FormControlLabel } from '@mui/material'
+import CreateShieldedTokenTransfer from '../TokenTransfer/CreateShieldedTokenTransfer'
 
 export type UnshieldAssetsFlowProps = CreateTokenTransferProps
 
@@ -18,12 +19,16 @@ const UnshieldAssetsFlow = ({ txNonce }: UnshieldAssetsFlowProps = {}) => {
 
   const [unwrap, setUnwrap] = useState(true)
 
+  // `toLowerCase` is not necessary here as the form component expects a
+  // "standard" address to be able to find the token to display.
+  const wethAddress = process.env.NEXT_PUBLIC_MOCK_WETH_ADDRESS!
+
   const initialData = useMemo(
     () => ({
       recipients: [
         {
           [TokenTransferFields.recipient]: safeAddress,
-          [TokenTransferFields.tokenAddress]: ZERO_ADDRESS,
+          [TokenTransferFields.tokenAddress]: wethAddress,
           [TokenTransferFields.amount]: '',
         },
       ],
@@ -40,9 +45,9 @@ const UnshieldAssetsFlow = ({ txNonce }: UnshieldAssetsFlowProps = {}) => {
       ReviewTransactionComponent={ReviewShieldAssets}
     >
       <TxFlowStep title="New transaction">
-        <CreateTokenTransfer txNonce={txNonce} />
+        <CreateShieldedTokenTransfer txNonce={txNonce} />
 
-        {/* TODO only show this for WETH */}
+        {/* TODO layout and only show the unwrap checkbox for WETH
         <FormControlLabel
           sx={({ palette }) => ({
             flex: 1,
@@ -53,7 +58,7 @@ const UnshieldAssetsFlow = ({ txNonce }: UnshieldAssetsFlowProps = {}) => {
           control={<Checkbox checked={unwrap} onChange={e => setUnwrap(e.target.checked)} name="unwrap" />}
           label="Unwrap"
           title="Unwrap WETH to ETH"
-        />
+        /> */}
 
       </TxFlowStep>
     </TxFlow>

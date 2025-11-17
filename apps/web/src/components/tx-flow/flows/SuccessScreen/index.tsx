@@ -21,7 +21,7 @@ import { usePredictSafeAddressFromTxDetails } from '@/hooks/usePredictSafeAddres
 import { AppRoutes } from '@/config/routes'
 import { NESTED_SAFE_EVENTS, NESTED_SAFE_LABELS } from '@/services/analytics/events/nested-safes'
 import Track from '@/components/common/Track'
-import { useBermuda } from '@/contexts/bermuda-context'
+import { STXType, useBermuda } from '@/contexts/bermuda-context'
 import { useRouter } from 'next/router'
 
 interface Props {
@@ -37,7 +37,7 @@ const SuccessScreen = ({ txId, txHash }: Props) => {
   const { setTxFlow } = useContext(TxModalContext)
   const chain = useCurrentChain()
   const router = useRouter()
-  const { isStx } = useBermuda()
+  const { stxType } = useBermuda()
   const pendingTx = useAppSelector((state) => (txId ? selectPendingTxById(state, txId) : undefined))
   const { safeAddress } = useSafeInfo()
   const status = !txId && txHash ? PendingStatus.INDEXING : pendingTx?.status
@@ -97,12 +97,12 @@ const SuccessScreen = ({ txId, txHash }: Props) => {
   const spinnerStatus = error ? SpinnerStatus.ERROR : isSuccess ? SpinnerStatus.SUCCESS : SpinnerStatus.PROCESSING
 
   useEffect(() => {
-    if (isSuccess && isStx && router.isReady) {
+    if (isSuccess && (stxType === STXType.Transfer || stxType === STXType.Withdrawal) && router.isReady) {
       //TODO instead of hard reloading would be better to close the success screen overlay modal
       router.push(`/transactions/queue?safe=dev:${safeAddress}`)
       router.reload()
     }
-  }, [isSuccess, isStx, router.isReady])
+  }, [isSuccess, stxType, router.isReady])
 
   let StatusComponent
   switch (status) {
