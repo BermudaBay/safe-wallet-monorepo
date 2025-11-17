@@ -31,29 +31,30 @@ const ExecuteTxButton = ({
   const { keyPair, sdk, saveStxExecuted, isStxExecuted } = useBermuda()
   const [isDispatchingProofs, setIsDispatchingProofs] = useState(false)
 
-
   const expiredSwap = useIsExpiredSwap(txSummary.txInfo)
 
   const methodName = (txSummary.txInfo as any).methodName
   const isStxTransferOrUnshield = methodName === "Shielded transfer" || methodName === "Unshield"
 
   const isNext = (txNonce !== undefined && txNonce === safe.nonce) //|| problyStx
-  const isDisabled = !sdk || isStxExecuted(txSummary.id) || isDispatchingProofs || !isStxTransferOrUnshield && (!isNext || !sdk || expiredSwap || isPending)
+  const isDisabled = !sdk || isStxExecuted(txSummary.txHash!.toLowerCase()) || isDispatchingProofs || !isStxTransferOrUnshield && (!isNext || !sdk || expiredSwap || isPending)
 
-  const onClick = (e: SyntheticEvent) => {
+  const onClick = async (e: SyntheticEvent) => {
     e.stopPropagation()
     e.preventDefault()
 
     if (isStxTransferOrUnshield) {
       try {
         setIsDispatchingProofs(true)
-        dispatchProofs(keyPair, safe.address.value, txSummary)
-        saveStxExecuted(txSummary.id)
+        console.log(isDispatchingProofs)
+        await dispatchProofs(keyPair, safe.address.value, txSummary)
+        saveStxExecuted(txSummary.txHash!.toLowerCase())
       } catch (err) {
         console.error(err)
       } finally {
         setIsDispatchingProofs(false)
       }
+      console.log(isDispatchingProofs)
     } else {
       setTxFlow(<ConfirmTxFlow txSummary={txSummary} />, undefined, false)
     }
