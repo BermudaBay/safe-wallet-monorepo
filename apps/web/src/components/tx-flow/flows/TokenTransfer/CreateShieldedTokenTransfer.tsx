@@ -87,6 +87,10 @@ export const CreateShieldedTokenTransfer = ({ txNonce }: CreateTokenTransferProp
   const isMassPayoutsEnabled = useHasFeature(FEATURES.MASS_PAYOUTS)
   const { onNext, data } = useContext(TxFlowContext) as TxFlowContextType<MultiTokenTransferParams>
 
+  const wethAddress = (process.env.NEXT_PUBLIC_MOCK_WETH_ADDRESS ||
+    process.env.NEXT_PUBLIC_WETH_ADDRESS ||
+    process.env.NEXT_PUBLIC_WETH)!.toLowerCase()
+
   useEffect(() => {
     if (txNonce !== undefined) {
       setNonce(txNonce)
@@ -105,7 +109,9 @@ export const CreateShieldedTokenTransfer = ({ txNonce }: CreateTokenTransferProp
         data?.recipients.map(({ tokenAddress, ...rest }) => ({
           ...rest,
           [TokenTransferFields.tokenAddress]:
-            canCreateSpendingLimitTx && !canCreateStandardTx ? balancesItems[0]?.tokenInfo.address : tokenAddress,
+            canCreateSpendingLimitTx && !canCreateStandardTx ? balancesItems[0]?.tokenInfo.address : wethAddress,
+          [TokenTransferFields.shieldedTokenAddress]:
+            canCreateSpendingLimitTx && !canCreateStandardTx ? balancesItems[0]?.tokenInfo.address : wethAddress,
         })) || [],
     },
     mode: 'onChange',
