@@ -36,6 +36,7 @@
   "include": [
     "apps/web/next-env.d.ts",
     "src/definitions.d.ts",
+    "src/types/**/*.d.ts",
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
