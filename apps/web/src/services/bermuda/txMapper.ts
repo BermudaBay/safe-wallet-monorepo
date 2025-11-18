@@ -11,6 +11,7 @@ import {
 import { clearSdkQueuedTxs, getSdkQueuedTx, setSdkQueuedTx, type CachedSdkTx } from './txCache'
 import { getBermudaSDK } from '@/hooks/bermudaSDK/useBermudaSDK'
 import { hexlify, Interface, toBeHex, ZeroAddress } from 'ethers'
+import { STXType } from '@/contexts/bermuda-context'
 
 type MapArgs = {
   safeAddress: string
@@ -37,19 +38,19 @@ const getStatus = (info: SdkSafeTxInfo, threshold: number) => {
   return { confirmationsRequired, confirmationsSubmitted, txStatus }
 }
 
-const toCustomTxInfo = (info: SdkSafeTxInfo): Transaction['transaction']['txInfo'] => {
+const toCustomTxInfo = (info: SdkSafeTxInfo, latestStxType: STXType): Transaction['transaction']['txInfo'] => {
   const dataSize = info.details.data ? Math.max(0, (info.details.data.length - 2) / 2) : 0
 
   let methodName = "Custom Transaction"
   if (info.details.to === process.env.NEXT_PUBLIC_POOL_ADDRESS) {
-    const extAmount = Interface.from(getBermudaSDK().abis.POOL_ABI).parseTransaction(info.details)?.args._extData.extAmount
-    console.log("extAmount", extAmount)
-    if (extAmount && extAmount > 0n) {
+    if (latestStxType === STXType.Deposit) {
       methodName = "Shield"
-    } else if (extAmount && extAmount < 0n) {
-      methodName = "Unshield"
-    } else if (!extAmount || extAmount === 0n) {
+    } else if (latestStxType === STXType.Transfer) {
       methodName = "Shielded transfer"
+    } else if (latestStxType === STXType.Withdrawal) {
+      methodName = "Unshield"
+    } else if (latestStxType === STXType.Undefined) {
+      methodName = ""
     }
 
   } else if (info.details.to === process.env.NEXT_PUBLIC_SIGN_MSG_HASH_LIB_ADDRESS) {
@@ -70,6 +71,7 @@ const toTransaction = (
   cacheEntry: CachedSdkTx,
   owners: AddressEx[],
   threshold: number,
+  latestStxType: STXType
 ): Transaction => {
   const { info, safeAddress, timestamp } = cacheEntry
   const { confirmationsRequired, confirmationsSubmitted, txStatus } = getStatus(info, threshold)
@@ -86,7 +88,7 @@ const toTransaction = (
       id: buildTxId(safeAddress, info),
       timestamp,
       txStatus,
-      txInfo: toCustomTxInfo(info),
+      txInfo: toCustomTxInfo(info, latestStxType),
       txHash: info.txHash ?? null,
       executionInfo: {
         type: DetailedExecutionInfoType.MULTISIG,
@@ -103,6 +105,7 @@ export const toTransactionDetails = (
   cacheEntry: CachedSdkTx,
   owners: AddressEx[],
   threshold: number,
+  latestStxType: STXType
 ): TransactionDetails => {
   const { info, safeAddress, timestamp } = cacheEntry
   const { confirmationsRequired, confirmationsSubmitted, txStatus } = getStatus(info, threshold)
@@ -123,7 +126,7 @@ export const toTransactionDetails = (
     safeAddress,
     txId: buildTxId(safeAddress, info),
     txStatus,
-    txInfo: toCustomTxInfo(info),
+    txInfo: toCustomTxInfo(info, latestStxType),
     txData: {
       hexData: info.details.data,
       to: { value: info.details.to },
@@ -151,7 +154,7 @@ export const toTransactionDetails = (
   }
 }
 
-export const mapSdkQueueToTransactionPage = ({ safeAddress, allTxs, owners, threshold }: MapArgs, isStxExecuted: (_: string) => boolean): TransactionListPage => {
+export const mapSdkQueueToTransactionPage = ({ safeAddress, allTxs, owners, threshold }: MapArgs, isStxExecuted: (_: string) => boolean, latestStxType: STXType): TransactionListPage => {
   clearSdkQueuedTxs()
 
   // If executed and target === signMsgHashLib then inject stx with exec btn triggering zk-proving
@@ -206,7 +209,7 @@ export const mapSdkQueueToTransactionPage = ({ safeAddress, allTxs, owners, thre
     const cacheEntry: CachedSdkTx = { safeAddress, info, timestamp }
     const txId = buildTxId(safeAddress, info)
     setSdkQueuedTx(txId, cacheEntry)
-    return toTransaction(cacheEntry, owners, threshold)
+    return toTransaction(cacheEntry, owners, threshold, latestStxType)
   })
 
   return { results }
@@ -216,11 +219,12 @@ export const getCachedTransactionDetails = (
   txId: string,
   owners: AddressEx[],
   threshold: number,
+  latestStxType: STXType
 ): TransactionDetails | undefined => {
   const cached = getSdkQueuedTx(txId)
   if (!cached) {
     return undefined
   }
 
-  return toTransactionDetails(cached, owners, threshold)
+  return toTransactionDetails(cached, owners, threshold, latestStxType)
 }

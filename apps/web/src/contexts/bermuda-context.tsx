@@ -11,7 +11,8 @@ const STX_TYPE_KEY = 'stx-type'
 export enum STXType {
   Deposit,
   Transfer,
-  Withdrawal
+  Withdrawal,
+  Undefined
 }
 
 export function useBermuda() {
