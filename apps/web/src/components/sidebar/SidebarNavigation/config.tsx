@@ -41,7 +41,7 @@ export const navItems: NavItem[] = [
 
 export const transactionNavItems = [
   { label: 'Queue', href: AppRoutes.transactions.queue },
-  { label: 'History (WIP)', href: AppRoutes.transactions.history, disabled: true },
+  { label: 'History', href: AppRoutes.transactions.history, disabled: true },
   { label: 'Messages', href: AppRoutes.transactions.messages },
 ]
 
