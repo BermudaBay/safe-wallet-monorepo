@@ -9220,6 +9220,7 @@ __metadata:
     "@next/bundle-analyzer": "npm:^15.0.4"
     "@next/mdx": "npm:^15.0.4"
     "@next/third-parties": "npm:^15.2.0"
+    "@noble/curves": "npm:^1.6.0"
     "@openzeppelin/contracts": "npm:^4.9.6"
     "@reduxjs/toolkit": "npm:^2.8.2"
     "@reown/walletkit": "npm:^1.2.7"
@@ -9296,6 +9297,7 @@ __metadata:
     lodash: "npm:^4.17.21"
     mixpanel-browser: "npm:^2.66.0"
     mockdate: "npm:^3.0.5"
+    mpecdh: "git+ssh://git@github.com:BermudaBay/mpecdh.git"
     msw: "npm:^2.7.3"
     next: "patch:next@15.5.4#../../.yarn/patches/next-npm-15.5.4-2693b30f50.patch"
     papaparse: "npm:^5.3.2"
@@ -25985,6 +25987,18 @@ __metadata:
 "mpecdh@git+ssh://git@github.com:BermudaBay/mpecdh":
   version: 0.0.1
   resolution: "mpecdh@git+ssh://git@github.com:BermudaBay/mpecdh#commit=2b1f90cc349672dcf697b05f1729d745c7a8cd19"
+  dependencies:
+    "@noble/curves": "npm:^1.4.0"
+    "@safe-global/protocol-kit": "npm:6.1.1"
+    "@safe-global/sdk-starter-kit": "npm:3.0.1"
+    ethers: "npm:6.15.0"
+  checksum: 10/e4fb07d2ddce9332fc0aa350e96e6e198760d426bb581658cfc2c952c5703bfc97588a8edf2c3b43181b0b10b2f79b4fd0a8c4ebaf771e94adc5f534e892ab3c
+  languageName: node
+  linkType: hard
+
+"mpecdh@git+ssh://git@github.com:BermudaBay/mpecdh.git":
+  version: 0.0.1
+  resolution: "mpecdh@git+ssh://git@github.com:BermudaBay/mpecdh.git#commit=2b1f90cc349672dcf697b05f1729d745c7a8cd19"
   dependencies:
     "@noble/curves": "npm:^1.4.0"
     "@safe-global/protocol-kit": "npm:6.1.1"
