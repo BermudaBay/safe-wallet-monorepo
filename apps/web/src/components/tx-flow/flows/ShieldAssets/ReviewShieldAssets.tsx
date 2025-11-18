@@ -11,7 +11,7 @@ import { ZERO_ADDRESS } from '@safe-global/protocol-kit/dist/src/utils/constants
 import { Divider, Stack } from '@mui/material'
 import ReviewRecipientRow from '../TokenTransfer/ReviewRecipientRow'
 import { useCurrentChain } from '@/hooks/useChains'
-import { useBermuda } from '@/contexts/bermuda-context'
+import { STXType, useBermuda } from '@/contexts/bermuda-context'
 import { TxFlowContext, type TxFlowContextType } from '../../TxFlowProvider'
 
 type ReviewShieldAssetsProps = {
@@ -27,7 +27,7 @@ const ReviewShieldAssets = ({
   children,
 }: PropsWithChildren<ReviewShieldAssetsProps>) => {
   const { safeAddress } = useSafeInfo()
-  const { keyPair } = useBermuda()
+  const { sdk, keyPair, saveStxType } = useBermuda()
   const { balances } = useBalances()
   const { setSafeTx, setSafeTxError, setNonce, setBatchSafeTxs } = useContext(SafeTxContext)
   const currentChain = useCurrentChain()
@@ -83,6 +83,7 @@ const ReviewShieldAssets = ({
         })
         setSafeTxError(undefined)
 
+        sdk && saveStxType(STXType.Deposit)
         const { metaTxs, batchSafeTxs } = await buildShieldedDepositMetaTxs({
           safeAddress,
           shieldedAddress: recipient.recipient,

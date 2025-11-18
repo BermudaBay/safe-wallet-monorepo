@@ -8,14 +8,14 @@ import { useBermudaSDK } from '@/hooks/bermudaSDK/useBermudaSDK'
 import { mapSdkQueueToTransactionPage } from '@/services/bermuda/txMapper'
 import useWallet from '@/hooks/wallets/useWallet'
 import type { SdkListTxsResult } from '@/services/bermuda/types'
-import { useBermuda } from '@/contexts/bermuda-context'
+import { STXType, useBermuda } from '@/contexts/bermuda-context'
 
 export const useLoadTxQueue = (): AsyncResult<TransactionListPage> => {
   const { safe, safeAddress, safeLoaded } = useSafeInfo()
   const { chainId, txQueuedTag, txHistoryTag } = safe
   const [updatedTxId, setUpdatedTxId] = useState<string>('')
   const bermudaSDK = useBermudaSDK()
-  const { isStxExecuted } = useBermuda()
+  const { isStxExecuted, stxType } = useBermuda()
   const wallet = useWallet()
   // N.B. we reload when txQueuedTag/txHistoryTag/updatedTxId changes as txQueuedTag alone is not enough
   const reloadTag = (txQueuedTag ?? '') + (txHistoryTag ?? '') + updatedTxId
@@ -34,6 +34,8 @@ export const useLoadTxQueue = (): AsyncResult<TransactionListPage> => {
         logoUri: address.logoUri ?? undefined,
       }))
 
+      const latestStxType = stxType ?? STXType.Undefined
+
       return bermudaSDK.safe.listTxs(safeAddress, owner).then((result: unknown) => {
         const { all, pending } = result as SdkListTxsResult
         // const { keyPair, sdk, saveStxExecuted, isStxExecuted } = useBermuda()
@@ -42,7 +44,7 @@ export const useLoadTxQueue = (): AsyncResult<TransactionListPage> => {
           allTxs: all,
           owners,
           threshold: safe.threshold,
-        }, isStxExecuted)
+        }, isStxExecuted, latestStxType)
       })
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
