@@ -127,6 +127,107 @@ export default function ShieldedAccount({ sx }: { sx: SxProps }) {
     void refreshLocalQueue()
   }, [sdk, safeAddress, signer])
 
+  async function refreshStatus() {
+    if (!mpecdhAddress || !browserProvider || !signer) return
+    try {
+      const ceremony_helper = await createCeremonyHelper(mpecdhAddress, browserProvider)
+      const ethersSigner = await browserProvider.getSigner()
+      const current = await ceremony_helper.status(ethersSigner)
+      setStatus(current)
+      setBlocking(await ceremony_helper.blocking())
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
+  useEffect(() => {
+    void refreshStatus()
+  }, [mpecdhAddress, browserProvider, signer])
+
+  async function handleContribute(event: React.FormEvent) {
+    event.preventDefault()
+    if (!mpecdhAddress || !browserProvider || !signer) {
+      setRegisterError(new Error('Connect a signer and ensure MPECDH is deployed'))
+      return
+    }
+    setIsLoading(true)
+    setRegisterError(undefined)
+    setDeriveError(undefined)
+    try {
+      const ceremony_helper = await createCeremonyHelper(mpecdhAddress, browserProvider)
+      const ethersSigner = await browserProvider.getSigner()
+      const current = await ceremony_helper.status(ethersSigner)
+      if (current === 3) {
+        await ceremony_helper.step0(ethersSigner)
+      } else if (current === 1) {
+        await ceremony_helper.stepN(ethersSigner)
+      } else {
+        setRegisterError(new Error('No contribution needed right now'))
+      }
+      await refreshStatus()
+    } catch (error: unknown) {
+      setRegisterError(error as Error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  async function handleLogin(event: React.FormEvent) {
+    event.preventDefault()
+    if (!mpecdhAddress || !browserProvider || !signer) {
+      setDeriveError(new Error('Connect a signer and ensure MPECDH'))
+      return
+    }
+    setIsLoading(true)
+    setDeriveError(undefined)
+    setRegisterError(undefined)
+    try {
+      const helper = await createCeremonyHelper(mpecdhAddress, browserProvider)
+      const ethersSigner = await browserProvider.getSigner()
+      const seedHex = await helper.stepX(ethersSigner)
+      const seed = getBytes(seedHex)
+      const nextKeyPair = sdk.types.KeyPair.fromSeed(seed)
+      const shieldedAddress = nextKeyPair.address()
+      const isRegistered = await sdk.registry.isRegistered(shieldedAddress)
+
+      if (!isRegistered) {
+        const chainId = sdk.config.chainId
+        const target = await sdk.config.registry.getAddress()
+
+        const data = Interface.from([
+          'function _register(address _nativeAddress, bytes calldata _shieldedAddress, bytes calldata _name) external',
+        ]).encodeFunctionData('_register', [
+          safeAddress,
+          Buffer.from(shieldedAddress.replace('0x', ''), 'hex'),
+          Buffer.alloc(0),
+        ])
+
+        const tx = await sdk.utils.relay(sdk.config.relayer, {
+          chainId,
+          target,
+          data,
+        })
+
+        const receipt = await sdk.config.provider.waitForTransaction(tx)
+        if (receipt.status === 0) {
+          throw new Error(`Registry Transaction ${tx} reverted`)
+        }
+      }
+
+      const nativeAddress = await sdk.registry.nativeAddressOf(shieldedAddress)
+
+      if (nativeAddress.toLowerCase() !== safeAddress.toLowerCase()) {
+        throw new Error('KeyPair already registered with different Safe')
+      }
+
+      saveKeyPair(nextKeyPair)
+    } catch (error: unknown) {
+      setDeriveError(error as Error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   async function handleDeploy(event: React.FormEvent) {
     event.preventDefault()
     if (!browserProvider || !signer || !sdk) {
@@ -260,6 +361,7 @@ export default function ShieldedAccount({ sx }: { sx: SxProps }) {
         <Grid item xs>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, width: '100%' }}>
             {registerError && <Alert severity="error">{registerError.message}</Alert>}
+            {deriveError && <Alert severity="error">{deriveError.message}</Alert>}
 
             <Box component="form" onSubmit={handleDeploy} sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center' }}>
               <Button type="submit" variant="contained" disabled={isLoading || !!mpecdhAddress}>
@@ -268,6 +370,25 @@ export default function ShieldedAccount({ sx }: { sx: SxProps }) {
               <Typography variant="body2">
                 Creates Safe transaction to deploy the SafeMPECDH contract via standard multisig flow.
               </Typography>
+            </Box>
+
+            <Box display="flex" gap={2} flexWrap="wrap" alignItems="center">
+              <Button
+                variant="outlined"
+                onClick={handleContribute}
+                disabled={isLoading || !mpecdhAddress}
+                title="Submit your contribution for the current round"
+              >
+                Contribute
+              </Button>
+              <Button
+                variant="contained"
+                onClick={handleLogin}
+                disabled={isLoading || !mpecdhAddress || !isReady}
+                title="Derive shared seed and register shielded key"
+              >
+                Derive seed
+              </Button>
             </Box>
 
             {keyPair ? (
