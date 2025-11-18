@@ -19,7 +19,12 @@ const abFilterOptions = createFilterOptions({
 /**
  *  Temporary component until revamped safe components are done
  */
-const AddressBookInput = ({ name, canAdd, ...props }: AddressInputProps & { canAdd?: boolean }): ReactElement => {
+const AddressBookInput = ({
+  name,
+  canAdd,
+  showWarning = false,
+  ...props
+}: AddressInputProps & { canAdd?: boolean } & { showWarning: boolean }): ReactElement => {
   const [open, setOpen] = useState(false)
   const [openAddressBook, setOpenAddressBook] = useState<boolean>(false)
   const mergedAddressBook = useMergedAddressBooks()
@@ -109,7 +114,7 @@ const AddressBookInput = ({ name, canAdd, ...props }: AddressInputProps & { canA
         )}
       />
 
-      {canAdd && !isInAddressBook ? (
+      {canAdd && showWarning && !isInAddressBook ? (
         <Typography variant="body2" className={css.unknownAddress}>
           <SvgIcon component={InfoIcon} fontSize="small" />
           <span>
