@@ -19,6 +19,7 @@ import { sameAddress } from '@safe-global/utils/utils/addresses'
 import Track from '@/components/common/Track'
 import { MODALS_EVENTS } from '@/services/analytics'
 import { ZeroAddress } from 'ethers'
+import { STXType, useBermuda } from '@/contexts/bermuda-context'
 
 const getFieldName = (
   field: keyof TokenTransferParams,
@@ -35,6 +36,7 @@ type RecipientRowProps = {
 export const ShieldedRecipientRow = ({ fieldArray, removable = true, remove, disableSpendingLimit }: RecipientRowProps) => {
   const { balances } = useShieldedBalances()
   const spendingLimits = useSelector(selectSpendingLimits)
+  const { stxType } = useBermuda()
 
   const {
     formState: { errors },
@@ -67,6 +69,8 @@ export const ShieldedRecipientRow = ({ fieldArray, removable = true, remove, dis
 
   const isSpendingLimitType = type === TokenTransferType.spendingLimit
 
+  //  const isShieldedDeposit = keyPair && keyPair.address().toLowerCase() === (recipient as string).toLowerCase()
+
   const spendingLimitBalances = useMemo(
     () =>
       balances.items.filter(({ tokenInfo }) =>
@@ -90,9 +94,14 @@ export const ShieldedRecipientRow = ({ fieldArray, removable = true, remove, dis
     <>
       <Stack spacing={1}>
         <Stack spacing={2}>
-          <FormControl fullWidth>
-            <AddressBookInput name={recipientFieldName} canAdd={isAddressValid} />
-          </FormControl>
+
+          {
+            stxType !== STXType.Withdrawal && (
+              <FormControl fullWidth>
+                <AddressBookInput name={recipientFieldName} canAdd={isAddressValid} />
+              </FormControl>
+            )
+          }
 
           <FormControl fullWidth>
             <ShieldedTokenAmountInput
