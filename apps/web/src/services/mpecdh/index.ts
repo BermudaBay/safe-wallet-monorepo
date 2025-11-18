@@ -50,8 +50,14 @@ async function ensureAddress<S extends Signer>(signer: S): Promise<S & { address
   if (!addr) {
     return signer as S & { address: string }
   }
-  ;(signer as any).address = addr
-  return signer as S & { address: string }
+  const wrapped = Object.create(signer) as S & { address: string }
+  Object.defineProperty(wrapped, 'address', {
+    value: addr,
+    writable: false,
+    configurable: true,
+    enumerable: true,
+  })
+  return wrapped
 }
 
 export type CeremonyHelper = {
