@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { BrowserProvider, Interface, ZeroAddress } from 'ethers'
+import { BrowserProvider, Interface } from 'ethers'
 import { Alert, Box, Button, Grid, Paper, Stack, SxProps, TextField, Typography } from '@mui/material'
 import useSafeInfo from '@/hooks/useSafeInfo'
 import { useBermuda } from '@/contexts/bermuda-context'
@@ -8,7 +8,6 @@ import { copyToClipboard } from './utils'
 import { useSigner } from '@/hooks/wallets/useWallet'
 import { useWeb3ReadOnly } from '@/hooks/wallets/web3'
 import { buildMPECDHDeployment, calcMPECDHAddress, getOwners, isMPECDHDeployed } from '@/services/mpecdh'
-import { getConfirmPayload, getSafeTxHash } from '@/services/tx/tx-sender/utils'
 
 export default function ShieldedAccount({ sx }: { sx: SxProps }) {
   const { safe, safeAddress } = useSafeInfo()
@@ -25,6 +24,8 @@ export default function ShieldedAccount({ sx }: { sx: SxProps }) {
   const [mpecdhAddress, setMpecdhAddress] = useState<string | null>(null)
   const [expectedAddress, setExpectedAddress] = useState<string | null>(null)
   const [deploymentHash, setDeploymentHash] = useState<string | null>(null)
+  const [localQueue, setLocalQueue] = useState<{ hash: string; status: string }[]>([])
+  const [pendingTxs, setPendingTxs] = useState<any[]>([])
 
   const browserProvider = useMemo(() => {
     const baseProvider = signer?.provider as any
@@ -90,6 +91,21 @@ export default function ShieldedAccount({ sx }: { sx: SxProps }) {
     void refreshMpecdhState()
   }, [safeAddress, web3ReadOnly, browserProvider])
 
+  async function refreshLocalQueue() {
+    if (!sdk || !safeAddress) return
+    try {
+      const owner = signer?.address
+      const { pending } = await sdk.safe.listTxs(safeAddress, owner)
+      setPendingTxs(pending)
+    } catch (error) {
+      console.error('Failed to load local queue', error)
+    }
+  }
+
+  useEffect(() => {
+    void refreshLocalQueue()
+  }, [sdk, safeAddress, signer])
+
   async function handleDeploy(event: React.FormEvent) {
     event.preventDefault()
     if (!browserProvider || !signer || !sdk) {
@@ -102,42 +118,12 @@ export default function ShieldedAccount({ sx }: { sx: SxProps }) {
       const ethersSigner = await browserProvider.getSigner()
       const owners = await getOwners(safeAddress, web3ReadOnly ?? browserProvider)
       const txData = buildMPECDHDeployment(safeAddress, owners)
-      const chainIdNumber =
-        (safe.chainId && Number(safe.chainId)) ||
-        (sdk?.config?.chainId && Number(sdk.config.chainId)) ||
-        (await browserProvider.getNetwork()).chainId
-
-      const providerForConfirm = (signer as any)?.provider ?? (browserProvider as any).provider
-      if (!providerForConfirm?.request) {
-        throw new Error('Connected wallet provider does not expose request()')
-      }
-
-      const safeTxData: any = {
-        to: txData.to,
-        value: '0',
-        data: txData.data,
-        operation: txData.operation,
-        safeTxGas: '0',
-        baseGas: '0',
-        gasPrice: '0',
-        gasToken: ZeroAddress,
-        refundReceiver: ZeroAddress,
-        nonce: safe.nonce >= 0 ? safe.nonce : 0,
-      }
-      const safeTxHash = await getSafeTxHash(safeAddress, safeTxData)
-
-      const chain = BigInt(chainIdNumber)
-      const confirmPayload = await getConfirmPayload(
-        safeAddress,
-        safeTxHash,
-        safeTxData,
-        ethersSigner as any,
-        chain,
-        providerForConfirm,
-      )
-      const receipt = await ethersSigner.sendTransaction(confirmPayload)
+      const ownerSigner = ethersSigner
+      const proposePayload = await sdk.safe.proposePayload(safeAddress, txData, ownerSigner)
+      const receipt = await ownerSigner.sendTransaction(proposePayload)
       setDeploymentHash(receipt.hash)
       await refreshMpecdhState()
+      await refreshLocalQueue()
     } catch (error: unknown) {
       setRegisterError(error as Error)
     } finally {
@@ -236,6 +222,12 @@ export default function ShieldedAccount({ sx }: { sx: SxProps }) {
                 Deployment tx: <code>{shortenHex(deploymentHash, 6)}</code>
               </Typography>
             )}
+            {localQueue.length > 0 &&
+              localQueue.map((item) => (
+                <Typography key={item.hash} variant="body2" title={item.hash}>
+                  Pending (local): <code>{shortenHex(item.hash, 6)}</code> – {item.status}
+                </Typography>
+              ))}
           </Stack>
         </Grid>
         <Grid item xs>
