@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { BrowserProvider, Interface } from 'ethers'
+import { BrowserProvider, Interface, ZeroAddress, getBytes } from 'ethers'
 import { Alert, Box, Button, Grid, Paper, Stack, SxProps, TextField, Typography } from '@mui/material'
 import useSafeInfo from '@/hooks/useSafeInfo'
 import { useBermuda } from '@/contexts/bermuda-context'
@@ -7,7 +7,15 @@ import { shortenHex } from '@/utils/misc'
 import { copyToClipboard } from './utils'
 import { useSigner } from '@/hooks/wallets/useWallet'
 import { useWeb3ReadOnly } from '@/hooks/wallets/web3'
-import { buildMPECDHDeployment, calcMPECDHAddress, getOwners, isMPECDHDeployed } from '@/services/mpecdh'
+import {
+  buildDeployment,
+  calcAddress,
+  createCeremonyHelper,
+  getBlocking,
+  getOwners,
+  isDeployed,
+  isReady as isMpecdhReady,
+} from '@/services/mpecdh'
 
 export default function ShieldedAccount({ sx }: { sx: SxProps }) {
   const { safe, safeAddress } = useSafeInfo()
@@ -24,8 +32,11 @@ export default function ShieldedAccount({ sx }: { sx: SxProps }) {
   const [mpecdhAddress, setMpecdhAddress] = useState<string | null>(null)
   const [expectedAddress, setExpectedAddress] = useState<string | null>(null)
   const [deploymentHash, setDeploymentHash] = useState<string | null>(null)
-  const [localQueue, setLocalQueue] = useState<{ hash: string; status: string }[]>([])
   const [pendingTxs, setPendingTxs] = useState<any[]>([])
+  const [status, setStatus] = useState<number | null>(null)
+  const [blocking, setBlocking] = useState<string[]>([])
+  const [isReady, setIsReady] = useState<boolean>(false)
+  const [deriveError, setDeriveError] = useState<Error | undefined>()
 
   const browserProvider = useMemo(() => {
     const baseProvider = signer?.provider as any
@@ -74,14 +85,24 @@ export default function ShieldedAccount({ sx }: { sx: SxProps }) {
     if (!safeAddress) return
     const provider = web3ReadOnly ?? browserProvider
     if (!provider) {
-      setRegisterError(new Error('Connect a wallet with an EIP-1193 provider (request method)'))
+      setRegisterError(new Error('Connect a wallet'))
       return
     }
     try {
       const owners = await getOwners(safeAddress, provider)
-      setExpectedAddress(calcMPECDHAddress(safeAddress, owners))
-      const deployed = await isMPECDHDeployed(safeAddress, provider)
+      const expected = calcAddress(safeAddress, owners)
+      setExpectedAddress(expected)
+      const code = await provider.getCode(expected)
+      const deployed = code && code !== '0x' ? expected : await isDeployed(safeAddress, provider)
       setMpecdhAddress(deployed)
+      if (deployed) {
+        const readyFlag = await isMpecdhReady(safeAddress, provider)
+        setIsReady(readyFlag)
+      } else {
+        setIsReady(false)
+      }
+      console.log('[MPECDH] expected', expected)
+      console.log('[MPECDH] deployed', deployed, 'isReady', isReady)
     } catch (error) {
       console.error(error)
     }
@@ -109,7 +130,7 @@ export default function ShieldedAccount({ sx }: { sx: SxProps }) {
   async function handleDeploy(event: React.FormEvent) {
     event.preventDefault()
     if (!browserProvider || !signer || !sdk) {
-      setRegisterError(new Error('Connect a signer wallet with an EIP-1193 provider to deploy MPECDH'))
+      setRegisterError(new Error('Connect a signer wallet'))
       return
     }
     setIsLoading(true)
@@ -117,7 +138,7 @@ export default function ShieldedAccount({ sx }: { sx: SxProps }) {
     try {
       const ethersSigner = await browserProvider.getSigner()
       const owners = await getOwners(safeAddress, web3ReadOnly ?? browserProvider)
-      const txData = buildMPECDHDeployment(safeAddress, owners)
+      const txData = buildDeployment(safeAddress, owners)
       const ownerSigner = ethersSigner
       const proposePayload = await sdk.safe.proposePayload(safeAddress, txData, ownerSigner)
       const receipt = await ownerSigner.sendTransaction(proposePayload)
@@ -222,12 +243,18 @@ export default function ShieldedAccount({ sx }: { sx: SxProps }) {
                 Deployment tx: <code>{shortenHex(deploymentHash, 6)}</code>
               </Typography>
             )}
-            {localQueue.length > 0 &&
-              localQueue.map((item) => (
+            {pendingTxs.length > 0 &&
+              pendingTxs.map((item) => (
                 <Typography key={item.hash} variant="body2" title={item.hash}>
-                  Pending (local): <code>{shortenHex(item.hash, 6)}</code> – {item.status}
+                  Pending: <code>{shortenHex(item.hash, 6)}</code> – {item.confirmationStatus}
                 </Typography>
               ))}
+            {blocking.length > 0 && (
+              <Typography variant="body2">
+                Blocking: {blocking.map((addr: string) => shortenHex(addr, 4)).join(', ')}
+              </Typography>
+            )}
+            {status !== null && <Typography variant="body2">Ceremony status: {status}</Typography>}
           </Stack>
         </Grid>
         <Grid item xs>

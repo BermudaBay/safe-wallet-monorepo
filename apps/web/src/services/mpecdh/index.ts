@@ -1,6 +1,8 @@
 import { type BrowserProvider, type JsonRpcProvider, type Provider, type Signer } from 'ethers'
 import * as mpecdhModule from 'mpecdh'
 
+const CREATE_CALL_LIB = process.env.NEXT_PUBLIC_CREATE_CALL_LIB
+
 type EthersProvider = JsonRpcProvider | BrowserProvider | Provider
 
 const {
@@ -13,11 +15,23 @@ const {
   proposeMPECDHDeployment,
 } = (mpecdhModule as any) || {}
 
-if (!calcMPECDHAddress || !mpecdh) {
-  throw new Error('Failed to load mpecdh module. Ensure git@github.com:BermudaBay/mpecdh.git is installed.')
+export function calcAddress(safeAddress: string, owners: string[]) {
+  return calcMPECDHAddress(safeAddress, owners, CREATE_CALL_LIB)
 }
 
-export { calcMPECDHAddress, isMPECDHDeployed, isMPECDHReady, buildMPECDHDeployment, getOwners, proposeMPECDHDeployment }
+export function isDeployed(safeAddress: string, provider: EthersProvider) {
+  return isMPECDHDeployed(safeAddress, provider, CREATE_CALL_LIB)
+}
+
+export function isReady(safeAddress: string, provider: EthersProvider) {
+  return isMPECDHReady(safeAddress, provider, CREATE_CALL_LIB)
+}
+
+export function buildDeployment(safeAddress: string, owners: string[]) {
+  return buildMPECDHDeployment(safeAddress, owners, CREATE_CALL_LIB)
+}
+
+export { getOwners, proposeMPECDHDeployment, CREATE_CALL_LIB }
 
 export type SafeCall = {
   to: string
@@ -31,7 +45,6 @@ export async function getBlocking(address: string, provider: EthersProvider): Pr
   return helper.blocking()
 }
 
-// normalize signer to carry address property for the CJS helper
 async function ensureAddress<S extends Signer>(signer: S): Promise<S & { address: string }> {
   const addr = (signer as any).address ?? (await signer.getAddress?.())
   if (!addr) {
