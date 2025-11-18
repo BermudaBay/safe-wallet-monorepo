@@ -355,7 +355,6 @@ export default function ShieldedAccount({ sx }: { sx: SxProps }) {
                 Blocking: {blocking.map((addr: string) => shortenHex(addr, 4)).join(', ')}
               </Typography>
             )}
-            {status !== null && <Typography variant="body2">Ceremony status: {status}</Typography>}
           </Stack>
         </Grid>
         <Grid item xs>
