@@ -3,7 +3,9 @@ import { Button, Container, Divider, Paper } from '@mui/material'
 import classnames from 'classnames'
 import Link from 'next/link'
 import css from './styles.module.css'
-import { useAppSelector } from '@/store'
+import { useAppDispatch } from '@/store'
+import { showNotification } from '@/store/notificationsSlice'
+import { useAppDispatch, useAppSelector } from '@/store'
 import { PendingStatus, selectPendingTxById } from '@/store/pendingTxsSlice'
 import { useCallback, useContext, useEffect, useState } from 'react'
 import { useCurrentChain } from '@/hooks/useChains'
@@ -37,6 +39,7 @@ const SuccessScreen = ({ txId, txHash }: Props) => {
   const { setTxFlow } = useContext(TxModalContext)
   const chain = useCurrentChain()
   const router = useRouter()
+  const dispatch = useAppDispatch()
   const { stxType } = useBermuda()
   const pendingTx = useAppSelector((state) => (txId ? selectPendingTxById(state, txId) : undefined))
   const { safeAddress } = useSafeInfo()
@@ -95,6 +98,19 @@ const SuccessScreen = ({ txId, txHash }: Props) => {
 
   const isSuccess = status === undefined
   const spinnerStatus = error ? SpinnerStatus.ERROR : isSuccess ? SpinnerStatus.SUCCESS : SpinnerStatus.PROCESSING
+
+  useEffect(() => {
+    if (isSuccess && (stxType === STXType.Transfer || stxType === STXType.Withdrawal)) {
+      dispatch(
+        showNotification({
+          title: 'Success',
+          message: 'Shielded transaction successful',
+          groupKey: 'shielded-transactions',
+          variant: 'success',
+        }),
+      )
+    }
+  }, [isSuccess, stxType])
 
   useEffect(() => {
     if (isSuccess && (stxType === STXType.Transfer || stxType === STXType.Withdrawal) && router.isReady) {
