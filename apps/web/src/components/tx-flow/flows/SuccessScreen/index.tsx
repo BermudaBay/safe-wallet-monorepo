@@ -98,9 +98,8 @@ const SuccessScreen = ({ txId, txHash }: Props) => {
 
   useEffect(() => {
     if (isSuccess && (stxType === STXType.Transfer || stxType === STXType.Withdrawal) && router.isReady) {
-      //TODO instead of hard reloading would be better to close the success screen overlay modal
+      setTxFlow(undefined)
       router.push(`/transactions/queue?safe=dev:${safeAddress}`)
-      router.reload()
     }
   }, [isSuccess, stxType, router.isReady])
 

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useContext, useEffect, useState } from 'react'
 import type { AddressEx, TransactionListPage } from '@safe-global/safe-gateway-typescript-sdk'
 import useAsync, { type AsyncResult } from '@safe-global/utils/hooks/useAsync'
 import useSafeInfo from '../useSafeInfo'
@@ -9,6 +9,7 @@ import { mapSdkQueueToTransactionPage } from '@/services/bermuda/txMapper'
 import useWallet from '@/hooks/wallets/useWallet'
 import type { SdkListTxsResult } from '@/services/bermuda/types'
 import { STXType, useBermuda } from '@/contexts/bermuda-context'
+import { TxModalContext } from '@/components/tx-flow'
 
 export const useLoadTxQueue = (): AsyncResult<TransactionListPage> => {
   const { safe, safeAddress, safeLoaded } = useSafeInfo()
@@ -19,6 +20,8 @@ export const useLoadTxQueue = (): AsyncResult<TransactionListPage> => {
   const wallet = useWallet()
   // N.B. we reload when txQueuedTag/txHistoryTag/updatedTxId changes as txQueuedTag alone is not enough
   const reloadTag = (txQueuedTag ?? '') + (txHistoryTag ?? '') + updatedTxId
+
+  const { txFlow } = useContext(TxModalContext)
 
   // Re-fetch when chainId/address, or txQueueTag change
   const [data, error, loading] = useAsync<TransactionListPage>(
@@ -48,7 +51,7 @@ export const useLoadTxQueue = (): AsyncResult<TransactionListPage> => {
       })
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [safeLoaded, chainId, safeAddress, reloadTag, safe.deployed, bermudaSDK, wallet?.address],
+    [safeLoaded, chainId, safeAddress, reloadTag, safe.deployed, bermudaSDK, wallet?.address, txFlow],
     false,
   )
 
