@@ -88,13 +88,13 @@ const SafeHeader = (): ReactElement => {
               )}
             </Typography>
 
-            <Typography variant="caption" fontWeight={700} sx={{ color: 'var(--color-text-secondary)' }}>
+            {/* <Typography variant="caption" fontWeight={700} sx={{ color: 'var(--color-text-secondary)' }}>
               {safe.deployed && shieldedBalances.fiatTotal && (
                 <>
                   Shielded balance: <FiatValue value={shieldedBalances.fiatTotal} />
                 </>
               )}
-            </Typography>
+            </Typography> */}
           </div>
         </div>
 
