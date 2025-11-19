@@ -108,6 +108,7 @@ export const CreateShieldedTokenTransfer = ({ txNonce }: CreateTokenTransferProp
       recipients:
         data?.recipients.map(({ tokenAddress, ...rest }) => ({
           ...rest,
+          recipient: '',
           [TokenTransferFields.tokenAddress]:
             canCreateSpendingLimitTx && !canCreateStandardTx ? balancesItems[0]?.tokenInfo.address : wethAddress,
           [TokenTransferFields.shieldedTokenAddress]:
