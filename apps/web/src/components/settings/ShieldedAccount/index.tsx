@@ -7,6 +7,7 @@ import { shortenHex } from '@/utils/misc'
 import { copyToClipboard } from './utils'
 import { useSigner } from '@/hooks/wallets/useWallet'
 import { useWeb3ReadOnly } from '@/hooks/wallets/web3'
+import { txDispatch, TxEvent } from '@/services/tx/txEvents'
 import {
   buildDeployment,
   calcAddress,
@@ -16,6 +17,9 @@ import {
   isDeployed,
   isReady as isMpecdhReady,
 } from '@/services/mpecdh'
+import { getSafeTxHash } from '@/services/tx/tx-sender/utils'
+import { getUserNonce } from '@/hooks/wallets/web3'
+import { OperationType } from '@safe-global/types-kit'
 
 export default function ShieldedAccount({ sx }: { sx: SxProps }) {
   const { safe, safeAddress } = useSafeInfo()
@@ -145,6 +149,7 @@ export default function ShieldedAccount({ sx }: { sx: SxProps }) {
   }, [mpecdhAddress, browserProvider, signer])
 
   async function handleContribute(event: React.FormEvent) {
+
     event.preventDefault()
     if (!mpecdhAddress || !browserProvider || !signer) {
       setRegisterError(new Error('Connect a signer and ensure MPECDH is deployed'))
@@ -229,6 +234,7 @@ export default function ShieldedAccount({ sx }: { sx: SxProps }) {
   }
 
   async function handleDeploy(event: React.FormEvent) {
+
     event.preventDefault()
     if (!browserProvider || !signer || !sdk) {
       setRegisterError(new Error('Connect a signer wallet'))
@@ -240,10 +246,35 @@ export default function ShieldedAccount({ sx }: { sx: SxProps }) {
       const ethersSigner = await browserProvider.getSigner()
       const owners = await getOwners(safeAddress, web3ReadOnly ?? browserProvider)
       const txData = buildDeployment(safeAddress, owners)
+
+        const safeNonce = safe.nonce
+      const tx = {
+        value: 0n,
+        operation: OperationType.Call,
+        safeTxGas: 0n,
+        baseGas: 0n,
+        gasPrice: 0n,
+        gasToken: ZeroAddress,
+        refundReceiver: ZeroAddress,
+        nonce: safeNonce,
+        ...txData
+      }
+      const safeTxHash = await getSafeTxHash(safeAddress, tx)
+      console.log('safeTxHash', safeTxHash)
       const ownerSigner = ethersSigner
       const proposePayload = await sdk.safe.proposePayload(safeAddress, txData, ownerSigner)
-      const receipt = await ownerSigner.sendTransaction(proposePayload)
-      setDeploymentHash(receipt.hash)
+      console.log('proposePayload', proposePayload)
+      const txResponse = await ownerSigner.sendTransaction(proposePayload)
+
+      setDeploymentHash(txResponse.hash)
+      console.log('txResponse', txResponse)
+      await sdk.config.provider.waitForTransaction(txResponse.hash)
+
+      txDispatch(safeTxHash ? TxEvent.SIGNATURE_PROPOSED : TxEvent.PROPOSED, {
+        txId: safeTxHash,
+        signerAddress: ownerSigner.address,
+        nonce: safeNonce,
+      })
       await refreshMpecdhState()
       await refreshLocalQueue()
     } catch (error: unknown) {

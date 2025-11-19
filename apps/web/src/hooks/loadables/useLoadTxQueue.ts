@@ -53,7 +53,17 @@ export const useLoadTxQueue = (): AsyncResult<TransactionListPage> => {
   // Track proposed and deleted txs so that we can reload the queue
   useEffect(() => {
     const unsubscribeProposed = txSubscribe(TxEvent.PROPOSED, ({ txId }) => {
-      setUpdatedTxId(txId)
+      const retryWithDelay = (attempt: number, maxAttempts = 3) => {
+        const delay = attempt * 1000 
+        setTimeout(() => {
+          setUpdatedTxId(`${txId}-${Date.now()}-${attempt}`)
+          if (attempt < maxAttempts) {
+            retryWithDelay(attempt + 1, maxAttempts)
+          }
+        }, delay)
+      }
+      setUpdatedTxId(`${txId}-${Date.now()}-0`)
+      retryWithDelay(1)
     })
     const unsubscribeDeleted = txSubscribe(TxEvent.DELETED, ({ safeTxHash }) => {
       setUpdatedTxId(safeTxHash)
