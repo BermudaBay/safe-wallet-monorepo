@@ -27,28 +27,25 @@ export const useInitBermudaSDK = () => {
     }
 
     web3ReadOnly?.getNetwork().then(({ chainId }) => {
-
-      initBermudaSDK({ chainId: safe.chainId || chainId })
-        .then(setBermudaSDK)
-        .catch((_e) => {
-          const e = asError(_e)
-          dispatch(
-            showNotification({
-              message: 'Error initializing the Bermuda SDK. Please try reloading the page.',
-              groupKey: 'core-sdk-init-error',
-              variant: 'error',
-              detailedMessage: e.message,
-            }),
-          )
-          trackError(ErrorCodes._105, e.message)
-        })
-
+      // Only initialize the Bermuda SDK if the current network's chain id
+      // matches the chain id that's used by the safe. This ensures that we
+      // won't try to initialize the SDK for unknown chain ids.
+      if (String(chainId) === safe.chainId) {
+        return initBermudaSDK({ chainId })
+          .then(setBermudaSDK)
+          .catch((_e) => {
+            const e = asError(_e)
+            dispatch(
+              showNotification({
+                message: 'Error initializing the Bermuda SDK. Please try reloading the page.',
+                groupKey: 'core-sdk-init-error',
+                variant: 'error',
+                detailedMessage: e.message,
+              }),
+            )
+            trackError(ErrorCodes._105, e.message)
+          })
+      }
     })
-  }, [
-    address,
-    dispatch,
-    safe.chainId,
-    safeLoaded,
-    web3ReadOnly,
-  ])
+  }, [address, dispatch, safe.chainId, safeLoaded, web3ReadOnly, safe.address.value])
 }
