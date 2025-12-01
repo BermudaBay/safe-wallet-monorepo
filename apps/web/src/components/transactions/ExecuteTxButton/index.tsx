@@ -41,33 +41,43 @@ const ExecuteTxButton = ({
   const _isStxExecuted = sdk && isStxExecuted(txSummary.txHash!.toLowerCase())
   const isDisabled = _isStxExecuted || isDispatchingProofs || !isStxTransferOrUnshield && (!isNext || !sdk || expiredSwap || isPending)
 
+  useEffect(() => {
+    (async () => {
+      if (isStxTransferOrUnshield) {
+        try {
+          setIsDispatchingProofs(true)
+
+          console.log("$$$$$ stxType", stxType, "stxType === STXType.Withdrawal", stxType === STXType.Withdrawal)
+          if (stxType === STXType.Transfer) {
+            await dispatchShieldedTransfer(keyPair, safe.address.value, txSummary)
+          } else if (stxType === STXType.Withdrawal) {
+            await dispatchShieldedWithdrawal(keyPair, safe.address.value, txSummary)
+          } else {
+            throw Error("Unexpected stx type " + stxType)
+          }
+
+          saveStxExecuted(txSummary.txHash!.toLowerCase())
+        } catch (err) {
+          console.error(err)
+        } finally {
+          setIsDispatchingProofs(false)
+        }
+      }
+    })()
+  }, [
+    keyPair,
+    stxType,
+    txSummary,
+    saveStxExecuted,
+    safe.address.value,
+    isStxTransferOrUnshield,
+  ])
+
   const onClick = async (e: SyntheticEvent) => {
     e.stopPropagation()
     e.preventDefault()
 
-    if (isStxTransferOrUnshield) {
-      try {
-        setIsDispatchingProofs(true)
-        console.log(isDispatchingProofs)
-        console.log("$$$$$ stxType", stxType, "stxType === STXType.Withdrawal", stxType === STXType.Withdrawal)
-        if (stxType === STXType.Transfer) {
-          await dispatchShieldedTransfer(keyPair, safe.address.value, txSummary)
-        } else if (stxType === STXType.Withdrawal) {
-          await dispatchShieldedWithdrawal(keyPair, safe.address.value, txSummary)
-        } else {
-          throw Error("Unexpected stx type " + stxType)
-        }
-
-        saveStxExecuted(txSummary.txHash!.toLowerCase())
-      } catch (err) {
-        console.error(err)
-      } finally {
-        setIsDispatchingProofs(false)
-      }
-      console.log(isDispatchingProofs)
-    } else {
-      setTxFlow(<ConfirmTxFlow txSummary={txSummary} />, undefined, false)
-    }
+    setTxFlow(<ConfirmTxFlow txSummary={txSummary} />, undefined, false)
   }
 
   const onMouseEnter = () => {
