@@ -1,9 +1,9 @@
 import useIsExpiredSwap from '@/features/swap/hooks/useIsExpiredSwap'
 import useIsPending from '@/hooks/useIsPending'
 import type { SyntheticEvent } from 'react'
-import { type ReactElement, useContext, useEffect, useState } from 'react'
+import { type ReactElement, useContext } from 'react'
 import { type TransactionSummary } from '@safe-global/safe-gateway-typescript-sdk'
-import { Button, CircularProgress, Tooltip } from '@mui/material'
+import { Button, Tooltip } from '@mui/material'
 
 import useSafeInfo from '@/hooks/useSafeInfo'
 import { isMultisigExecutionInfo } from '@/utils/transaction-guards'
@@ -13,9 +13,6 @@ import { ReplaceTxHoverContext } from '../GroupedTxListItems/ReplaceTxHoverProvi
 import CheckWallet from '@/components/common/CheckWallet'
 import { TxModalContext } from '@/components/tx-flow'
 import { ConfirmTxFlow } from '@/components/tx-flow/flows'
-import { dispatchShieldedTransfer } from '@/services/bermuda/dispatchShieldedTransfer'
-import { STXType, useBermuda } from '@/contexts/bermuda-context'
-import { dispatchShieldedWithdrawal } from '@/services/bermuda/dispatchShieldedWithdrawal'
 
 const ExecuteTxButton = ({
   txSummary,
@@ -29,49 +26,11 @@ const ExecuteTxButton = ({
   const txNonce = isMultisigExecutionInfo(txSummary.executionInfo) ? txSummary.executionInfo.nonce : undefined
   const isPending = useIsPending(txSummary.id)
   const { setSelectedTxId } = useContext(ReplaceTxHoverContext)
-  const { keyPair, sdk, saveStxExecuted, isStxExecuted, stxType } = useBermuda()
-  const [isDispatchingProofs, setIsDispatchingProofs] = useState(false)
 
   const expiredSwap = useIsExpiredSwap(txSummary.txInfo)
 
-  const methodName = (txSummary.txInfo as any).methodName
-  const isStxTransferOrUnshield = methodName === "Shielded transfer" || methodName === "Unshield"
-
   const isNext = (txNonce !== undefined && txNonce === safe.nonce) //|| problyStx
-  const _isStxExecuted = sdk && isStxExecuted(txSummary.txHash!.toLowerCase())
-  const isDisabled = _isStxExecuted || isDispatchingProofs || !isStxTransferOrUnshield && (!isNext || !sdk || expiredSwap || isPending)
-
-  useEffect(() => {
-    (async () => {
-      if (isStxTransferOrUnshield) {
-        try {
-          setIsDispatchingProofs(true)
-
-          console.log("$$$$$ stxType", stxType, "stxType === STXType.Withdrawal", stxType === STXType.Withdrawal)
-          if (stxType === STXType.Transfer) {
-            await dispatchShieldedTransfer(keyPair, safe.address.value, txSummary)
-          } else if (stxType === STXType.Withdrawal) {
-            await dispatchShieldedWithdrawal(keyPair, safe.address.value, txSummary)
-          } else {
-            throw Error("Unexpected stx type " + stxType)
-          }
-
-          saveStxExecuted(txSummary.txHash!.toLowerCase())
-        } catch (err) {
-          console.error(err)
-        } finally {
-          setIsDispatchingProofs(false)
-        }
-      }
-    })()
-  }, [
-    keyPair,
-    stxType,
-    txSummary,
-    saveStxExecuted,
-    safe.address.value,
-    isStxTransferOrUnshield,
-  ])
+  const isDisabled = !isNext || expiredSwap || isPending
 
   const onClick = async (e: SyntheticEvent) => {
     e.stopPropagation()
@@ -92,7 +51,7 @@ const ExecuteTxButton = ({
     <>
       <CheckWallet allowNonOwner>
         {(isOk) => (
-          <Tooltip title={isOk && !isNext && !isStxTransferOrUnshield ? 'You must execute the transaction with the lowest nonce first' : ''}>
+          <Tooltip title={isOk && !isNext ? 'You must execute the transaction with the lowest nonce first' : ''}>
             <span>
               <Track {...TX_LIST_EVENTS.EXECUTE}>
                 <Button
@@ -104,7 +63,7 @@ const ExecuteTxButton = ({
                   size={compact ? 'small' : 'stretched'}
                   sx={{ minWidth: '106.5px', py: compact ? 0.8 : undefined, cursor: isDisabled ? 'default' : 'pointer' }}
                 >
-                  {isDispatchingProofs ? <CircularProgress color='primary' size='15px' thickness={5} /> : 'Execute'}
+                  Execute
                 </Button>
               </Track>
             </span>

@@ -24,6 +24,8 @@ import { NESTED_SAFE_EVENTS, NESTED_SAFE_LABELS } from '@/services/analytics/eve
 import Track from '@/components/common/Track'
 import { STXType, useBermuda } from '@/contexts/bermuda-context'
 import { useRouter } from 'next/router'
+import { dispatchShieldedTransfer } from '@/services/bermuda/dispatchShieldedTransfer'
+import { dispatchShieldedWithdrawal } from '@/services/bermuda/dispatchShieldedWithdrawal'
 
 interface Props {
   /** The ID assigned to the transaction in the client-gateway */
@@ -39,16 +41,40 @@ const SuccessScreen = ({ txId, txHash }: Props) => {
   const chain = useCurrentChain()
   const router = useRouter()
   const dispatch = useAppDispatch()
-  const { stxType } = useBermuda()
+  const { keyPair, stxType, saveStxExecuted, isStxExecuted } = useBermuda()
   const pendingTx = useAppSelector((state) => (txId ? selectPendingTxById(state, txId) : undefined))
   const { safeAddress } = useSafeInfo()
   const status = !txId && txHash ? PendingStatus.INDEXING : pendingTx?.status
   const pendingTxHash = pendingTx && 'txHash' in pendingTx ? pendingTx.txHash : undefined
   const txLink = chain && txId && getTxLink(txId, chain, safeAddress)
   const [txDetails] = useTxDetails(txId)
-  // const [isShieldedDeposit, setIsShieldedDeposit] = useState<boolean>(true)
   const isSwapOrder = txDetails && isSwapTransferOrderTxInfo(txDetails.txInfo)
   const [predictedSafeAddress] = usePredictSafeAddressFromTxDetails(txDetails)
+  const [isDispatchingProofs, setIsDispatchingProofs] = useState<boolean | undefined>(undefined)
+
+  useEffect(() => {
+    (async () => {
+      if (localTxHash && !isStxExecuted(localTxHash.toLowerCase()) && (stxType === STXType.Transfer || stxType === STXType.Withdrawal)) {
+        try {
+          setIsDispatchingProofs(true)
+
+          if (stxType === STXType.Transfer) {
+            await dispatchShieldedTransfer(keyPair, safeAddress, localTxHash)
+          } else if (stxType === STXType.Withdrawal) {
+            await dispatchShieldedWithdrawal(keyPair, safeAddress, localTxHash)
+          } else {
+            throw Error("Unexpected stx type " + stxType)
+          }
+
+          saveStxExecuted(localTxHash.toLowerCase())
+        } catch (err) {
+          setError(err as Error)
+        } finally {
+          setIsDispatchingProofs(false)
+        }
+      }
+    })()
+  }, [localTxHash, keyPair, safeAddress, stxType, isStxExecuted, saveStxExecuted])
 
   // useEffect(() => {
   //   async function run() {
@@ -99,7 +125,7 @@ const SuccessScreen = ({ txId, txHash }: Props) => {
   const spinnerStatus = error ? SpinnerStatus.ERROR : isSuccess ? SpinnerStatus.SUCCESS : SpinnerStatus.PROCESSING
 
   useEffect(() => {
-    if (isSuccess && (stxType === STXType.Transfer || stxType === STXType.Withdrawal)) {
+    if (localTxHash && isStxExecuted(localTxHash.toLowerCase()) && (stxType === STXType.Transfer || stxType === STXType.Withdrawal)) {
       dispatch(
         showNotification({
           title: 'Success',
@@ -109,14 +135,14 @@ const SuccessScreen = ({ txId, txHash }: Props) => {
         }),
       )
     }
-  }, [isSuccess, stxType])
+  }, [localTxHash, stxType, dispatch, isStxExecuted])
 
   useEffect(() => {
-    if (isSuccess && (stxType === STXType.Transfer || stxType === STXType.Withdrawal) && router.isReady) {
+    if (localTxHash && isStxExecuted(localTxHash.toLowerCase()) && (stxType === STXType.Transfer || stxType === STXType.Withdrawal) && router.isReady) {
       setTxFlow(undefined)
-      router.push(`/transactions/queue?safe=dev:${safeAddress}`)
+      router.push(`/balances/?safe=dev:${safeAddress}`)
     }
-  }, [isSuccess, stxType, router.isReady])
+  }, [localTxHash, stxType, router, setTxFlow, safeAddress, isStxExecuted])
 
   let StatusComponent
   switch (status) {
@@ -151,7 +177,7 @@ const SuccessScreen = ({ txId, txHash }: Props) => {
         <>
           <Divider />
           <div className={css.row}>
-            <StatusStepper status={status} txHash={localTxHash} />
+            <StatusStepper status={status} txHash={localTxHash} isProving={isDispatchingProofs} />
           </div>
         </>
       )}

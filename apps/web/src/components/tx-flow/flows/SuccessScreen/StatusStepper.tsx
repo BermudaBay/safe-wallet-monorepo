@@ -5,7 +5,15 @@ import StatusStep from '@/components/new-safe/create/steps/StatusStep/StatusStep
 import useSafeInfo from '@/hooks/useSafeInfo'
 import { PendingStatus } from '@/store/pendingTxsSlice'
 
-const StatusStepper = ({ status, txHash }: { status?: PendingStatus; txHash?: string }) => {
+const StatusStepper = ({
+  status,
+  txHash,
+  isProving = undefined,
+}: {
+  status?: PendingStatus
+  txHash?: string
+  isProving?: boolean
+}) => {
   const { safeAddress } = useSafeInfo()
 
   const isProcessing = status === PendingStatus.PROCESSING || status === PendingStatus.INDEXING || status === undefined
@@ -56,6 +64,15 @@ const StatusStepper = ({ status, txHash }: { status?: PendingStatus; txHash?: st
           </Typography>
         </StatusStep>
       </Step>
+      {isProving !== undefined && (
+        <Step>
+          <StatusStep isLoading={isProving} safeAddress={safeAddress}>
+            <Typography variant="body2" fontWeight="700">
+              {isProving ? 'Proving' : 'Proof Generated'}
+            </Typography>
+          </StatusStep>
+        </Step>
+      )}
     </Stepper>
   )
 }

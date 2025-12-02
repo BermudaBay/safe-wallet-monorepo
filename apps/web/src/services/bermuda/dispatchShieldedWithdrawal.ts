@@ -1,18 +1,17 @@
-import { TransactionSummary } from "@safe-global/safe-gateway-typescript-sdk";
 import { queryFilterBatched, shieldedAddressFromSpendingPubkey, simpleDecodeStx } from "./utils";
 import { Contract, getBytes, ZeroHash } from "ethers";
 import { getBermudaSDK } from "@/hooks/bermudaSDK/useBermudaSDK";
 
-export async function dispatchShieldedWithdrawal(shieldedKeyPair: any, safeAddress: string, txSummary: TransactionSummary) {
+export async function dispatchShieldedWithdrawal(shieldedKeyPair: any, safeAddress: string, txHash: string | null) {
     // const { safeAddress } = useSafeInfo()
     const bermudaSDK = getBermudaSDK()
 
     // List all MessageCiphertext events, try decrypt, then decode, then stxhash
-    // If the resulting stxhash is included in txSummary.data (SignMsgHash data) 
-    // its most likely the preimage corresponding to the stx hash that got 
-    // "signed" thru the multisig 
-    console.log("$$$$$ txSummary.txHash", txSummary.txHash)
-    const signMsgHashTx = await bermudaSDK.config.provider.getTransaction(txSummary.txHash)
+    // If the resulting stxhash is included in txSummary.data (SignMsgHash data)
+    // its most likely the preimage corresponding to the stx hash that got
+    // "signed" thru the multisig
+    console.log("$$$$$ txHash", txHash)
+    const signMsgHashTx = await bermudaSDK.config.provider.getTransaction(txHash)
     if (!signMsgHashTx) throw Error("Cannot find SignMsgHashLib tx")
 
     const encryptionKey = shieldedKeyPair.x25519.secretKey
@@ -76,8 +75,8 @@ export async function dispatchShieldedWithdrawal(shieldedKeyPair: any, safeAddre
     }
 
     //NOTE We load all registered peers from tehe regsitry here once
-    // so that all subsequent shieldedAddressFromSpendingPubkey() invocations 
-    // have the fresh registry available. sdk.registry.load() internally 
+    // so that all subsequent shieldedAddressFromSpendingPubkey() invocations
+    // have the fresh registry available. sdk.registry.load() internally
     // concats loaded shielded addresses to sdk.config.peers
     await bermudaSDK.registry.load()
 
