@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { BrowserProvider, Interface, ZeroAddress, getBytes } from 'ethers'
-import { Alert, Box, Button, Grid, Paper, Stack, SxProps, TextField, Typography } from '@mui/material'
+import { Alert, Box, Button, CircularProgress, Grid, Paper, Stack, SxProps, TextField, Tooltip, Typography } from '@mui/material'
 import useSafeInfo from '@/hooks/useSafeInfo'
 import { useBermuda } from '@/contexts/bermuda-context'
 import { shortenHex } from '@/utils/misc'
@@ -11,6 +11,7 @@ import { txDispatch, TxEvent } from '@/services/tx/txEvents'
 import {
   buildDeployment,
   calcAddress,
+  CREATE_CALL_LIB,
   createCeremonyHelper,
   getBlocking,
   getOwners,
@@ -41,6 +42,9 @@ export default function ShieldedAccount({ sx }: { sx: SxProps }) {
   const [blocking, setBlocking] = useState<string[]>([])
   const [isReady, setIsReady] = useState<boolean>(false)
   const [deriveError, setDeriveError] = useState<Error | undefined>()
+  const [currentRound, setCurrentRound] = useState<number | null>(null)
+  const [totalRounds, setTotalRounds] = useState<number | null>(null)
+  const [hasContributed, setHasContributed] = useState<boolean>(false)
 
   const browserProvider = useMemo(() => {
     const baseProvider = signer?.provider as any
@@ -138,15 +142,106 @@ export default function ShieldedAccount({ sx }: { sx: SxProps }) {
       const ethersSigner = await browserProvider.getSigner()
       const current = await ceremony_helper.status(ethersSigner)
       setStatus(current)
-      setBlocking(await ceremony_helper.blocking())
+      const blockingList = await ceremony_helper.blocking()
+      setBlocking(blockingList)
     } catch (error) {
       console.error(error)
     }
   }
 
   useEffect(() => {
+    if (isReady) {
+      setHasContributed(false)
+    }
+  }, [isReady])
+
+  // Add this useEffect after line 156
+useEffect(() => {
+  if (isReady && !keyPair && !isLoading && mpecdhAddress && browserProvider && signer && sdk) {
+    const deriveSeed = async () => {
+      setIsLoading(true)
+      setDeriveError(undefined)
+      try {
+        const helper = await createCeremonyHelper(mpecdhAddress, browserProvider)
+        const ethersSigner = await browserProvider.getSigner()
+        const seedHex = await helper.stepX(ethersSigner)
+        const seed = getBytes(seedHex)
+        const nextKeyPair = sdk.types.KeyPair.fromSeed(seed)
+        const shieldedAddress = nextKeyPair.address()
+        const isRegistered = await sdk.registry.isRegistered(shieldedAddress)
+
+        if (!isRegistered) {
+          const chainId = sdk.config.chainId
+          const target = await sdk.config.registry.getAddress()
+          const data = Interface.from([
+            'function _register(address _nativeAddress, bytes calldata _shieldedAddress, bytes calldata _name) external',
+          ]).encodeFunctionData('_register', [
+            safeAddress,
+            Buffer.from(shieldedAddress.replace('0x', ''), 'hex'),
+            Buffer.alloc(0),
+          ])
+          const tx = await sdk.utils.relay(sdk.config.relayer, { chainId, target, data })
+          const receipt = await sdk.config.provider.waitForTransaction(tx)
+          if (receipt.status === 0) {
+            throw new Error(`Registry Transaction ${tx} reverted`)
+          }
+        }
+
+        const nativeAddress = await sdk.registry.nativeAddressOf(shieldedAddress)
+        if (nativeAddress.toLowerCase() !== safeAddress.toLowerCase()) {
+          throw new Error('KeyPair already registered with different Safe')
+        }
+
+        saveKeyPair(nextKeyPair)
+      } catch (error: unknown) {
+        setDeriveError(error as Error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    void deriveSeed()
+  }
+}, [isReady, keyPair, isLoading, mpecdhAddress, browserProvider, signer, sdk, safeAddress])
+
+  useEffect(() => {
     void refreshStatus()
-  }, [mpecdhAddress, browserProvider, signer])
+  }, [mpecdhAddress, browserProvider, signer, hasContributed])
+
+  async function refreshRoundInfo() {
+    if (!mpecdhAddress || !browserProvider || !signer || isReady) return
+    
+    try {
+      const owners = await getOwners(safeAddress, browserProvider)
+      const total = owners.length - 1
+      setTotalRounds(total)
+      
+      const { Contract } = await import('ethers')
+      const mpecdhContract = new Contract(
+        mpecdhAddress,
+        [
+          'function processed(uint256) public view returns (uint256)',
+          'function source(address) public view returns (uint256)'
+        ],
+        browserProvider
+      )
+      
+      const signerSlot = await mpecdhContract.source(signer.address)
+      const processedCount = await mpecdhContract.processed(signerSlot)
+      
+      const current = Number(processedCount) + 1
+      
+      if (current <= total) {
+        setCurrentRound(current)
+      }
+      
+    } catch (error) {
+      console.error('Failed to fetch round info', error)
+    }
+  }
+  useEffect(() => {
+    void refreshRoundInfo()
+  }, [mpecdhAddress, browserProvider, isReady, blocking])
+
 
   async function handleContribute(event: React.FormEvent) {
 
@@ -162,76 +257,31 @@ export default function ShieldedAccount({ sx }: { sx: SxProps }) {
       const ceremony_helper = await createCeremonyHelper(mpecdhAddress, browserProvider)
       const ethersSigner = await browserProvider.getSigner()
       const current = await ceremony_helper.status(ethersSigner)
+      let txResponse: any
       if (current === 3) {
-        await ceremony_helper.step0(ethersSigner)
+        txResponse = await ceremony_helper.step0(ethersSigner)
       } else if (current === 1) {
-        await ceremony_helper.stepN(ethersSigner)
+        txResponse = await ceremony_helper.stepN(ethersSigner)
       } else {
         setRegisterError(new Error('No contribution needed right now'))
+        return
       }
+      
+      if (txResponse?.hash) {
+        await browserProvider.waitForTransaction(txResponse.hash)
+      }
+      
+      setHasContributed(true)
       await refreshStatus()
+      await refreshMpecdhState()
     } catch (error: unknown) {
       setRegisterError(error as Error)
+      setHasContributed(false)
     } finally {
       setIsLoading(false)
     }
   }
 
-  async function handleLogin(event: React.FormEvent) {
-    event.preventDefault()
-    if (!mpecdhAddress || !browserProvider || !signer) {
-      setDeriveError(new Error('Connect a signer and ensure MPECDH'))
-      return
-    }
-    setIsLoading(true)
-    setDeriveError(undefined)
-    setRegisterError(undefined)
-    try {
-      const helper = await createCeremonyHelper(mpecdhAddress, browserProvider)
-      const ethersSigner = await browserProvider.getSigner()
-      const seedHex = await helper.stepX(ethersSigner)
-      const seed = getBytes(seedHex)
-      const nextKeyPair = sdk.types.KeyPair.fromSeed(seed)
-      const shieldedAddress = nextKeyPair.address()
-      const isRegistered = await sdk.registry.isRegistered(shieldedAddress)
-
-      if (!isRegistered) {
-        const chainId = sdk.config.chainId
-        const target = await sdk.config.registry.getAddress()
-
-        const data = Interface.from([
-          'function _register(address _nativeAddress, bytes calldata _shieldedAddress, bytes calldata _name) external',
-        ]).encodeFunctionData('_register', [
-          safeAddress,
-          Buffer.from(shieldedAddress.replace('0x', ''), 'hex'),
-          Buffer.alloc(0),
-        ])
-
-        const tx = await sdk.utils.relay(sdk.config.relayer, {
-          chainId,
-          target,
-          data,
-        })
-
-        const receipt = await sdk.config.provider.waitForTransaction(tx)
-        if (receipt.status === 0) {
-          throw new Error(`Registry Transaction ${tx} reverted`)
-        }
-      }
-
-      const nativeAddress = await sdk.registry.nativeAddressOf(shieldedAddress)
-
-      if (nativeAddress.toLowerCase() !== safeAddress.toLowerCase()) {
-        throw new Error('KeyPair already registered with different Safe')
-      }
-
-      saveKeyPair(nextKeyPair)
-    } catch (error: unknown) {
-      setDeriveError(error as Error)
-    } finally {
-      setIsLoading(false)
-    }
-  }
 
   async function handleDeploy(event: React.FormEvent) {
 
@@ -340,6 +390,30 @@ export default function ShieldedAccount({ sx }: { sx: SxProps }) {
     setRegisterAliasError(undefined)
   }
 
+const canContribute = useMemo(() => {
+  if (!signer?.address) return false
+  if (mpecdhAddress && !isReady && blocking.length === 0) return true
+  return blocking.some(addr => addr.toLowerCase() === signer.address.toLowerCase())
+}, [signer?.address, blocking, mpecdhAddress, isReady])
+
+  const isDeploymentPending = useMemo(() => {
+    if (mpecdhAddress) return false 
+    if (deploymentHash) return true 
+    
+    if (pendingTxs.length > 0 && expectedAddress && CREATE_CALL_LIB) {
+      const createCallLib = CREATE_CALL_LIB.toLowerCase()
+      console.log('pendingTxs', pendingTxs)
+      console.log('createCallLib', pendingTxs.some((tx: any) => 
+        tx.details?.[0]?.toLowerCase() === createCallLib
+      ))
+      return pendingTxs.some((tx: any) => 
+        tx.details?.[0]?.toLowerCase() === createCallLib
+      )
+    }
+    
+    return false
+  }, [mpecdhAddress, deploymentHash, pendingTxs, expectedAddress])
+
   return (
     <Paper sx={{ padding: 4, ...sx }}>
       <Grid
@@ -360,7 +434,7 @@ export default function ShieldedAccount({ sx }: { sx: SxProps }) {
             Shielded account
           </Typography>
           <Stack direction="column" spacing={1} mt={2}>
-            {expectedAddress && (
+            {/* {expectedAddress && (
               <Typography variant="body2">
                 Expected MPECDH: <code>{shortenHex(expectedAddress, 6)}</code>
               </Typography>
@@ -369,57 +443,122 @@ export default function ShieldedAccount({ sx }: { sx: SxProps }) {
               <Typography variant="body2" title={mpecdhAddress}>
                 Deployed at: <code>{shortenHex(mpecdhAddress, 6)}</code>
               </Typography>
-            )}
+            )} */}
             {deploymentHash && (
               <Typography variant="body2" title={deploymentHash}>
                 Deployment tx: <code>{shortenHex(deploymentHash, 6)}</code>
               </Typography>
             )}
-            {pendingTxs.length > 0 &&
+            {/* {pendingTxs.length > 0 &&
               pendingTxs.map((item) => (
                 <Typography key={item.hash} variant="body2" title={item.hash}>
                   Pending: <code>{shortenHex(item.hash, 6)}</code> – {item.confirmationStatus}
                 </Typography>
-              ))}
+              ))} */}
             {blocking.length > 0 && (
               <Typography variant="body2">
                 Blocking: {blocking.map((addr: string) => shortenHex(addr, 4)).join(', ')}
               </Typography>
             )}
+            {mpecdhAddress && !isReady && currentRound !== null && totalRounds !== null && (
+            <Typography variant="caption" sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
+              Current round: {currentRound} | TotalRounds: {totalRounds}
+            </Typography>
+            )}
           </Stack>
+          <Box sx={{ 
+            p: 2, 
+            mt: 2,
+            backgroundColor: 'background.paper', 
+            borderRadius: 1,
+            border: '1px solid',
+            borderColor: 'divider'
+          }}>
+            <Typography variant="caption" sx={{ fontSize: '0.75rem', color: 'text.secondary', display: 'block' }}>
+            How to set up your Safe's shielded account?
+            </Typography>
+            <Typography variant="caption" sx={{ fontSize: '0.75rem', color: 'text.secondary', display: 'block', mt: 0.5 }}>
+              1. Deploy a multi-party key exchange coordination contract for your Safe (owners)
+            </Typography>
+            <Typography variant="caption" sx={{ fontSize: '0.75rem', color: 'text.secondary', display: 'block' }}>
+              2. Contribute to ceremony  ({safe.owners.length - 1} {safe.owners.length - 1 === 1 ? 'round' : 'rounds'})
+            </Typography>
+            <Typography variant="caption" sx={{ fontSize: '0.75rem', color: 'text.secondary', display: 'block' }}>
+              3. Derive seed
+            </Typography>
+            <Typography variant="caption" sx={{ fontSize: '0.75rem', color: 'text.secondary', display: 'block' }}>
+              4. Optionally register a name.bay alias for your shielded address
+            </Typography>
+          </Box>
         </Grid>
         <Grid item xs>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, width: '100%' }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, width: '100%', mt: 4, alignItems: 'center' }}>
             {registerError && <Alert severity="error">{registerError.message}</Alert>}
             {deriveError && <Alert severity="error">{deriveError.message}</Alert>}
 
-            <Box component="form" onSubmit={handleDeploy} sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center' }}>
-              <Button type="submit" variant="contained" disabled={isLoading || !!mpecdhAddress}>
-                {mpecdhAddress ? 'MPECDH Deployed' : 'Deploy MPECDH'}
-              </Button>
-              <Typography variant="body2">
-                Creates Safe transaction to deploy the SafeMPECDH contract via standard multisig flow.
-              </Typography>
-            </Box>
+            {!mpecdhAddress && (
+              <Box component="form" onSubmit={handleDeploy} sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center' }}>
+                <Tooltip
+                  title={
+                    isDeploymentPending 
+                      ? "Deployment transaction is pending. Check the Transactions list to approve and execute." 
+                      : "Deploy the MPECDH contract via Safe multisig transaction"
+                  }
+                  arrow
+                >
+                  <span>
+                    <Button type="submit" variant="contained" disabled={isLoading || isDeploymentPending}>
+                      {isDeploymentPending ? 'Deployment Pending...' : 'Deploy MPECDH'}
+                    </Button>
+                  </span>
+                </Tooltip>
 
-            <Box display="flex" gap={2} flexWrap="wrap" alignItems="center">
-              <Button
-                variant="outlined"
-                onClick={handleContribute}
-                disabled={isLoading || !mpecdhAddress}
-                title="Submit your contribution for the current round"
-              >
-                Contribute
-              </Button>
-              <Button
-                variant="contained"
-                onClick={handleLogin}
-                disabled={isLoading || !mpecdhAddress || !isReady}
-                title="Derive shared seed and register shielded key"
-              >
-                Derive seed
-              </Button>
-            </Box>
+              </Box>
+            )}
+
+            {mpecdhAddress && (
+              <Box display="flex" gap={2} flexWrap="wrap" alignItems="center" justifyContent="center">
+                {!isReady && (
+                  <>
+                  <Tooltip 
+                    title={!canContribute ? "Wait for the blocking address to contribute." : "Submit your contribution for the current round"}
+                    arrow
+                  >
+                  <span>
+                  <Button
+                    variant="outlined"
+                    onClick={handleContribute}
+                    disabled={isLoading ||  !canContribute || (hasContributed && blocking.length > 0)}
+                  >
+                    Contribute
+                  </Button>
+                  </span>
+                  </Tooltip>
+                  {isLoading && !hasContributed && (
+                    <Box display="flex" alignItems="center" gap={1}>
+                      <CircularProgress size={16} />
+                      <Typography variant="body2" sx={{ color: 'text.secondary', fontSize: '0.875rem' }}>
+                        Submitting contribution...
+                      </Typography>
+                    </Box>
+                  )}
+                  {hasContributed && (
+                    <Typography variant="body2" sx={{ color: 'success.main', fontSize: '0.875rem' }}>
+                      Contribution submitted.
+                    </Typography>
+                  )}
+                    </>
+                )}
+                {isReady && !keyPair && isLoading && (
+                  <Box display="flex" alignItems="center" gap={1}>
+                    <CircularProgress size={16} />
+                    <Typography variant="body2" sx={{ color: 'text.secondary', fontSize: '0.875rem' }}>
+                      Deriving seed...
+                    </Typography>
+                  </Box>
+                )}
+              </Box>
+            )}
 
             {keyPair ? (
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: '10px', width: '320px' }}>
@@ -465,8 +604,8 @@ export default function ShieldedAccount({ sx }: { sx: SxProps }) {
                 </Button>
               </Box>
             ) : (
-              <Typography variant="body2" color="text.secondary">
-                Derive the shielded seed through the MPECDH ceremony to unlock alias registration.
+              <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center' }}>
+                  Complete the shielded account setup to enable shielded transactions.
               </Typography>
             )}
           </Box>
