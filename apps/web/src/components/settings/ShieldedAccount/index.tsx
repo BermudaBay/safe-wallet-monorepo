@@ -155,7 +155,6 @@ export default function ShieldedAccount({ sx }: { sx: SxProps }) {
     }
   }, [isReady])
 
-  // Add this useEffect after line 156
 useEffect(() => {
   if (isReady && !keyPair && !isLoading && mpecdhAddress && browserProvider && signer && sdk) {
     const deriveSeed = async () => {
@@ -396,7 +395,7 @@ const canContribute = useMemo(() => {
   return blocking.some(addr => addr.toLowerCase() === signer.address.toLowerCase())
 }, [signer?.address, blocking, mpecdhAddress, isReady])
 
-  const isDeploymentPending = useMemo(() => {
+    const isDeploymentPending = useMemo(() => {
     if (mpecdhAddress) return false 
     if (deploymentHash) return true 
     
@@ -434,30 +433,14 @@ const canContribute = useMemo(() => {
             Shielded account
           </Typography>
           <Stack direction="column" spacing={1} mt={2}>
-            {/* {expectedAddress && (
-              <Typography variant="body2">
-                Expected MPECDH: <code>{shortenHex(expectedAddress, 6)}</code>
-              </Typography>
-            )}
-            {mpecdhAddress && (
-              <Typography variant="body2" title={mpecdhAddress}>
-                Deployed at: <code>{shortenHex(mpecdhAddress, 6)}</code>
-              </Typography>
-            )} */}
             {deploymentHash && (
               <Typography variant="body2" title={deploymentHash}>
                 Deployment tx: <code>{shortenHex(deploymentHash, 6)}</code>
               </Typography>
             )}
-            {/* {pendingTxs.length > 0 &&
-              pendingTxs.map((item) => (
-                <Typography key={item.hash} variant="body2" title={item.hash}>
-                  Pending: <code>{shortenHex(item.hash, 6)}</code> – {item.confirmationStatus}
-                </Typography>
-              ))} */}
             {blocking.length > 0 && (
               <Typography variant="body2">
-                Blocking: {blocking.map((addr: string) => shortenHex(addr, 4)).join(', ')}
+                Blocking Address: {blocking.map((addr: string) => shortenHex(addr, 4)).join(', ')}
               </Typography>
             )}
             {mpecdhAddress && !isReady && currentRound !== null && totalRounds !== null && (
