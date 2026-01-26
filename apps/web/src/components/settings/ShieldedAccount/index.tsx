@@ -178,22 +178,65 @@ export default function ShieldedAccount({ sx }: { sx: SxProps }) {
   }, [signer, canContribute])
 
   useEffect(() => {
+    console.log("isReady", isReady)
+    console.log("!keyPair", !keyPair)
+    console.log("!isLoading", !isLoading)
+    console.log("mpecdhAddress", mpecdhAddress)
+    console.log("signer", signer)
+    console.log("sdk", sdk)
+    console.log("do weeeee")
+
     if (isReady && !keyPair && !isLoading && mpecdhAddress && browserProvider && signer && sdk) {
+      console.log("do we notttttt")
       const deriveSeed = async () => {
+        console.log("111111111")
+
         setIsLoading(true)
+        console.log("2222222222")
+
         setDeriveError(undefined)
+        console.log("3333333")
+
         try {
+          console.log("444444")
+
           const helper = await createCeremonyHelper(mpecdhAddress, browserProvider)
+          console.log("41")
+
           const ethersSigner = await browserProvider.getSigner()
+          console.log("42")
+
           const seedHex = await helper.stepX(ethersSigner)
+          console.log("43")
+
           const seed = getBytes(seedHex)
+          console.log("44")
+
           const nextKeyPair = sdk.types.KeyPair.fromSeed(seed)
+          console.log("45")
+
           const shieldedAddress = nextKeyPair.address()
+          console.log("46")
+
+          const shieldedByNativeAddress = await sdk.registry.shieldedAddressOf(safeAddress)
+          console.log("shieldedByNativeAddress", shieldedByNativeAddress)
+          console.log("sheiled addr", shieldedAddress)
+
+
           const isRegistered = await sdk.registry.isRegistered(shieldedAddress)
+          console.log("555555555")
+          console.log("isRegistered", isRegistered)
+          console.log("old target ", await sdk.config.registry.getAddress())
+
+
 
           if (!isRegistered) {
+            console.log("6666666666")
+
             const chainId = sdk.config.chainId
             const target = await sdk.config.registry.getAddress()
+            console.log("target", target)
+            console.log("old target ", await sdk.config.registry.getAddress())
             const data = Interface.from([
               'function _register(address _nativeAddress, bytes calldata _shieldedAddress, bytes calldata _name) external',
             ]).encodeFunctionData('_register', [
@@ -201,22 +244,53 @@ export default function ShieldedAccount({ sx }: { sx: SxProps }) {
               Buffer.from(shieldedAddress.replace('0x', ''), 'hex'),
               Buffer.alloc(0),
             ])
+            console.log("777777777")
+
             const tx = await sdk.utils.relay(sdk.config.relayer, { chainId, target, data })
             const receipt = await sdk.config.provider.waitForTransaction(tx)
             if (receipt.status === 0) {
+              try {
+                const tt = await sdk.config.provider.getTransaction(tx)
+                if (tt && tt.to && tt.data) {
+                  await sdk.config.provider.call({
+                    to: tt.to,
+                    data: tt.data,
+                    from: tt.from,
+                    value: tx.value,
+                    blockTag: receipt.blockNumber
+                  })
+                }
+              } catch (error: any) {
+                const revertReason = error.reason || error.data?.message || error.message || 'Unknown revert reason'
+                console.error('Transaction reverted. Reason:', revertReason)
+                console.error('Transaction reverted. message:', error.message)
+                if (error.data) {
+                  console.error('Revert data:', error.data)
+                }
+              }
               throw new Error(`Registry Transaction ${tx} reverted`)
             }
+            console.log("888888888")
+
           }
 
           const nativeAddress = await sdk.registry.nativeAddressOf(shieldedAddress)
           if (nativeAddress.toLowerCase() !== safeAddress.toLowerCase()) {
             throw new Error('KeyPair already registered with different Safe')
           }
+          console.log("999999999")
 
           saveKeyPair(nextKeyPair)
+          console.log("tryyyyyyyyyy", !keyPair)
+          console.log("keyPair", keyPair)
         } catch (error: unknown) {
+          console.log("Error", Error)
+          console.error("Error during seed derivation:", error)
+          console.error("Error message:", error instanceof Error ? error.message : String(error))
+          console.error("Error stack:", error instanceof Error ? error.stack : 'No stack trace')
           setDeriveError(error as Error)
         } finally {
+          console.log("finally")
           setIsLoading(false)
         }
       }
@@ -246,6 +320,9 @@ export default function ShieldedAccount({ sx }: { sx: SxProps }) {
         browserProvider,
       )
 
+      console.log("mpecdhContract", mpecdhContract)
+      console.log("signer", signer.address)
+      console.log("owners", owners)
       const signerSlot = await mpecdhContract.source(signer.address)
       const processedCount = await mpecdhContract.processed(signerSlot)
 

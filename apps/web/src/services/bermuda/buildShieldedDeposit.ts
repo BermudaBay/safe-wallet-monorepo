@@ -115,8 +115,7 @@ export const buildShieldedDepositMetaTxs = async ({
   const [mappedArgs, mappedExtData] = bermudaSDK.utils.mapTransactArgs([args, extData])
 
   const TRANSACT_SIMPLE_SIGNATURE =
-    'transact((bytes,bytes32[],bytes32,bytes32[],bytes32[2],uint256,bytes32,bytes,bytes32[],bytes32,uint256,bytes32),(address,int256,address,uint256,bytes,bytes,bool,address,uint256,bytes32,address))'
-
+    'transact((bytes,bytes32[],bytes32,bytes32[],bytes32[],uint256,bytes32,bytes,bytes32[],bytes32,uint256,bytes32),(address,int256,address,uint256,bytes[],bool,address,uint256,bytes32,address))'
   const transactData = poolContract.interface.encodeFunctionData(TRANSACT_SIMPLE_SIGNATURE, [
     mappedArgs,
     mappedExtData,
