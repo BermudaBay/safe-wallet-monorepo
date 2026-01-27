@@ -1,18 +1,25 @@
 import useSafeInfo from '@/hooks/useSafeInfo'
+import { resolveStxPreimage } from '@/services/bermuda/utils'
 import { useBermudaSDK } from '@/hooks/bermudaSDK/useBermudaSDK'
-import { useState, useContext, createContext, type ReactNode, useEffect, Dispatch, SetStateAction } from 'react'
+import { type SafeStxHashParams } from '@/services/bermuda/types'
+import { useState, useContext, createContext, type ReactNode, useEffect, useCallback } from 'react'
 
 const KEYPAIRS_NAMESPACE = 'keypairs'
 const EXECUTIONS_NAMESPACE = 'executions'
 const MISCELLANEOUS_NAMESPACE = 'misc'
 
-const STX_TYPE_KEY = 'stx-type'
+const STX_INFO_KEY = 'stx-info'
 
 export enum STXType {
   Deposit,
   Transfer,
   Withdrawal,
-  Undefined
+  Undefined,
+}
+
+export type STXInfo = {
+  type: STXType
+  data: SafeStxHashParams
 }
 
 export function useBermuda() {
@@ -29,43 +36,102 @@ export function BermudaProvider(props: Props) {
   const sdk = useBermudaSDK()
   const { safeAddress } = useSafeInfo()
   const [keyPair, setKeyPair] = useState<any | undefined>()
-  const [stxType, setStxType] = useState<STXType | undefined>()
+  const [stxInfo, setStxInfo] = useState<STXInfo | undefined>()
 
-  useEffect(() => {
-    if (sdk) {
-      const key = STX_TYPE_KEY
-      const namespace = MISCELLANEOUS_NAMESPACE
+  const loadKeyPair = useCallback(() => {
+    const key = safeAddress.toLowerCase()
+    const namespace = KEYPAIRS_NAMESPACE
 
-      const result = sdk.storage.get({ namespace, key })
-
-      setStxType(result)
+    const deserializer = function (text: string) {
+      const parsed = JSON.parse(text)
+      return sdk.types.KeyPair.fromJSON(parsed)
     }
+
+    return sdk.storage.get({ namespace, key, deserializer })
+  }, [safeAddress, sdk])
+
+  const loadStxInfo = useCallback(() => {
+    const key = STX_INFO_KEY
+    const namespace = MISCELLANEOUS_NAMESPACE
+
+    const deserializer = function (text: string) {
+      const { type, data } = JSON.parse(text)
+
+      const amounts = data.amounts.map((item: string) => BigInt(item))
+      const inputNullifiers = data.inputNullifiers.map((item: string) => BigInt(item))
+      const outputAmounts = data.outputAmounts.map((item: string) => BigInt(item))
+      const outputPubkeys = data.outputPubkeys.map((item: string) => BigInt(item))
+      const spendingLimit = BigInt(data.spendingLimit)
+
+      const result: STXInfo = {
+        type,
+        data: {
+          ...data,
+          amounts,
+          inputNullifiers,
+          outputAmounts,
+          outputPubkeys,
+          spendingLimit,
+        },
+      }
+
+      return result
+    }
+
+    const result: STXInfo | undefined = sdk.storage.get({ namespace, key, deserializer })
+
+    return result
   }, [sdk])
 
   useEffect(() => {
     if (sdk && safeAddress) {
-      const key = safeAddress.toLowerCase()
-      const namespace = KEYPAIRS_NAMESPACE
+      const keyPairResult = loadKeyPair()
+      const stxInfoResult = loadStxInfo()
 
-      const deserializer = function (text: string) {
-        const parsed = JSON.parse(text)
-        return sdk.types.KeyPair.fromJSON(parsed)
-      }
-
-      const result = sdk.storage.get({ namespace, key, deserializer })
-
-      setKeyPair(result)
+      setKeyPair(keyPairResult)
+      setStxInfo(stxInfoResult)
     }
-  }, [sdk, safeAddress])
+  }, [sdk, safeAddress, loadKeyPair, loadStxInfo])
 
-  function saveStxType(type: STXType) {
-    const key = STX_TYPE_KEY
+  async function getStxPreimage(txHash: string) {
+    if (keyPair) {
+      return resolveStxPreimage(keyPair, txHash)
+    }
+    return undefined
+  }
+
+  function saveStxInfo(value: STXInfo | undefined) {
+    const key = STX_INFO_KEY
     const namespace = MISCELLANEOUS_NAMESPACE
-    const value = type
 
-    sdk.storage.set({ namespace, key, value })
+    const serializer = function (value: STXInfo) {
+      const { type, data } = value
 
-    setStxType(value)
+      const amounts = data.amounts.map((item) => String(item))
+      const inputNullifiers = data.inputNullifiers.map((item) => String(item))
+      const outputAmounts = data.outputAmounts.map((item) => String(item))
+      const outputPubkeys = data.outputPubkeys.map((item) => String(item))
+      const spendingLimit = String(data.spendingLimit)
+
+      return JSON.stringify({
+        type,
+        data: {
+          ...data,
+          amounts,
+          inputNullifiers,
+          outputAmounts,
+          outputPubkeys,
+          spendingLimit,
+        },
+      })
+    }
+
+    sdk.storage.set({ namespace, key, value, serializer })
+
+    // Load STX Info to ensure that the date is correctly typed.
+    const result = loadStxInfo()
+
+    setStxInfo(result)
   }
 
   function saveKeyPair(keyPair: any) {
@@ -107,7 +173,22 @@ export function BermudaProvider(props: Props) {
   }
 
   return (
-    <BermudaContext.Provider value={{ sdk, keyPair, safeAddress, saveKeyPair, deleteKeyPair, saveStxType, stxType, saveStxExecuted, isStxExecuted }}>
+    <BermudaContext.Provider
+      value={{
+        sdk,
+        keyPair,
+        safeAddress,
+        saveKeyPair,
+        loadKeyPair,
+        deleteKeyPair,
+        stxInfo,
+        saveStxInfo,
+        loadStxInfo,
+        saveStxExecuted,
+        isStxExecuted,
+        getStxPreimage,
+      }}
+    >
       {props.children}
     </BermudaContext.Provider>
   )
@@ -120,11 +201,14 @@ type BermudaContext = {
   keyPair: any | undefined
   safeAddress: string
   saveKeyPair: (keyPair: any) => void
+  loadKeyPair: () => any | undefined
   deleteKeyPair: () => void
-  stxType: STXType | undefined
-  saveStxType: (value: STXType) => void
+  stxInfo: STXInfo | undefined
+  saveStxInfo: (value: STXInfo | undefined) => void
+  loadStxInfo: () => STXInfo | undefined
   saveStxExecuted: (id: string) => void
   isStxExecuted(id: string): boolean
+  getStxPreimage(txHash: string): Promise<SafeStxHashParams | undefined>
 }
 
 type Props = {

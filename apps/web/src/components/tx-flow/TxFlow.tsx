@@ -101,7 +101,7 @@ export const TxFlow = <T extends unknown>({
                   <Blockaid />
                 </ReviewTransactionComponent>
 
-                <ConfirmTxReceipt onSubmit={handleFlowSubmit}>
+                <ConfirmTxReceipt onSubmit={handleFlowSubmit} txId={txId}>
                   <Counterfactual />
                   <ExecuteThroughRole />
 

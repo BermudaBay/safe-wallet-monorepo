@@ -1,11 +1,12 @@
 import { getBermudaSDK } from '@/hooks/bermudaSDK/useBermudaSDK'
 import { ZERO_ADDRESS } from '@safe-global/protocol-kit/dist/src/utils/constants'
-import type { MetaTransactionData } from '@safe-global/types-kit'
+import { type MetaTransactionData } from '@safe-global/types-kit'
 import { safeParseUnits } from '@safe-global/utils/utils/formatters'
 import { sameAddress } from '@safe-global/utils/utils/addresses'
 import { Interface } from 'ethers'
-import { OperationType } from '@safe-global/types-kit'
 import type { BatchSafeTx } from '@/services/tx/tx-sender/dispatch'
+import { getTransactAbis, simpleEncodeStx } from './utils'
+import { type SafeStxHashParams } from './types'
 
 type BuildShieldedDepositArgs = {
   safeAddress: string
@@ -23,7 +24,7 @@ export const buildShieldedDepositMetaTxs = async ({
   tokenDecimals,
   amount,
   shieldedKeyPair,
-}: BuildShieldedDepositArgs): Promise<{ metaTxs: MetaTransactionData[]; batchSafeTxs: BatchSafeTx[]; viewingKey?: string }> => {
+}: BuildShieldedDepositArgs): Promise<{ metaTxs: MetaTransactionData[]; batchSafeTxs: BatchSafeTx[]; shieldedTx: SafeStxHashParams; viewingKey?: string }> => {
   console.info('[ShieldAssets][Builder] Preparing shielded deposit meta txs', {
     safeAddress,
     shieldedAddress,
@@ -101,25 +102,8 @@ export const buildShieldedDepositMetaTxs = async ({
     safe: safeAddress,
   })
 
-  const { args, extData, viewingKey } = await bermudaSDK.core.prepareTransact({
-    inputs: [bogus1, bogus2],
-    outputs: [utxo, bogus3],
-    token: normalizedToken,
-    funder: safeAddress,
-    fee: 0n,
-  })
-  console.info('[ShieldAssets][Builder] Prepared transact payload', {
-    hasViewingKey: Boolean(viewingKey),
-  })
-
-  const [mappedArgs, mappedExtData] = bermudaSDK.utils.mapTransactArgs([args, extData])
-
-  const TRANSACT_SIMPLE_SIGNATURE =
-    'transact((bytes,bytes32[],bytes32,bytes32[],bytes32[],uint256,bytes32,bytes,bytes32[],bytes32,uint256,bytes32),(address,int256,address,uint256,bytes[],bool,address,uint256,bytes32,address))'
-  const transactData = poolContract.interface.encodeFunctionData(TRANSACT_SIMPLE_SIGNATURE, [
-    mappedArgs,
-    mappedExtData,
-  ])
+  const inputs = [bogus1, bogus2]
+  const outputs = [utxo, bogus3]
 
   const metaTxs: MetaTransactionData[] = []
 
@@ -135,18 +119,62 @@ export const buildShieldedDepositMetaTxs = async ({
     console.info('[ShieldAssets][Builder] Added ERC20 approval meta tx')
   }
 
+  const { args, extData } = await bermudaSDK.core.prepareTransact({
+    inputs: [bogus1, bogus2],
+    outputs: [utxo, bogus3],
+    token: normalizedToken,
+    funder: safeAddress,
+    fee: 0n,
+  })
+
+  const [_args, _extData] = bermudaSDK.utils.mapTransactArgs([args, extData])
+
+  const abi = getTransactAbis().find((abi: any) => abi.inputs.length === 2)
+  const data = bermudaSDK.config.pool.interface.encodeFunctionData(
+    new Interface([abi]).getFunction('transact'),
+    [_args, _extData],
+  )
+
   metaTxs.push({
     to: poolAddress,
-    data: transactData,
+    data,
     value: isNativeToken ? parsedAmount.toString() : '0',
   })
+
+  const ownPubKey = BigInt(shieldedKeyPair.address().slice(0, 66))
+  const stx: SafeStxHashParams = {
+    token: normalizedToken,
+    safe: safeAddress,
+    inputNullifiers: inputs.map((u: any) => u.getNullifier()),
+    amounts: outputs.map((u: any) => u.amount),
+    spendingLimit: parsedAmount,
+    recipient: safeAddress,
+    outputPubkeys: [ownPubKey, ownPubKey],
+    outputAmounts: [parsedAmount, 0n],
+  }
 
   console.info('[ShieldAssets][Builder] Prepared final meta tx bundle', {
     metaTxCount: metaTxs.length,
     includesApproval: !isNativeToken,
   })
 
-  const batchSafeTxs: BatchSafeTx[] = []
+  const encodedStx = simpleEncodeStx(stx)
+  const encryptionKey = shieldedKeyPair.x25519.secretKey
+  const encryptedStx = bermudaSDK.utils.encryptMessageCiphertext(encryptionKey, encodedStx).payload
+  const topic = bermudaSDK.utils.calcMessageCiphertextTopic({
+    chainId: bermudaSDK.config.chainId,
+    safeAddress,
+    secretKey: encryptionKey
+  })
 
-  return { metaTxs, batchSafeTxs, viewingKey }
+  await bermudaSDK.utils.relay(bermudaSDK.config.relayer, {
+    chainId: bermudaSDK.config.chainId,
+    target: bermudaSDK.config.signMsgHashLib,
+    data: Interface.from(bermudaSDK.abis.SIGN_MESSAGE_HASH_LIB_ABI).encodeFunctionData('messageCiphertext', [
+      topic,
+      encryptedStx
+    ]),
+  })
+
+  return { metaTxs, batchSafeTxs: [], shieldedTx: stx, viewingKey: undefined }
 }

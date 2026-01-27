@@ -20,8 +20,18 @@ type MapArgs = {
   threshold: number
 }
 
+export function getTxHash(txId: string) {
+  let txHash = txId
+
+  if (txHash.startsWith('multisig')) {
+    txHash = txId.split('_')[2]
+  }
+
+  return txHash
+}
+
 const buildTxId = (safeAddress: string, info: SdkSafeTxInfo): string => {
-  return `multisig_${safeAddress.toLowerCase()}_${info.hash}`
+  return `multisig_${safeAddress.toLowerCase()}_${info.txHash}_${info.hash}`
 }
 
 const getStatus = (info: SdkSafeTxInfo, threshold: number) => {
@@ -179,7 +189,7 @@ export const mapSdkQueueToTransactionPage = ({ safeAddress, allTxs, owners, thre
           gasPrice: '0',
           gasToken: ZeroAddress,
           refundReceiver: ZeroAddress,
-          // "Inheriting" the nonce here to display a grouped tx for the 
+          // "Inheriting" the nonce here to display a grouped tx for the
           // mutlisig auth and shielded exec bundle
           nonce: allTxs[i].details.nonce
         },
@@ -187,7 +197,7 @@ export const mapSdkQueueToTransactionPage = ({ safeAddress, allTxs, owners, thre
         signatures: allTxs[i].signatures,
         executed: false,
         stxExecuted,
-        // "Inheriting" the txHash here to display a grouped tx for the 
+        // "Inheriting" the txHash here to display a grouped tx for the
         // mutlisig auth and shielded exec bundle
         txHash: allTxs[i].txHash
       })

@@ -16,7 +16,7 @@ export const useLoadTxQueue = (): AsyncResult<TransactionListPage> => {
   const { chainId, txQueuedTag, txHistoryTag } = safe
   const [updatedTxId, setUpdatedTxId] = useState<string>('')
   const bermudaSDK = useBermudaSDK()
-  const { isStxExecuted, stxType } = useBermuda()
+  const { isStxExecuted, stxInfo } = useBermuda()
   const wallet = useWallet()
   // N.B. we reload when txQueuedTag/txHistoryTag/updatedTxId changes as txQueuedTag alone is not enough
   const reloadTag = (txQueuedTag ?? '') + (txHistoryTag ?? '') + updatedTxId
@@ -37,7 +37,7 @@ export const useLoadTxQueue = (): AsyncResult<TransactionListPage> => {
         logoUri: address.logoUri ?? undefined,
       }))
 
-      const latestStxType = stxType ?? STXType.Undefined
+      const latestStxType = stxInfo?.type ?? STXType.Undefined
 
       return bermudaSDK.safe.listTxs(safeAddress, owner).then((result: unknown) => {
         const { all, pending } = result as SdkListTxsResult
