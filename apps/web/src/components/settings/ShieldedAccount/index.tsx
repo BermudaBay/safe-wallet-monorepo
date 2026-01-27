@@ -178,35 +178,22 @@ export default function ShieldedAccount({ sx }: { sx: SxProps }) {
   }, [signer, canContribute])
 
   useEffect(() => {
-
     if (isReady && !keyPair && !isLoading && mpecdhAddress && browserProvider && signer && sdk) {
       const deriveSeed = async () => {
-
         setIsLoading(true)
-
         setDeriveError(undefined)
-
         try {
-
           const helper = await createCeremonyHelper(mpecdhAddress, browserProvider)
-
           const ethersSigner = await browserProvider.getSigner()
-
           const seedHex = await helper.stepX(ethersSigner)
-
           const seed = getBytes(seedHex)
-
           const nextKeyPair = sdk.types.KeyPair.fromSeed(seed)
-          console.log("45")
-
           const shieldedAddress = nextKeyPair.address()
-
           const isRegistered = await sdk.registry.isRegistered(shieldedAddress)
 
           if (!isRegistered) {
             const chainId = sdk.config.chainId
             const target = await sdk.config.registry.getAddress()
-            console.log("target", target)
             const data = Interface.from([
               'function _register(address _nativeAddress, bytes calldata _shieldedAddress, bytes calldata _name) external',
             ]).encodeFunctionData('_register', [
@@ -214,7 +201,6 @@ export default function ShieldedAccount({ sx }: { sx: SxProps }) {
               Buffer.from(shieldedAddress.replace('0x', ''), 'hex'),
               Buffer.alloc(0),
             ])
-
             const tx = await sdk.utils.relay(sdk.config.relayer, { chainId, target, data })
             const receipt = await sdk.config.provider.waitForTransaction(tx)
             if (receipt.status === 0) {
@@ -259,7 +245,6 @@ export default function ShieldedAccount({ sx }: { sx: SxProps }) {
         ],
         browserProvider,
       )
-
 
       const signerSlot = await mpecdhContract.source(signer.address)
       const processedCount = await mpecdhContract.processed(signerSlot)
