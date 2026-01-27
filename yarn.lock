@@ -1726,7 +1726,7 @@ __metadata:
 
 "@bermuda/sdk@git+ssh://git@github.com:BermudaBay/sdk":
   version: 0.0.1
-  resolution: "@bermuda/sdk@git+ssh://git@github.com:BermudaBay/sdk#commit=a64eaab1af254760b95d95d81185c2de4a9c1b4f"
+  resolution: "@bermuda/sdk@git+ssh://git@github.com:BermudaBay/sdk#commit=8b175a891b700ed96179032d115935a82e6cde8a"
   dependencies:
     "@aztec/bb.js": "npm:0.87.6"
     "@noble/curves": "npm:1.9.0"
@@ -1736,14 +1736,9 @@ __metadata:
     "@stablelib/xchacha20poly1305": "npm:2.0.1"
     blake3-hash-wasm: "git+ssh://git@github.com:bermudabay/blake3-hash-wasm"
     ethers: "npm:6.14.4"
-    fsevents: "npm:*"
     mpecdh: "git+ssh://git@github.com:BermudaBay/mpecdh"
-    poseidon2-compression-ts: "git+ssh://git@github.com:BermudaBay/poseidon2-compression-ts"
     slimejs: "git+ssh://git@github.com:BermudaBay/slimejs"
-  dependenciesMeta:
-    fsevents:
-      optional: true
-  checksum: 10/09956928fd1938b9af157eb611816a36022bceb2581d77fde0e3a84e168da17518143303c5a07df173c11537d81f7e3a99578278ea94354e2cdb7852118341cf
+  checksum: 10/e30b278b7eb6f2862550407acf420ec8324ff602658ae0fac700362c313d12063ac1f5ce9f2f0b35f95ed770c85e60e25a118315186d0a6284b4a9f526ba970a
   languageName: node
   linkType: hard
 
@@ -14303,13 +14298,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@zkpassport/poseidon2@npm:0.6.2":
-  version: 0.6.2
-  resolution: "@zkpassport/poseidon2@npm:0.6.2"
-  checksum: 10/8648756b306442e666b84639f8ae8a573835e77bde1ab612bd358c84202fb234e43834670a0792cc21138740557d6ca6b471a27b72c47fd8f394c1790824a7ad
-  languageName: node
-  linkType: hard
-
 "abab@npm:^2.0.6":
   version: 2.0.6
   resolution: "abab@npm:2.0.6"
@@ -20690,7 +20678,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fsevents@npm:*, fsevents@npm:^2.3.2, fsevents@npm:~2.3.2":
+"fsevents@npm:^2.3.2, fsevents@npm:~2.3.2":
   version: 2.3.3
   resolution: "fsevents@npm:2.3.3"
   dependencies:
@@ -20700,7 +20688,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fsevents@patch:fsevents@npm%3A*#optional!builtin<compat/fsevents>, fsevents@patch:fsevents@npm%3A^2.3.2#optional!builtin<compat/fsevents>, fsevents@patch:fsevents@npm%3A~2.3.2#optional!builtin<compat/fsevents>":
+"fsevents@patch:fsevents@npm%3A^2.3.2#optional!builtin<compat/fsevents>, fsevents@patch:fsevents@npm%3A~2.3.2#optional!builtin<compat/fsevents>":
   version: 2.3.3
   resolution: "fsevents@patch:fsevents@npm%3A2.3.3#optional!builtin<compat/fsevents>::version=2.3.3&hash=df0bf1"
   dependencies:
@@ -27747,15 +27735,6 @@ __metadata:
     style-value-types: "npm:5.0.0"
     tslib: "npm:^2.1.0"
   checksum: 10/d2b6f16536b093d6106ab4caff105b1b4a8bb260e1deb316ca4fe81997c2ca1fc9e2d7747cee08dc2ce34d23ef7be8fd096efa7bc7f6908479da9d16343e1f63
-  languageName: node
-  linkType: hard
-
-"poseidon2-compression-ts@git+ssh://git@github.com:BermudaBay/poseidon2-compression-ts":
-  version: 0.1.0
-  resolution: "poseidon2-compression-ts@git+ssh://git@github.com:BermudaBay/poseidon2-compression-ts#commit=25936f6533b72218b33a5f368f84e1c90688b184"
-  dependencies:
-    "@zkpassport/poseidon2": "npm:0.6.2"
-  checksum: 10/24c19cd368daed188901bcdac48c5a763a09ade32b7e47ca6bddd1b179025330a927d095a7c858f140cf7a5879c72fa15788713f7c4a5a990ac50a326d3608df
   languageName: node
   linkType: hard
 
