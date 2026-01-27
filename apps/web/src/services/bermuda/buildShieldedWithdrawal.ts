@@ -45,19 +45,19 @@ export const buildShieldedWithdrawalMetaTxs = async ({
 
     // Select UTXOs up to amount
     let utxos = await bermudaSDK.utils
-        .findUtxos({
+        .findUtxosUpTo({
             pool: bermudaSDK.config.pool,
             keypair: shieldedKeyPair,
             peers: [
                 /*empty since we won't need to decrypt stx history, i.e. historical, spent UTXOs*/
             ],
-            tokens: [normalizedToken],
+            token: normalizedToken,
             excludeSpent: true,
             excludeOthers: true,
             from: bermudaSDK.config.startBlock,
+            amount: parsedAmount 
         })
 
-    utxos = utxos[normalizedToken]
 
     console.log("$$$$$ utxos", utxos.length, utxos)
 
