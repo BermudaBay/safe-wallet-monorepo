@@ -1,55 +1,12 @@
-import { TransactionSummary } from "@safe-global/safe-gateway-typescript-sdk";
-import { queryFilterBatched, shieldedAddressFromSpendingPubkey, simpleDecodeStx } from "./utils";
-import { Contract, getBytes, ZeroHash } from "ethers";
+import { Interface, ZeroHash } from "ethers";
+import { getTransactAbis, resolveStxPreimage } from "./utils";
 import { getBermudaSDK } from "@/hooks/bermudaSDK/useBermudaSDK";
+import { type TransactionSummary } from "@safe-global/safe-gateway-typescript-sdk";
 
 export async function dispatchShieldedWithdrawal(shieldedKeyPair: any, safeAddress: string, txSummary: TransactionSummary) {
-    // const { safeAddress } = useSafeInfo()
     const bermudaSDK = getBermudaSDK()
 
-    // List all MessageCiphertext events, try decrypt, then decode, then stxhash
-    // If the resulting stxhash is included in txSummary.data (SignMsgHash data) 
-    // its most likely the preimage corresponding to the stx hash that got 
-    // "signed" thru the multisig 
-    console.log("$$$$$ txSummary.txHash", txSummary.txHash)
-    const signMsgHashTx = await bermudaSDK.config.provider.getTransaction(txSummary.txHash)
-    if (!signMsgHashTx) throw Error("Cannot find SignMsgHashLib tx")
-
-    const encryptionKey = shieldedKeyPair.x25519.secretKey
-    const topic = bermudaSDK.utils.calcMessageCiphertextTopic({
-        chainId: bermudaSDK.config.chainId,
-        safeAddress,
-        secretKey: encryptionKey
-    })
-
-    const toBlock = await bermudaSDK.config.provider.getBlockNumber()
-    const signMsgHashLib = new Contract(
-        bermudaSDK.config.signMsgHashLib,
-        bermudaSDK.abis.SIGN_MESSAGE_HASH_LIB_ABI,
-        { provider: bermudaSDK.config.provider }
-    )
-
-    const ciphertexts = await queryFilterBatched(
-        0n,
-        toBlock,
-        signMsgHashLib,
-        // indexing by topic returns an empty result
-        signMsgHashLib.filters.MessageCiphertext(null/*topic*/, null)
-    )
-        .then(events => events.map(e => e.args.ciphertext))
-    console.log("ciphertexts", ciphertexts)
-    let stx
-    for (const c of ciphertexts) {
-        const plaintext = bermudaSDK.utils.decryptMessageCiphertext(encryptionKey, getBytes(c))
-        const decoded = simpleDecodeStx(plaintext)
-        console.log("$$$$$$ dispatchShieldedWithdrawal found stx preimage", decoded)
-        const stxHash = bermudaSDK.safe.stxHash(decoded)
-        console.log("$$$$$$$$$ dispatchShieldedWithdrawal stxHash", stxHash)
-        if (signMsgHashTx.data.includes(stxHash.slice(2))) {
-            stx = decoded
-            break
-        }
-    }
+    const stx = await resolveStxPreimage(shieldedKeyPair, txSummary.txHash!)
     if (!stx) throw Error("Cannot find stx hash preimage")
 
     const utxos = await bermudaSDK.utils
@@ -76,8 +33,8 @@ export async function dispatchShieldedWithdrawal(shieldedKeyPair: any, safeAddre
     }
 
     //NOTE We load all registered peers from tehe regsitry here once
-    // so that all subsequent shieldedAddressFromSpendingPubkey() invocations 
-    // have the fresh registry available. sdk.registry.load() internally 
+    // so that all subsequent shieldedAddressFromSpendingPubkey() invocations
+    // have the fresh registry available. sdk.registry.load() internally
     // concats loaded shielded addresses to sdk.config.peers
     await bermudaSDK.registry.load()
 
@@ -133,9 +90,10 @@ export async function dispatchShieldedWithdrawal(shieldedKeyPair: any, safeAddre
 
     const [_args, _extData] = bermudaSDK.utils.mapTransactArgs([args, extData])
     const target = await bermudaSDK.config.pool.getAddress()
-    const data = bermudaSDK.config.pool.interface.encodeFunctionData(
-        'transact((bytes,bytes32[],bytes32,bytes32[],bytes32[],uint256,bytes32,bytes,bytes32[],bytes32,uint256,bytes32),(address,int256,address,uint256,bytes[],bool,address,uint256,bytes32,address),(uint256,uint8,bytes32,bytes32))',
 
+    const abi = getTransactAbis().find((abi: any) => abi.inputs.length === 2)
+    const data = bermudaSDK.config.pool.interface.encodeFunctionData(
+        new Interface([abi]).getFunction('transact'),
         [
             _args,
             _extData,
@@ -143,7 +101,7 @@ export async function dispatchShieldedWithdrawal(shieldedKeyPair: any, safeAddre
         ]
     )
 
-    bermudaSDK.utils.relay(bermudaSDK.config.relayer, {
+    return bermudaSDK.utils.relay(bermudaSDK.config.relayer, {
         chainId: bermudaSDK.config.chainId,
         target,
         data

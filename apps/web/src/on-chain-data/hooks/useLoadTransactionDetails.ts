@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import loadSafeInfo from '../load-safe-info'
 import { useBermuda } from '@/contexts/bermuda-context'
-import { toTransactionDetails } from '@/services/bermuda/txMapper'
+import { getTxHash, toTransactionDetails } from '@/services/bermuda/txMapper'
 import { type TransactionDetails } from '@safe-global/safe-gateway-typescript-sdk'
 
 export default function useLoadTransactionDetails(chainId: number, address: string, transactionId?: string) {
@@ -16,11 +16,7 @@ export default function useLoadTransactionDetails(chainId: number, address: stri
     try {
       const { owners, threshold } = await loadSafeInfo(chainId, address)
 
-      let txHash = transactionId
-      if (txHash.startsWith('multisig')) {
-        txHash = transactionId.split('_').pop()!
-      }
-
+      const txHash = getTxHash(transactionId)
       const { all } = await sdk.safe.listTxs(address)
       const transaction = all.find((item: any) => item.hash.toLowerCase() === txHash.toLowerCase())
 

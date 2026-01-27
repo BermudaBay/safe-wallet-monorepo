@@ -6,6 +6,8 @@ import type { SafeTransactionData } from '@safe-global/types-kit'
 import { dateString } from '@safe-global/utils/utils/formatters'
 import { ZERO_ADDRESS } from '@safe-global/protocol-kit/dist/src/utils/constants'
 import { Receipt } from '@/components/tx/ConfirmTxDetails/Receipt'
+import { ShieldedReceipt } from '@/components/tx/ConfirmTxDetails/ShieldedReceipt'
+import { useState, useEffect } from 'react'
 import DecodedData from '../TxData/DecodedData'
 import ColorCodedTxAccordion from '@/components/tx/ColorCodedTxAccordion'
 import { Box, Divider, Stack, Typography } from '@mui/material'
@@ -13,6 +15,9 @@ import DecoderLinks from './DecoderLinks'
 import isEqual from 'lodash/isEqual'
 import Multisend from '../TxData/DecodedData/Multisend'
 import { isMultiSendCalldata } from '@/utils/transaction-calldata'
+import { useBermuda } from '@/contexts/bermuda-context'
+import { getTxHash } from '@/services/bermuda/txMapper'
+import { type SafeStxHashParams } from '@/services/bermuda/types'
 
 interface Props {
   safeTxData?: SafeTransactionData
@@ -31,6 +36,21 @@ const Summary = ({
   showMultisend = true,
   showDecodedData = true,
 }: Props): ReactElement => {
+  const { getStxPreimage } = useBermuda()
+  const [stxPreimage, setStxPreimage] = useState<SafeStxHashParams | undefined>()
+
+  useEffect(() => {
+    if (txDetails) {
+      async function run() {
+        const txHash = getTxHash(txDetails?.txId!)
+        const preimage = await getStxPreimage(txHash)
+
+        setStxPreimage(preimage)
+      }
+      run()
+    }
+  }, [txDetails, getStxPreimage])
+
   const { txHash, executedAt } = txDetails ?? {}
   const customTxInfo = txInfo && isCustomTxInfo(txInfo) ? txInfo : undefined
   const toInfo = customTxInfo?.to || txData?.addressInfoIndex?.[txData?.to.value] || txData?.to
@@ -93,20 +113,32 @@ const Summary = ({
               {showDecodedData && <DecodedData txData={txData} toInfo={toInfo} />}
 
               <Box>
-                <Typography variant="subtitle2" fontWeight={700} mb={2}>
-                  Advanced details
-                </Typography>
+                {stxPreimage ? (
+                  <ShieldedReceipt
+                    safeTxData={safeTxData}
+                    shieldedTxData={stxPreimage}
+                    txData={txData}
+                    txInfo={txInfo}
+                    grid
+                  />
+                ) : (
+                  <>
+                    <Typography variant="subtitle2" fontWeight={700} mb={2}>
+                      Advanced details
+                    </Typography>
 
-                <DecoderLinks />
+                    <DecoderLinks />
 
-                <Receipt
-                  safeTxData={safeTxData}
-                  txData={txData}
-                  txDetails={txDetails}
-                  txInfo={txInfo}
-                  withSignatures
-                  grid
-                />
+                    <Receipt
+                      safeTxData={safeTxData}
+                      txData={txData}
+                      txDetails={txDetails}
+                      txInfo={txInfo}
+                      withSignatures
+                      grid
+                    />
+                  </>
+                )}
               </Box>
             </Stack>
           </ColorCodedTxAccordion>

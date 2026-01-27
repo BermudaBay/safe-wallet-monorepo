@@ -5,6 +5,7 @@ import { Interface, toUtf8Bytes, ZeroAddress } from 'ethers'
 import { OperationType } from '@safe-global/types-kit'
 import type { BatchSafeTx } from '@/services/tx/tx-sender/dispatch'
 import { simpleEncodeStx } from './utils'
+import { type SafeStxHashParams } from './types'
 
 type BuildShieldedTransferArgs = {
     safeAddress: string
@@ -22,7 +23,7 @@ export const buildShieldedTransferMetaTxs = async ({
     tokenDecimals,
     amount,
     shieldedKeyPair,
-}: BuildShieldedTransferArgs): Promise<{ metaTxs: MetaTransactionData[]; batchSafeTxs: BatchSafeTx[]; viewingKey?: string }> => {
+}: BuildShieldedTransferArgs): Promise<{ metaTxs: MetaTransactionData[]; batchSafeTxs: BatchSafeTx[]; shieldedTx: SafeStxHashParams; viewingKey?: string }> => {
     console.info('[ShieldedAssetTransfer][Builder] Preparing shielded transfer meta txs', {
         safeAddress,
         shieldedAddress,
@@ -87,7 +88,7 @@ export const buildShieldedTransferMetaTxs = async ({
     const ownAmount = sumIns - parsedAmount
     const safeToExternal = sumIns - (otherAmount + ownAmount)
     const spendingLimit = safeToExternal > 0n ? safeToExternal : 0n
-    const stx = {
+    const stx: SafeStxHashParams = {
         token: tokenAddress,
         safe: safeAddress,
         inputNullifiers: utxos.map((u: any) => u.getNullifier()),
@@ -127,5 +128,5 @@ export const buildShieldedTransferMetaTxs = async ({
         value: '0'
     }
 
-    return { metaTxs: [safeTx], batchSafeTxs: [], viewingKey: undefined }
+    return { metaTxs: [safeTx], batchSafeTxs: [], shieldedTx: stx, viewingKey: undefined }
 }

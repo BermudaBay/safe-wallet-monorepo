@@ -39,7 +39,7 @@ const SuccessScreen = ({ txId, txHash }: Props) => {
   const chain = useCurrentChain()
   const router = useRouter()
   const dispatch = useAppDispatch()
-  const { stxType } = useBermuda()
+  const { stxInfo } = useBermuda()
   const pendingTx = useAppSelector((state) => (txId ? selectPendingTxById(state, txId) : undefined))
   const { safeAddress } = useSafeInfo()
   const status = !txId && txHash ? PendingStatus.INDEXING : pendingTx?.status
@@ -99,7 +99,7 @@ const SuccessScreen = ({ txId, txHash }: Props) => {
   const spinnerStatus = error ? SpinnerStatus.ERROR : isSuccess ? SpinnerStatus.SUCCESS : SpinnerStatus.PROCESSING
 
   useEffect(() => {
-    if (isSuccess && (stxType === STXType.Transfer || stxType === STXType.Withdrawal)) {
+    if (isSuccess && (stxInfo?.type === STXType.Transfer || stxInfo?.type === STXType.Withdrawal)) {
       dispatch(
         showNotification({
           title: 'Success',
@@ -109,14 +109,14 @@ const SuccessScreen = ({ txId, txHash }: Props) => {
         }),
       )
     }
-  }, [isSuccess, stxType])
+  }, [isSuccess, stxInfo])
 
   useEffect(() => {
-    if (isSuccess && (stxType === STXType.Transfer || stxType === STXType.Withdrawal) && router.isReady) {
+    if (isSuccess && (stxInfo?.type === STXType.Transfer || stxInfo?.type === STXType.Withdrawal) && router.isReady) {
       setTxFlow(undefined)
       router.push(`/transactions/queue?safe=dev:${safeAddress}`)
     }
-  }, [isSuccess, stxType, router.isReady])
+  }, [isSuccess, stxInfo, router.isReady])
 
   let StatusComponent
   switch (status) {

@@ -28,7 +28,7 @@ const ReviewUnshieldAssets = ({
   children,
 }: PropsWithChildren<ReviewUnshieldAssetsProps>) => {
   const { safeAddress } = useSafeInfo()
-  const { sdk, keyPair, saveStxType } = useBermuda()
+  const { sdk, keyPair, saveStxInfo } = useBermuda()
   const { balances } = useBalances()
   const { setSafeTx, setSafeTxError, setNonce, setBatchSafeTxs } = useContext(SafeTxContext)
   const currentChain = useCurrentChain()
@@ -84,8 +84,7 @@ const ReviewUnshieldAssets = ({
         })
         setSafeTxError(undefined)
 
-        sdk && saveStxType(STXType.Withdrawal)
-        const { metaTxs, batchSafeTxs } = await buildShieldedWithdrawalMetaTxs({
+        const { metaTxs, batchSafeTxs, shieldedTx } = await buildShieldedWithdrawalMetaTxs({
           safeAddress,
           nativeAddress: safeAddress,
           tokenAddress: recipient.tokenAddress,
@@ -93,6 +92,8 @@ const ReviewUnshieldAssets = ({
           amount: recipient.amount,
           shieldedKeyPair: keyPair,
         })
+
+        sdk && saveStxInfo({ type: STXType.Withdrawal, data: shieldedTx })
 
         const safeTx = await createMultiSendCallOnlyTx(metaTxs)
 

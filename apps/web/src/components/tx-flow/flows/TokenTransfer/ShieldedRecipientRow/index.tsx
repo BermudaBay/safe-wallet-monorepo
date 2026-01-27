@@ -36,7 +36,7 @@ type RecipientRowProps = {
 export const ShieldedRecipientRow = ({ fieldArray, removable = true, remove, disableSpendingLimit }: RecipientRowProps) => {
   const { balances } = useShieldedBalances()
   const spendingLimits = useSelector(selectSpendingLimits)
-  const { stxType } = useBermuda()
+  const { stxInfo } = useBermuda()
 
   const {
     formState: { errors },
@@ -96,7 +96,7 @@ export const ShieldedRecipientRow = ({ fieldArray, removable = true, remove, dis
         <Stack spacing={2}>
 
           {
-            stxType !== STXType.Withdrawal && (
+            stxInfo?.type !== STXType.Withdrawal && (
               <FormControl fullWidth>
                 <AddressBookInput name={recipientFieldName} canAdd={isAddressValid} />
               </FormControl>

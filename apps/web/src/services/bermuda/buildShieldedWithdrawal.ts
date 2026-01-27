@@ -5,6 +5,7 @@ import { Interface, toUtf8Bytes, ZeroAddress } from 'ethers'
 import { OperationType } from '@safe-global/types-kit'
 import type { BatchSafeTx } from '@/services/tx/tx-sender/dispatch'
 import { simpleEncodeStx } from './utils'
+import { type SafeStxHashParams } from './types'
 
 type BuildShieldedWithdrawalArgs = {
     safeAddress: string
@@ -24,7 +25,7 @@ export const buildShieldedWithdrawalMetaTxs = async ({
     tokenDecimals,
     amount,
     shieldedKeyPair,
-}: BuildShieldedWithdrawalArgs): Promise<{ metaTxs: MetaTransactionData[]; batchSafeTxs: BatchSafeTx[]; viewingKey?: string }> => {
+}: BuildShieldedWithdrawalArgs): Promise<{ metaTxs: MetaTransactionData[]; batchSafeTxs: BatchSafeTx[]; shieldedTx: SafeStxHashParams; viewingKey?: string }> => {
     console.info('[ShieldedAssetWithdrawal][Builder] Preparing shielded withdrawal meta txs', {
         safeAddress,
         nativeAddress,
@@ -87,7 +88,7 @@ export const buildShieldedWithdrawalMetaTxs = async ({
     const ownPubKey = BigInt(shieldedKeyPair.address().slice(0, 66))
     // const otherAmount = parsedAmount
     const ownAmount = sumIns - parsedAmount
-    const stx = {
+    const stx: SafeStxHashParams = {
         token: tokenAddress,
         safe: safeAddress,
         inputNullifiers: utxos.map((u: any) => u.getNullifier()),
@@ -129,5 +130,5 @@ export const buildShieldedWithdrawalMetaTxs = async ({
         value: '0'
     }
 
-    return { metaTxs: [safeTx], batchSafeTxs: [], viewingKey: undefined }
+    return { metaTxs: [safeTx], batchSafeTxs: [], shieldedTx: stx, viewingKey: undefined }
 }

@@ -1,7 +1,7 @@
 import useIsExpiredSwap from '@/features/swap/hooks/useIsExpiredSwap'
 import useIsPending from '@/hooks/useIsPending'
 import type { SyntheticEvent } from 'react'
-import { type ReactElement, useContext, useEffect, useState } from 'react'
+import { type ReactElement, useContext, useState } from 'react'
 import { type TransactionSummary } from '@safe-global/safe-gateway-typescript-sdk'
 import { Button, CircularProgress, Tooltip } from '@mui/material'
 
@@ -29,7 +29,7 @@ const ExecuteTxButton = ({
   const txNonce = isMultisigExecutionInfo(txSummary.executionInfo) ? txSummary.executionInfo.nonce : undefined
   const isPending = useIsPending(txSummary.id)
   const { setSelectedTxId } = useContext(ReplaceTxHoverContext)
-  const { keyPair, sdk, saveStxExecuted, isStxExecuted, stxType } = useBermuda()
+  const { keyPair, sdk, saveStxExecuted, isStxExecuted, stxInfo } = useBermuda()
   const [isDispatchingProofs, setIsDispatchingProofs] = useState(false)
 
   const expiredSwap = useIsExpiredSwap(txSummary.txInfo)
@@ -38,7 +38,7 @@ const ExecuteTxButton = ({
   const isStxTransferOrUnshield = methodName === "Shielded transfer" || methodName === "Unshield"
 
   const isNext = (txNonce !== undefined && txNonce === safe.nonce) //|| problyStx
-  const _isStxExecuted = sdk && isStxExecuted(txSummary.txHash!.toLowerCase())
+  const _isStxExecuted = sdk && txSummary.txHash && isStxExecuted(txSummary.txHash.toLowerCase())
   const isDisabled = _isStxExecuted || isDispatchingProofs || !isStxTransferOrUnshield && (!isNext || !sdk || expiredSwap || isPending)
 
   const onClick = async (e: SyntheticEvent) => {
@@ -49,13 +49,13 @@ const ExecuteTxButton = ({
       try {
         setIsDispatchingProofs(true)
         console.log(isDispatchingProofs)
-        console.log("$$$$$ stxType", stxType, "stxType === STXType.Withdrawal", stxType === STXType.Withdrawal)
-        if (stxType === STXType.Transfer) {
+        console.log("$$$$$ stxInfo?.type", stxInfo?.type, "stxInfo?.type === STXType.Withdrawal", stxInfo?.type === STXType.Withdrawal)
+        if (stxInfo?.type === STXType.Transfer) {
           await dispatchShieldedTransfer(keyPair, safe.address.value, txSummary)
-        } else if (stxType === STXType.Withdrawal) {
+        } else if (stxInfo?.type === STXType.Withdrawal) {
           await dispatchShieldedWithdrawal(keyPair, safe.address.value, txSummary)
         } else {
-          throw Error("Unexpected stx type " + stxType)
+          throw Error("Unexpected stx type " + stxInfo?.type)
         }
 
         saveStxExecuted(txSummary.txHash!.toLowerCase())
