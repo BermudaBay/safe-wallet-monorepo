@@ -1,10 +1,10 @@
 import useIsExpiredSwap from '@/features/swap/hooks/useIsExpiredSwap'
 import useIsPending from '@/hooks/useIsPending'
 import type { SyntheticEvent } from 'react'
-import { type ReactElement, useContext, useState } from 'react'
+import { type ReactElement, useContext, useCallback, useState, useEffect } from 'react'
 import { type TransactionSummary } from '@safe-global/safe-gateway-typescript-sdk'
 import { Button, CircularProgress, Tooltip } from '@mui/material'
-
+import { useRouter } from 'next/router'
 import useSafeInfo from '@/hooks/useSafeInfo'
 import { isMultisigExecutionInfo } from '@/utils/transaction-guards'
 import Track from '@/components/common/Track'
@@ -24,6 +24,7 @@ const ExecuteTxButton = ({
   txSummary: TransactionSummary
   compact?: boolean
 }): ReactElement => {
+  const router = useRouter()
   const { setTxFlow } = useContext(TxModalContext)
   const { safe } = useSafeInfo()
   const txNonce = isMultisigExecutionInfo(txSummary.executionInfo) ? txSummary.executionInfo.nonce : undefined
@@ -41,30 +42,47 @@ const ExecuteTxButton = ({
   const _isStxExecuted = sdk && txSummary.txHash && isStxExecuted(txSummary.txHash.toLowerCase())
   const isDisabled = _isStxExecuted || isDispatchingProofs || !isStxTransferOrUnshield && (!isNext || !sdk || expiredSwap || isPending)
 
+  const finalizeStxExecution = useCallback(async () => {
+    try {
+      setIsDispatchingProofs(true)
+
+      if (stxInfo?.type === STXType.Transfer) {
+        await dispatchShieldedTransfer(keyPair, safe.address.value, txSummary)
+      } else if (stxInfo?.type === STXType.Withdrawal) {
+        await dispatchShieldedWithdrawal(keyPair, safe.address.value, txSummary)
+      } else {
+        throw Error("Unexpected stx type " + stxInfo?.type)
+      }
+
+      saveStxExecuted(txSummary.txHash!.toLowerCase())
+
+      router.push(`/balances/?safe=dev:${safe.address.value}`)
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setIsDispatchingProofs(false)
+    }
+  }, [
+    router,
+    keyPair,
+    stxInfo,
+    txSummary,
+    saveStxExecuted,
+    safe.address.value,
+  ])
+
+  useEffect(() => {
+    if (isStxTransferOrUnshield) {
+      finalizeStxExecution()
+    }
+  }, [isStxTransferOrUnshield, finalizeStxExecution])
+
   const onClick = async (e: SyntheticEvent) => {
     e.stopPropagation()
     e.preventDefault()
 
     if (isStxTransferOrUnshield) {
-      try {
-        setIsDispatchingProofs(true)
-        console.log(isDispatchingProofs)
-        console.log("$$$$$ stxInfo?.type", stxInfo?.type, "stxInfo?.type === STXType.Withdrawal", stxInfo?.type === STXType.Withdrawal)
-        if (stxInfo?.type === STXType.Transfer) {
-          await dispatchShieldedTransfer(keyPair, safe.address.value, txSummary)
-        } else if (stxInfo?.type === STXType.Withdrawal) {
-          await dispatchShieldedWithdrawal(keyPair, safe.address.value, txSummary)
-        } else {
-          throw Error("Unexpected stx type " + stxInfo?.type)
-        }
-
-        saveStxExecuted(txSummary.txHash!.toLowerCase())
-      } catch (err) {
-        console.error(err)
-      } finally {
-        setIsDispatchingProofs(false)
-      }
-      console.log(isDispatchingProofs)
+      await finalizeStxExecution()
     } else {
       setTxFlow(<ConfirmTxFlow txSummary={txSummary} />, undefined, false)
     }
